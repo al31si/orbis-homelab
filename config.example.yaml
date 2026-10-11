@@ -30,14 +30,16 @@
 app:
   # Namespaces the PWA caches and the browser storage keys. Lowercase letters, digits and dashes.
   id: orbis-homelab
-  # Shown in the header, the browser tab and as the name of the installed app.
-  name: Homelab
+  # Shown in the header, the browser tab and as the name of the installed app. Replace it with
+  # your own (and, optionally, `shortName` below): while it is `Orbis Homelab`, the name under the
+  # home-screen icon is `Orbis`.
+  name: Orbis Homelab
   # `en` or `it`: one language for the whole instance.
   language: en
 
   # ---- Optional: Look, ordering and favorites ----
   # # Name under the home-screen icon (max 20 characters) and a description for the browser.
-  # shortName: Homelab
+  # shortName: Lab
   # description: Status and shortcuts for my homelab
   # # Default for devices that never chose: system, light or dark.
   # theme: system

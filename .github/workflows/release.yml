@@ -34,7 +34,7 @@ jobs:
       packages: write # push to GHCR, only when dry_run is false
     env:
       VERSION: ${{ inputs.version }}
-      IMAGE: ghcr.io/${{ github.repository }}
+      IMAGE_NAME: ghcr.io/${{ github.repository }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -108,12 +108,12 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: |
           set -euo pipefail
-          tags=(-t "$IMAGE:$VERSION")
+          tags=(-t "$IMAGE_NAME:$VERSION")
           if [[ "$VERSION" != *-* ]]; then
             minor=${VERSION%.*}
-            tags+=(-t "$IMAGE:$minor" -t "$IMAGE:latest")
+            tags+=(-t "$IMAGE_NAME:$minor" -t "$IMAGE_NAME:latest")
             # `X` only from 1.0.0: a 0.x line makes no promise of compatibility between minors.
-            [[ "$VERSION" == 0.* ]] || tags+=(-t "$IMAGE:${VERSION%%.*}")
+            [[ "$VERSION" == 0.* ]] || tags+=(-t "$IMAGE_NAME:${VERSION%%.*}")
           fi
           docker buildx build --platform linux/amd64,linux/arm64 \
             --build-arg VERSION="$VERSION" --build-arg REVISION="$GITHUB_SHA" \

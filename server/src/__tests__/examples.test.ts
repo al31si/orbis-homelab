@@ -135,6 +135,15 @@ describe('config.example.yaml as shipped (the recommended install)', () => {
     expect(config.extensions).toEqual([]);
   });
 
+  it('installs as Orbis Homelab, short name Orbis, with its own storage namespace', async () => {
+    const { config } = await load(EXAMPLE);
+    expect(config.app).toMatchObject({
+      id: 'orbis-homelab',
+      name: 'Orbis Homelab',
+      shortName: 'Orbis',
+    });
+  });
+
   it('gives nobody full access, whatever the address or the identity headers claim', async () => {
     const { config } = await load(EXAMPLE);
     const policy = createAccessPolicy(config.access);
@@ -238,7 +247,7 @@ describe('the optional blocks follow their own instructions', () => {
   it('every block switches on what it documents', async () => {
     const look = (await enabled(['Look, ordering and favorites'])).config.app;
     expect(look.categories.map((c) => c.id)).toEqual(['media', 'infrastructure']);
-    expect(look).toMatchObject({ shortName: 'Homelab', theme: 'system', accent: '#2f6fed' });
+    expect(look).toMatchObject({ shortName: 'Lab', theme: 'system', accent: '#2f6fed' });
     expect(look.defaultFavorites).toEqual(['media-server']);
     expect((await enabled(['Public HTTPS address'])).config.publicUrl).toBe(
       'https://orbis.example.com',
