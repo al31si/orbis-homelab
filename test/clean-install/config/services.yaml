@@ -1,0 +1,16 @@
+services:
+  # Probe answers: up.
+  - id: stub-ok
+    name: Stub OK
+    url: 'http://{host}:8080'
+    probe: http://stub/health
+
+  # Probe points to a closed port: down.
+  - id: stub-down
+    name: Stub down
+    probe: http://stub:9/
+
+  # Neither probe nor containers: listed, but not monitored.
+  - id: no-probe
+    name: Not monitored
+    url: https://example.com

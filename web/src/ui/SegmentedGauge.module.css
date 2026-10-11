@@ -1,0 +1,40 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cells {
+  display: flex;
+  gap: 2px;
+  height: 28px;
+}
+
+.cell {
+  flex: 1;
+  min-width: 0;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+}
+
+.cell[data-tone='ok'] {
+  background: color-mix(in srgb, var(--text-3) 22%, transparent);
+}
+
+.cell[data-lit] {
+  background: var(--tone);
+}
+
+.scale {
+  position: relative;
+  height: 14px;
+  color: var(--text-3);
+  font-size: 0.6875rem;
+  line-height: 14px;
+}
+
+.scale span {
+  position: absolute;
+  transform: translateX(-50%);
+}

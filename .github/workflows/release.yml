@@ -1,0 +1,133 @@
+name: Release (manual)
+
+# Publishes a release: the multi-architecture image on GHCR, the git tag and the GitHub Release.
+# It is NOT part of CI and never runs automatically: start it by hand from the Actions tab,
+# on the commit you intend to release. `dry_run` is on by default: it runs every check and builds
+# the image and the release files, and publishes nothing. Read docs/releasing.md first.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, without "v" (it must equal the version in the repository, for example 0.1.0)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Check and build only: no login, no push, no tag, no release'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write # tag and release, only when dry_run is false
+      packages: write # push to GHCR, only when dry_run is false
+    env:
+      VERSION: ${{ inputs.version }}
+      IMAGE: ghcr.io/${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: The version matches the repository and is not released yet
+        run: |
+          set -euo pipefail
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]] || { echo "not a version: $VERSION"; exit 1; }
+          in_code=$(sed -n "s/^export const VERSION = '\(.*\)';$/\1/p" server/src/version.ts)
+          [ "$in_code" = "$VERSION" ] || { echo "server/src/version.ts has $in_code, not $VERSION"; exit 1; }
+          for package in package.json server/package.json web/package.json sdk/package.json; do
+            [ "$(node -p "require('./$package').version")" = "$VERSION" ] || { echo "$package is not $VERSION"; exit 1; }
+          done
+          for file in README.md docs/install.md compose.yaml; do
+            grep -Eq "^[# ]*VERSION=$VERSION( |$)" "$file" || { echo "the Quick Start in $file does not install $VERSION"; exit 1; }
+          done
+          [ -s "docs/release-notes/$VERSION.md" ] || { echo "docs/release-notes/$VERSION.md is missing"; exit 1; }
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo "tag v$VERSION already exists"; exit 1
+          fi
+
+      - name: Checks
+        run: |
+          npm ci
+          npm run format:check
+          npm run lint
+          npm run typecheck
+          npm test
+          npm run build
+          npm run licenses:check
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Clean install test
+        run: scripts/test-clean-install.sh
+
+      - name: Build the multi-architecture image (not pushed)
+        run: >
+          docker buildx build --platform linux/amd64,linux/arm64
+          --build-arg VERSION="$VERSION" --build-arg REVISION="$GITHUB_SHA"
+          --build-arg SOURCE="https://github.com/${{ github.repository }}"
+          --output type=oci,dest="$RUNNER_TEMP/image.tar" .
+
+      - name: Inspect the image
+        run: node scripts/verify-oci.mjs "$RUNNER_TEMP/image.tar" "$VERSION" "https://github.com/${{ github.repository }}"
+
+      - name: Release files
+        run: |
+          set -euo pipefail
+          mkdir release
+          cp compose.yaml config.example.yaml services.example.yaml .env.example release/
+          (cd release && sha256sum -- compose.yaml config.example.yaml services.example.yaml .env.example > SHA256SUMS)
+          cat release/SHA256SUMS
+
+      - name: Stop here on a dry run
+        if: ${{ inputs.dry_run }}
+        run: echo 'dry_run is on - nothing was published (no login, no push, no tag, no release)'
+
+      - name: Log in to GHCR
+        if: ${{ !inputs.dry_run }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the image
+        if: ${{ !inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          tags=(-t "$IMAGE:$VERSION")
+          if [[ "$VERSION" != *-* ]]; then
+            minor=${VERSION%.*}
+            tags+=(-t "$IMAGE:$minor" -t "$IMAGE:latest")
+            # `X` only from 1.0.0: a 0.x line makes no promise of compatibility between minors.
+            [[ "$VERSION" == 0.* ]] || tags+=(-t "$IMAGE:${VERSION%%.*}")
+          fi
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            --build-arg VERSION="$VERSION" --build-arg REVISION="$GITHUB_SHA" \
+            --build-arg SOURCE="https://github.com/${{ github.repository }}" \
+            "${tags[@]}" --push .
+
+      - name: Create the tag and the GitHub Release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          prerelease=()
+          [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
+          gh release create "v$VERSION" release/* \
+            --target "$GITHUB_SHA" --title "Orbis Homelab $VERSION" \
+            --notes-file "docs/release-notes/$VERSION.md" "${prerelease[@]}"

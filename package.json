@@ -1,0 +1,45 @@
+{
+  "name": "orbis-homelab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Orbis Homelab - self-hosted homelab control center (PWA + BFF)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/al31si/orbis-homelab.git"
+  },
+  "homepage": "https://github.com/al31si/orbis-homelab#readme",
+  "bugs": {
+    "url": "https://github.com/al31si/orbis-homelab/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "server",
+    "web",
+    "sdk"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "build": "npm run build -w web && npm run build -w server",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w web && npm run typecheck -w sdk",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test -w server && npm run test -w web && npm run test -w sdk",
+    "licenses": "node scripts/third-party-licenses.mjs",
+    "licenses:check": "node scripts/third-party-licenses.mjs --check"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "globals": "^17.0.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "^8.71.0"
+  },
+  "license": "Apache-2.0"
+}

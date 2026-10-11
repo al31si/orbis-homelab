@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="%%LANG%%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>%%TITLE%%</title>
+    <meta name="description" content="%%DESCRIPTION%%" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#070e1b" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f2f5fa" media="(prefers-color-scheme: light)" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="%%APP_SHORT_NAME%%" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Rendered by the server for each instance: language, texts, boot config and the icon links
+         (favicon, apple-touch-icon, apple-touch-startup-image). See server index rendering. -->
+    <meta name="orbis-boot" content="%%BOOT_JSON%%" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    %%ICON_LINKS%%
+
+    <script src="/theme-init.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>This app requires JavaScript.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

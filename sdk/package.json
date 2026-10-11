@@ -1,0 +1,17 @@
+{
+  "name": "@orbis-homelab/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Extension contracts for Orbis Homelab: server extensions and client (PWA) extensions",
+  "exports": {
+    "./server": "./server.ts",
+    "./client": "./client.ts",
+    "./client-types": "./client-types.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "license": "Apache-2.0"
+}

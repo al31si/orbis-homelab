@@ -1,0 +1,33 @@
+.ring {
+  position: relative;
+  flex: none;
+}
+
+.ring svg {
+  transform: rotate(-90deg);
+}
+
+.track,
+.value {
+  fill: none;
+}
+
+.track {
+  stroke: color-mix(in srgb, var(--tone) 18%, transparent);
+}
+
+.value {
+  stroke: var(--tone);
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset var(--dur-slow) var(--ease-out),
+    stroke var(--dur-base) var(--ease-out);
+}
+
+.center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}

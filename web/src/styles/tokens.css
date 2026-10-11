@@ -1,0 +1,213 @@
+/*
+ * Design tokens. `--accent*` are overridden at startup by `app.accent` when the instance sets one
+ * (lib/accent.ts, public/theme-init.js).
+ *
+ * Breakpoints (mobile-first, mirrored in shell/shell.module.css):
+ *   compact  < 700px    bottom tab bar
+ *   medium   >= 700px   navigation rail (iPad)
+ *   wide     >= 1100px  sidebar
+ *
+ * Theme: dark by default, follows the system when data-theme is absent, and can be forced with
+ * <html data-theme="light|dark"> (see lib/theme.ts). Light values are declared twice (system
+ * preference + explicit override) because custom properties cannot be shared across selectors.
+ */
+
+:root {
+  /* spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* radii */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  /* type */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI',
+    system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI Variable Display', 'Segoe UI',
+    system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, Menlo, monospace;
+
+  --text-xs: 0.75rem; /* 12 */
+  --text-sm: 0.8125rem; /* 13 */
+  --text-base: 0.9375rem; /* 15 */
+  --text-md: 1.0625rem; /* 17 */
+  --text-lg: 1.25rem; /* 20 */
+  --text-xl: 1.5rem; /* 24 */
+  --text-2xl: 1.875rem; /* 30 */
+  --text-title: 2.125rem; /* 34 - iOS large title */
+  --text-display: 3rem; /* 48 */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.45;
+
+  /* motion */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* layout */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --header-h: 52px;
+  --tabbar-h: 49px;
+  --rail-w: 88px;
+  --sidebar-w: 248px;
+  --content-max: 1200px;
+  --page-pad: 16px;
+  --tap-min: 44px;
+}
+
+/* Dark (default) */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #070e1b;
+  --surface-1: #0e1829;
+  --surface-2: #152238;
+  --surface-3: #1d2d48;
+  --surface-overlay: #111d31;
+  --scrim: rgb(2 6 14 / 62%);
+  --header-bg: rgb(7 14 27 / 82%);
+
+  --text: #eef3fb;
+  --text-2: #a4b2c8;
+  --text-3: #7d8da8;
+
+  --hairline: rgb(150 180 230 / 11%);
+  --hairline-strong: rgb(150 180 230 / 20%);
+
+  --accent: #3cb8ea;
+  --accent-strong: #6ccbf0;
+  --accent-fg: #04182f;
+  --accent-soft: rgb(60 184 234 / 14%);
+
+  --ok: #3ddc97;
+  --warn: #f5b83d;
+  --crit: #ff6b6b;
+  --info: #4cc3f0;
+
+  --shadow-1: 0 1px 0 rgb(255 255 255 / 3%) inset;
+  --shadow-2: 0 12px 40px rgb(0 0 0 / 45%), 0 0 0 1px var(--hairline);
+  --shadow-sheet: 0 -12px 48px rgb(0 0 0 / 50%);
+}
+
+/* Light, following the system preference unless the user forced dark */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+
+    --bg: #f2f5fa;
+    --surface-1: #ffffff;
+    --surface-2: #e9eef6;
+    --surface-3: #dde5f0;
+    --surface-overlay: #ffffff;
+    --scrim: rgb(9 20 40 / 40%);
+    --header-bg: rgb(242 245 250 / 82%);
+
+    --text: #0b1b33;
+    --text-2: #44546d;
+    --text-3: #64738b;
+
+    --hairline: rgb(11 27 51 / 9%);
+    --hairline-strong: rgb(11 27 51 / 18%);
+
+    --accent: #0b67a8;
+    --accent-strong: #08558c;
+    --accent-fg: #ffffff;
+    --accent-soft: rgb(11 103 168 / 10%);
+
+    --ok: #0f7a4f;
+    --warn: #8f5a00;
+    --crit: #c42e2e;
+    --info: #0b67a8;
+
+    --shadow-1: 0 1px 2px rgb(11 27 51 / 6%), 0 4px 16px rgb(11 27 51 / 4%);
+    --shadow-2: 0 12px 40px rgb(11 27 51 / 18%), 0 0 0 1px var(--hairline);
+    --shadow-sheet: 0 -12px 48px rgb(11 27 51 / 18%);
+  }
+}
+
+/* Light, forced */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f2f5fa;
+  --surface-1: #ffffff;
+  --surface-2: #e9eef6;
+  --surface-3: #dde5f0;
+  --surface-overlay: #ffffff;
+  --scrim: rgb(9 20 40 / 40%);
+  --header-bg: rgb(242 245 250 / 82%);
+
+  --text: #0b1b33;
+  --text-2: #44546d;
+  --text-3: #64738b;
+
+  --hairline: rgb(11 27 51 / 9%);
+  --hairline-strong: rgb(11 27 51 / 18%);
+
+  --accent: #0b67a8;
+  --accent-strong: #08558c;
+  --accent-fg: #ffffff;
+  --accent-soft: rgb(11 103 168 / 10%);
+
+  --ok: #0f7a4f;
+  --warn: #8f5a00;
+  --crit: #c42e2e;
+  --info: #0b67a8;
+
+  --shadow-1: 0 1px 2px rgb(11 27 51 / 6%), 0 4px 16px rgb(11 27 51 / 4%);
+  --shadow-2: 0 12px 40px rgb(11 27 51 / 18%), 0 0 0 1px var(--hairline);
+  --shadow-sheet: 0 -12px 48px rgb(11 27 51 / 18%);
+}
+
+@media (min-width: 700px) {
+  :root {
+    --page-pad: 24px;
+  }
+}
+
+@media (min-width: 1100px) {
+  :root {
+    --page-pad: 32px;
+  }
+}
+
+/* Tone scoping: components read `var(--tone)`; set `data-tone` on any element. */
+[data-tone='ok'] {
+  --tone: var(--ok);
+}
+
+[data-tone='warn'] {
+  --tone: var(--warn);
+}
+
+[data-tone='crit'] {
+  --tone: var(--crit);
+}
+
+[data-tone='info'] {
+  --tone: var(--info);
+}
+
+[data-tone='neutral'] {
+  --tone: var(--text-3);
+}

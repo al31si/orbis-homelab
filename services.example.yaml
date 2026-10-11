@@ -1,0 +1,93 @@
+# Orbis Homelab - service catalog.
+#
+# Copy this file to config/services.yaml and replace the entries with your own services.
+# Reference: docs/configuration.md. The file is strict: unknown keys stop the container at startup.
+#
+# A service is what you see on the Services page. Its state comes from what you attach to it:
+#   - `probe`: an HTTP check made by Orbis Homelab (reachable from the container, see compose.yaml)
+#   - `containers`: Docker container names, with a system provider configured in config.yaml
+#   - `integration`: extra data (queues, sessions...) from a supported application
+# A service with neither probe nor containers is listed but not monitored.
+#
+# No secrets in this file: integrations read their API key from the environment (.env) or a file.
+# Hosts below are examples: entries probing a host that does not exist are reported as down.
+
+services:
+  # The smallest useful entry: a name and a launch URL. `{host}` is replaced in the browser by the
+  # hostname the app was opened on, so the link works from the LAN and from a VPN alike.
+  - id: nas
+    name: NAS
+    description: File shares and backups
+    category: infrastructure
+    # A file under config/branding/icons/ (SVG or PNG) used as the icon. Without `icon`, a
+    # generic mark is shown.
+    icon: nas.svg
+    url: 'http://{host}:5000'
+
+  # `probe` as a URL: Orbis Homelab checks it every cycle. Any 2xx/3xx answer counts as up.
+  - id: orbis-homelab
+    name: Orbis Homelab
+    description: This dashboard
+    category: infrastructure
+    url: 'http://{host}:3100'
+    probe: http://127.0.0.1:3100/api/health
+
+  # `core: true`: an outage is critical (and pushed) instead of a warning.
+  # `probe` as an object adds accepted status codes, request headers or `insecureTls: true` for a
+  # self-signed certificate. `containers` lists the Docker containers (main one first).
+  - id: media-server
+    name: Media server
+    description: Movies and TV shows
+    category: media
+    icon: jellyfin
+    url: 'http://{host}:8096'
+    core: true
+    containers: [jellyfin]
+    probe:
+      url: http://media-server:8096/health
+      okStatus: [200]
+    # `integration` adds playback details to the service. Without `secret`, the API key is read
+    # from the environment variable JELLYFIN_API_KEY (RADARR_API_KEY, SONARR_API_KEY, ... for
+    # the other types; VIKUNJA_API_TOKEN for vikunja). Empty or unset = "not configured".
+    integration:
+      type: jellyfin
+      url: http://media-server:8096
+
+  # `probe: true` probes `url` itself (it must not contain `{host}`).
+  - id: radarr
+    name: Radarr
+    description: Movie library
+    category: media
+    icon: radarr
+    url: http://radarr:7878
+    probe: true
+    integration:
+      type: radarr
+      url: http://radarr:7878
+
+  # A second instance of the same application needs its own key: name the variable explicitly.
+  - id: radarr-4k
+    name: Radarr 4K
+    description: Movie library in 4K
+    category: media
+    icon: radarr
+    url: http://radarr-4k:7878
+    probe: true
+    integration:
+      type: radarr
+      url: http://radarr-4k:7878
+      secret: { env: RADARR_4K_API_KEY }
+
+  # `secret` can also point to a file (a Docker/Compose secret mounted at /run/secrets).
+  # Monitored through its container only: no probe.
+  - id: qbittorrent
+    name: qBittorrent
+    description: Downloads
+    category: media
+    icon: qbittorrent
+    url: 'http://{host}:8080'
+    containers: [qbittorrent]
+    integration:
+      type: qbittorrent
+      url: http://qbittorrent:8080
+      secret: { file: /run/secrets/qbittorrent_api_key }

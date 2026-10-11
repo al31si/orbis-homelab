@@ -1,0 +1,8 @@
+# Minimal configuration of the clean-install test: custom name, English, no data source.
+app:
+  id: clean-check
+  name: Clean Install Check
+  language: en
+
+alerts:
+  graceSeconds: 0

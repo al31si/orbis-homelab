@@ -1,0 +1,187 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mono {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+/* settings rows (same metrics as List rows) */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-3) var(--space-4);
+}
+
+.row + .row,
+.block + .row,
+.row + .extra,
+.block + .extra {
+  border-top: 1px solid var(--hairline);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.rowText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-size: var(--text-md);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.rowSub {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.statusIcon {
+  flex: none;
+  align-self: flex-start;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  color: var(--tone);
+}
+
+.statusIcon[data-tone='neutral'] {
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+.extra {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.note {
+  padding: 0 var(--space-1);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.note code,
+.rowSub code {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.external {
+  color: var(--text-3);
+}
+
+/* address */
+.address {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.addressText {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+/* ios steps */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: var(--space-6);
+  color: var(--text-2);
+  font-size: var(--text-base);
+  list-style: decimal;
+}
+
+.steps li::marker {
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+.steps strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.inlineIcon {
+  display: inline-block;
+  vertical-align: -3px;
+  color: var(--accent);
+}
+
+/* switch */
+.switch {
+  position: relative;
+  flex: none;
+  width: 51px;
+  height: 31px;
+  border-radius: var(--radius-full);
+  background: var(--surface-3);
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+/* keeps the touch target at 44px without growing the visual switch */
+.switch::after {
+  content: '';
+  position: absolute;
+  inset: -7px -4px;
+}
+
+.switchOn {
+  background: var(--accent);
+}
+
+.switchThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: var(--radius-full);
+  background: #fff;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 28%);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.switchOn .switchThumb {
+  transform: translateX(20px);
+}

@@ -1,0 +1,47 @@
+.brand {
+  display: none;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-min);
+}
+
+.emblem {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.text {
+  display: none;
+  flex-direction: column;
+  min-width: 0;
+  line-height: var(--leading-tight);
+}
+
+.name {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 700px) and (min-height: 521px) {
+  .brand {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1100px) {
+  .brand {
+    justify-content: flex-start;
+    padding: 0 var(--space-2);
+  }
+
+  .text {
+    display: flex;
+  }
+}

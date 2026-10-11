@@ -1,0 +1,226 @@
+# Orbis Homelab - instance configuration.
+#
+# Copy this file to config/config.yaml and edit it. Reference: docs/configuration.md.
+#
+# SAFE BY DEFAULT: as shipped, everybody who opens the app gets the LIMITED view: services and
+# their state, with private details withheld and push notifications off. Full access is an
+# explicit choice: see the `access:` section below.
+#
+# - Non-sensitive settings live here. Secrets (API keys, tokens) never do: they come from the
+#   environment (.env) or from files, see docs/configuration.md, "Secrets".
+# - The file is strict: an unknown or misspelled key stops the container at startup with the path
+#   of the field and the reason (see `docker compose logs orbis`). A key written twice is
+#   rejected too.
+# - Everything not configured simply does not exist: no page, no request, no alert.
+#
+# HOW TO ENABLE AN OPTIONAL BLOCK
+# Optional blocks are commented out and start with a header line `# ---- Optional: <name> ----`.
+# To enable one, remove the `# ` that follows the indentation of each of its lines, up to the next
+# blank line, and keep the indentation:
+#
+#     #   shortName: Homelab        becomes        shortName: Homelab
+#
+# Every top-level key exists once in this file, and the blocks that extend a section (app,
+# access, sources) sit inside it, so enabling any blocks never writes a key twice. Two rules
+# come with the headers:
+#   (requires: X)   enable block X as well (a block inside `sources:` needs "Data sources").
+#   (replaces: L)   the block is an ALTERNATIVE to the active line L: put `# ` in front of L, then
+#                   enable the block. Enable at most one alternative per section.
+
+app:
+  # Namespaces the PWA caches and the browser storage keys. Lowercase letters, digits and dashes.
+  id: orbis-homelab
+  # Shown in the header, the browser tab and as the name of the installed app.
+  name: Homelab
+  # `en` or `it`: one language for the whole instance.
+  language: en
+
+  # ---- Optional: Look, ordering and favorites ----
+  # # Name under the home-screen icon (max 20 characters) and a description for the browser.
+  # shortName: Homelab
+  # description: Status and shortcuts for my homelab
+  # # Default for devices that never chose: system, light or dark.
+  # theme: system
+  # # Accent color as #rrggbb.
+  # accent: '#2f6fed'
+  # # Order and labels of the groups used by `category` in services.yaml.
+  # categories:
+  #   - { id: media, label: Media }
+  #   - { id: infrastructure, label: Infrastructure }
+  # # Service ids starred the first time a device opens the app.
+  # defaultFavorites: [media-server]
+
+access:
+  # Who gets full access (private details, push notifications)?
+  #   limited          nobody: everybody gets the limited view. The default and the safe choice.
+  #   trusted-network  everybody who can reach the port. Opt-in, see the block below.
+  #   identity-proxy   only people your reverse proxy or VPN has authenticated, see below.
+  mode: limited
+
+  # ---- Optional: Trusted network (replaces: mode: limited) ----
+  # # SECURITY WARNING: `trusted-network` gives full access (private details, push notifications)
+  # # to EVERYONE who can reach this port. Use it only when the port is reachable exclusively
+  # # from a network you control and trust (a home LAN behind a firewall). Never expose it to
+  # # the Internet. If in doubt keep `limited` or use one of the identity-proxy blocks.
+  # mode: trusted-network
+
+  # ---- Optional: Identity from a reverse proxy (replaces: mode: limited) ----
+  # # Full access only for requests that come from the proxy AND carry an allowed identity header.
+  # # Everybody else gets the limited view.
+  # mode: identity-proxy
+  # identityProxy:
+  #   # Address or CIDR the proxy connects from, as seen by the container: the proxy
+  #   # container's IP, or the CIDR of the Docker network it shares with Orbis Homelab.
+  #   # Identity headers from any other source are ignored.
+  #   trustedProxies: [172.18.0.0/16]
+  #   # Header set by the proxy after it authenticated the user (and optional display name).
+  #   userHeader: Remote-User
+  #   nameHeader: Remote-Name
+  #   # Values of that header that get full access (compared case-insensitively).
+  #   allowedUsers: [alice, bob@example.com]
+
+  # ---- Optional: Identity from Tailscale Serve (replaces: mode: limited) ----
+  # # The `tailscale` preset fills in the header names set by Tailscale Serve. Publish the second
+  # # port on the host loopback only (`127.0.0.1:3101:3101` in compose.yaml) and run
+  # # `tailscale serve --bg --https=443 3101`.
+  # mode: identity-proxy
+  # identityProxy:
+  #   preset: tailscale
+  #   # Source address Docker shows for requests relayed from the host loopback: the gateway of
+  #   # the compose network (`docker network inspect <folder>_default`, folder = the directory
+  #   # holding compose.yaml).
+  #   trustedProxies: [172.18.0.1]
+  #   # Identity is only honoured on this port, so nothing that reaches 3100 can forge it.
+  #   trustedPort: 3101
+  #   allowedUsers: [alice@example.com]
+
+# ---- Optional: Public HTTPS address ----
+# # HTTPS origin of this instance. Browsers only allow installing the app, the service worker and
+# # push notifications over HTTPS (iOS requires it); people opening the plain-HTTP address are
+# # pointed here.
+# publicUrl: https://orbis.example.com
+
+# ---- Optional: Listening port ----
+# # Port inside the container (default 3100). Keep it equal to the container side of `ports:` in
+# # compose.yaml. The image healthcheck follows this value.
+# server:
+#   port: 3100
+
+# ---- Optional: Data sources ----
+# # Parent of the source blocks below (System provider, Storage page, Storage pools, SMART disk
+# # health, Weekly AI usage): enable it together with the ones you want. Without any source the
+# # app still works: it shows the service catalog and its probes.
+# sources:
+
+# ---- Optional: System provider (requires: Data sources) ----
+# # Enables the System page, container states and filesystem usage. See compose.yaml for a
+# # Glances service you can add to the same file, and docs/glances.md for what that container
+# # can do on your host before you add it.
+#   system:
+#     type: glances
+#     url: http://glances:61208
+#     # Where the host folder with your disks is mounted inside the Glances container.
+#     hostPrefix: /host
+#     # Hostname to display. Inside Docker, Glances reports the container id.
+#     hostname: my-server
+
+# ---- Optional: Storage page (requires: Data sources) ----
+# # Enables the Storage page. `include: auto` shows every real filesystem the System provider
+# # reports. The next two blocks add pools and SMART health inside this one.
+#   storage:
+#     volumes:
+#       include: auto
+#       # Mount point -> friendly name.
+#       labels:
+#         /: System
+#         /mnt/data: Data
+
+# ---- Optional: Storage pools (requires: Data sources, System provider, Storage page) ----
+# # A pool shows several member volumes as one capacity (mergerfs, ZFS, LVM...).
+#     pools:
+#       - id: tank
+#         label: Tank
+#         mount: /mnt/tank
+#         members: [/mnt/disk1, /mnt/disk2]
+
+# ---- Optional: SMART disk health (requires: Data sources, Storage page) ----
+# # A JSON report written by a script of yours, from a file or a URL (docs/smart-report.md).
+#     smart:
+#       type: report-json
+#       file: /data/smart-report.json
+#       # url: http://nas:8080/smart-report.json
+#       # Disk label (as written in the report) -> mount point of its filesystem.
+#       disks:
+#         disk1: /mnt/disk1
+#         disk2: /mnt/disk2
+
+# ---- Optional: Weekly AI usage (requires: Data sources) ----
+# # One entry per provider. The JSON document is described in docs/usage-providers.md.
+#   usage:
+#     - id: assistant
+#       label: Assistant
+#       parser: weekly-quota
+#       file: /data/assistant-usage.json
+#       # url: http://nas:8080/assistant-usage.json
+#       # Data older than this is reported as stalled (needs `updated_at` in the document).
+#       maxAgeMinutes: 30
+#       # Shown until the file exists for the first time.
+#       hint: Run the usage writer, see docs/usage-providers.md
+#       intervalSeconds: 300
+
+# ---- Optional: Turn automatic pages off ----
+# # Detection can only be overridden to `false` (and `activity: true` to show the page even
+# # without sources, e.g. only for the event log).
+# features:
+#   system: false
+#   storage: false
+#   activity: true
+
+# ---- Optional: Alert tuning ----
+# # Values shown are the defaults. Percentages are 0-100.
+# alerts:
+#   # Seconds a condition must persist before it becomes an alert.
+#   graceSeconds: 90
+#   thresholds:
+#     poolWarn: 85
+#     poolCrit: 95
+#     fsWarn: 80
+#     fsCrit: 90
+#     # Available memory below this percentage.
+#     memAvailableWarn: 10
+#     memAvailableCrit: 5
+#     swapWarn: 85
+#     swapWithLowMemory: 25
+#     # 15-minute load above cores x this factor.
+#     loadFactorWarn: 1.5
+#     # SMART report older than this is stale.
+#     smartStaleSeconds: 2700
+
+# ---- Optional: Web Push notifications ----
+# # Needs full access and HTTPS (publicUrl). Keys are generated into /data on first start.
+# push:
+#   enabled: true
+#   # Contact claim sent to push services: `mailto:` or `https:`.
+#   subject: mailto:admin@example.com
+
+# ---- Optional: Quick links in Settings ----
+# # `{host}` is replaced by the hostname the app was opened on, so a link works over the LAN
+# # address and over a VPN name alike.
+# links:
+#   - id: router
+#     title: Router
+#     description: Admin interface
+#     url: http://192.168.1.1
+#     icon: generic
+#   - id: wiki
+#     title: Wiki
+#     url: http://{host}:8081
+
+# ---- Optional: Extensions ----
+# # Directories under /extensions, see docs/extensions.md. Only listed extensions are loaded.
+# extensions:
+#   - id: my-extension
+#     enabled: true
+#     # Passed to the extension, which validates it.
+#     config:
+#       interval: 60

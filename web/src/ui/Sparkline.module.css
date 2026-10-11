@@ -1,0 +1,19 @@
+.spark {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.line {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.area {
+  fill: color-mix(in srgb, var(--tone) 14%, transparent);
+  stroke: none;
+}

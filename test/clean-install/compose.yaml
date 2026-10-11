@@ -1,0 +1,40 @@
+# Self-contained project used by scripts/test-clean-install.sh: the app exactly as a new user
+# would run it (hardened, no secrets, no external networks) next to a stub web server that
+# serves as the probe target. Run it through the script: it picks the project name and port.
+
+services:
+  orbis:
+    # IMAGE: test a prebuilt image instead of building the repository.
+    image: ${IMAGE:-orbis-clean-install:local}
+    build:
+      context: ../..
+    restart: 'no'
+    ports:
+      # Random free port on the loopback interface; the script reads it back.
+      - '127.0.0.1::3100'
+    volumes:
+      - ./config:/config:ro
+      - data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      stub:
+        condition: service_healthy
+
+  stub:
+    image: nginx:alpine
+    volumes:
+      - ./stub:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1/health']
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+volumes:
+  data:

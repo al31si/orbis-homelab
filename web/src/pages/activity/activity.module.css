@@ -1,0 +1,369 @@
+/*
+ * Two independent columns from 700px. On compact screens the column wrappers dissolve, so the
+ * DOM order is the reading order: alerts, downloads, media, tasks, playback, usage, extensions, log.
+ */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.column {
+  display: contents;
+}
+
+@media (min-width: 700px) {
+  .stack {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1100px) {
+  .stack {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .column {
+    gap: var(--space-8);
+  }
+}
+
+.headUpdated {
+  display: flex;
+  margin-top: var(--space-2);
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+/* alerts / failures */
+.allClear {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-2);
+}
+
+.allClear svg {
+  flex: none;
+  color: var(--text-3);
+}
+
+.allClear[data-ok] svg {
+  color: var(--ok);
+}
+
+.failed {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.failed svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--tone);
+}
+
+.failedTitle {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.failedDetail {
+  margin-top: 2px;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+/* not configured */
+.notConfigured {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.notConfiguredIcon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+.notConfiguredText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.notConfiguredTitle {
+  color: var(--text);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.notConfiguredText code {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+/* card header shared by downloads, playback */
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.cardHeadText {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+}
+
+.cardSubtitle {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+/* downloads */
+.speeds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4) var(--space-4);
+}
+
+.speed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.speedLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tone);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.speed[data-tone='neutral'] .speedLabel {
+  color: var(--text-2);
+}
+
+.speedFigure {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.speedValue {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
+}
+
+.speedUnit {
+  color: var(--text-2);
+  font-size: var(--text-base);
+}
+
+.counts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid var(--hairline);
+}
+
+.count {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-3) 2px;
+  text-align: center;
+}
+
+.count + .count {
+  border-left: 1px solid var(--hairline);
+}
+
+.countValue {
+  margin: 0;
+  color: var(--tone, var(--text));
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.countLabel {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* media rows */
+.rowLine {
+  display: block;
+}
+
+.rowLine[data-tone] {
+  color: var(--tone);
+}
+
+.updateLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.queueEmpty {
+  color: var(--text-3);
+  font-size: var(--text-sm);
+}
+
+/* tasks */
+.taskCounts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.taskCount {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  padding: var(--space-4);
+}
+
+.taskCount + .taskCount {
+  border-left: 1px solid var(--hairline);
+}
+
+.taskValue {
+  margin: 0;
+  color: var(--tone, var(--text));
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
+}
+
+.taskLabel {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.divided {
+  border-top: 1px solid var(--hairline);
+}
+
+.restricted {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--hairline);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+
+/* quota */
+.quota {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.quotaText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.quotaValue {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.quotaUnit {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+/* event log */
+.day + .day {
+  border-top: 1px solid var(--hairline);
+}
+
+.dayTitle {
+  padding: var(--space-3) var(--space-4) var(--space-1);
+  color: var(--text-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.eventIcon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  color: var(--tone);
+}
+
+.eventTime {
+  color: var(--text-3);
+  font-size: var(--text-sm);
+}
+
+.more {
+  padding: var(--space-2);
+  border-top: 1px solid var(--hairline);
+}

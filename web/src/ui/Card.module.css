@@ -1,0 +1,33 @@
+.card {
+  position: relative;
+  min-width: 0;
+  background: var(--surface-1);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    var(--shadow-1),
+    0 0 0 1px var(--hairline);
+}
+
+.none {
+  padding: 0;
+  overflow: hidden;
+}
+
+.sm {
+  padding: var(--space-3);
+}
+
+.md {
+  padding: var(--space-4);
+}
+
+.lg {
+  padding: var(--space-6);
+}
+
+.toned {
+  background: color-mix(in srgb, var(--tone) 9%, var(--surface-1));
+  box-shadow:
+    var(--shadow-1),
+    0 0 0 1px color-mix(in srgb, var(--tone) 28%, transparent);
+}

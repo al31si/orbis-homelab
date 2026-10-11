@@ -1,0 +1,42 @@
+.wrap {
+  position: relative;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.wrap[data-dragging] {
+  transition: none;
+}
+
+.indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  height: 44px;
+  transform: translateY(-100%);
+  pointer-events: none;
+}
+
+.spinner {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-top: 6px;
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  color: var(--accent);
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+
+.spinner[data-spinning] {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

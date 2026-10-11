@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Build artifacts and caches
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+.eslintcache
+.cache/
+
+# Environment and secrets (the real .env lives outside the repo; .env.example is the template)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+secrets/
+.credentials.json
+vapid.json
+push.json
+claude-usage.json
+
+# Runtime data (anchored: must NOT match web/src/data, the frontend data layer)
+/data/
+*.sqlite
+*.sqlite3
+*.db
+state.json
+*.corrupt-*
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+*.tmp
+*.bak
+*.swp
+.tmp/
+
+# IDE / OS metadata
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,129 @@
+# Orbis Homelab - generic Docker Compose file.
+#
+# Quick start (details in docs/install.md). Download this file, the example configuration and
+# .env.example from the SAME release as the image: they are versioned together.
+#
+#   VERSION=0.1.0          # the release you want to install
+#   BASE=https://raw.githubusercontent.com/al31si/orbis-homelab/v$VERSION
+#   mkdir -p orbis-homelab/config orbis-homelab/data && cd orbis-homelab
+#   curl -fsSLO $BASE/compose.yaml
+#   curl -fsSL $BASE/config.example.yaml -o config/config.yaml
+#   curl -fsSL $BASE/services.example.yaml -o config/services.yaml
+#   curl -fsSL $BASE/.env.example -o .env
+#   echo "ORBIS_VERSION=$VERSION" >> .env     # pins the image to the release of these files
+#   sudo chown 1000:1000 data                        # the container runs as uid 1000 (user `node`)
+#   docker compose up -d
+#
+# The project name is the folder name and no container name is fixed, so several installations
+# can live side by side. Give each its own host port (ORBIS_PORT) and, if their folders have the
+# same name, its own COMPOSE_PROJECT_NAME (both in .env).
+
+services:
+  orbis:
+    # The version has no default on purpose: the image must match the release of the files above.
+    image: ghcr.io/al31si/orbis-homelab:${ORBIS_VERSION:?set ORBIS_VERSION in .env to the release of these files}
+    # To build from a checkout of the repository instead of pulling the image:
+    # build:
+    #   context: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    # environment:
+    #   # The container has no timezone of its own (UTC). Set it only if you want local times in logs.
+    #   TZ: Europe/London
+    ports:
+      # Host port : container port. The container port is `server.port` in config.yaml (default 3100).
+      # Set ORBIS_PORT in .env to run a second installation on the same machine.
+      - '${ORBIS_PORT:-3100}:3100'
+    volumes:
+      # config.yaml, services.yaml and the optional branding/ folder. Read-only.
+      - ./config:/config:ro
+      # State: alert history, Web Push keys and subscriptions.
+      - ./data:/data
+      # Optional extensions (see docs/extensions.md). Read-only.
+      # - ./extensions:/extensions:ro
+      # Optional file secrets: mount them and reference them with `{ file: ... }` in the YAML.
+      # - ./secrets:/run/secrets:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options:
+        max-size: '5m'
+        max-file: '3'
+    # The image already carries this healthcheck; it follows `server.port` from config.yaml, so
+    # it needs no adjustment if you change the port. Kept here so `docker compose ps` is explicit.
+    healthcheck:
+      test: ['CMD', 'node', '/app/healthcheck.mjs']
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    # Reaching the services you monitor
+    # ---------------------------------
+    # The container starts on its own default network, which only reaches the outside world and
+    # the host (through the published ports of other containers: use http://<host-ip>:<port>).
+    # To use container names (http://jellyfin:8096) attach it to the network(s) those services
+    # use, then declare each network at the bottom of this file:
+    #
+    # networks:
+    #   - default
+    #   - media
+    #
+    # To reach a service published on the Docker host itself, use the host's LAN IP address,
+    # or map a name to the host gateway:
+    #
+    # extra_hosts:
+    #   - 'host.docker.internal:host-gateway'
+
+# Networks of the services you monitor (they must already exist):
+#
+# networks:
+#   media:
+#     external: true
+#     name: media-stack_default   # `docker network ls` shows the exact name
+
+# ---------------------------------------------------------------------------------------------
+# Example: Glances, the optional system provider (System and Storage pages, container states).
+# Add it to this file, then point `sources.system.url` at http://glances:61208 in config.yaml.
+# Read docs/glances.md first: this container is more privileged than Orbis Homelab itself.
+#  - The Docker socket gives it control of the Docker host even when mounted `:ro` (that flag only
+#    protects the socket file, not the Docker API). Orbis Homelab never touches the socket.
+#  - Publish NO port and use no other network than this file's default one: the Glances web
+#    server has no authentication.
+#  - No `pid: host` (Orbis Homelab does not read processes) and mount only the parent folder of
+#    your data disks, not `/`, so Glances cannot read the whole host.
+#
+#   glances:
+#     image: nicolargo/glances:latest # pin a version once it works, for example 4.5.6
+#     restart: unless-stopped
+#     environment:
+#       GLANCES_OPT: '-w'
+#     volumes:
+#       - /var/run/docker.sock:/var/run/docker.sock:ro
+#       - /mnt:/host/mnt:ro
+#
+# `hostPrefix` in config.yaml (default /host) must match where the host folder is mounted above.
+#
+# ---------------------------------------------------------------------------------------------
+# Example: behind a reverse proxy (HTTPS, identity header). Do not publish the port to the LAN:
+# replace the `ports:` entry above with `expose: ['3100']` and join the proxy's network.
+#
+#   services:
+#     orbis:
+#       networks: [proxy]
+#       expose: ['3100']
+#   networks:
+#     proxy:
+#       external: true
+#       name: reverse-proxy_default
+#
+# In config.yaml, `access.mode: identity-proxy` then trusts the proxy's address (see
+# docs/configuration.md, "Access modes").

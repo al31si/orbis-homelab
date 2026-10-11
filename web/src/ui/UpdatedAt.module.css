@@ -1,0 +1,12 @@
+.updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--text-3);
+}

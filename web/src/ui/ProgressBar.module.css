@@ -1,0 +1,20 @@
+.track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--text-3) 20%, transparent);
+}
+
+.sm {
+  height: 5px;
+}
+
+.fill {
+  height: 100%;
+  min-width: 4px;
+  border-radius: inherit;
+  background: var(--tone);
+  transition:
+    width var(--dur-slow) var(--ease-out),
+    background var(--dur-base) var(--ease-out);
+}

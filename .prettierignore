@@ -1,0 +1,4 @@
+node_modules
+dist
+package-lock.json
+THIRD_PARTY_NOTICES.md
