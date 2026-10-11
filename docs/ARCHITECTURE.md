@@ -80,6 +80,25 @@ Italian and English, one language per instance (`app.language`). Dictionaries ar
 
 A directory `<EXTENSIONS_DIR>/<id>/` with `server.mjs`, `manifest.json` and an optional client bundle, enabled in `config.yaml` (`extensions:`). Contracts: `sdk/server.ts` (BFF) and `sdk/client-types.ts` (PWA). Server extensions register collectors, integrations, alert rules and routes under `/api/x/<id>/`; client extensions register pages (listed in Settings and the command palette) and Activity sections. Extensions run in-process with the BFF's privileges: install only code you trust. A broken extension is reported in Diagnostics and as a warning alert; it never stops the app.
 
+## What the browser keeps
+
+Several people, or one person with several identities, can use the same browser origin (for example behind a reverse proxy that authenticates them), and the browser keeps data on the device in three places: the service worker cache (Cache API), `localStorage`, and the memory of the open page. None of them knows who is looking, so the server tells the client what each response may be kept as. Every `/api` response carries two headers (`shared/api.ts`):
+
+- `X-Orbis-Scope`: `shared` (identical for every visitor: overview, services, system, containers, storage, diagnostics), `limited` (produced for a limited visitor, which anybody who reaches the server can obtain) or `full` (produced for a visitor with full access, possibly private). A route is `shared` only if it is on the list in `server/src/server.ts`; every other route, extension routes included, takes the access level of the request, so a new route is private by default.
+- `X-Orbis-Viewer`: an opaque tag of the identity the response was produced for (a hash salted per server process, never the identity).
+
+The rules, enforced in the service worker (`web/public/sw.js`) and in the data store (`web/src/data/store.ts`):
+
+| Where                | `shared`, `limited`                            | `full`, or no header                                                                                                                                     |
+| -------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Service worker cache | stored, served when the backend is unreachable | never stored; an answer also removes the entry stored for that URL                                                                                       |
+| `localStorage`       | stored, restored on a cold start               | never stored                                                                                                                                             |
+| Memory of the page   | held                                           | held, but dropped when the viewer tag changes, on a 401/403 or a body that is not the API (a proxy login page), and when contact with the server is lost |
+
+The session (`/api/session`: who you are) is not cached by the service worker nor persisted at all. An answer that was in flight when private data was dropped is discarded. Extension routes (`/api/x/*`) are never cached by the service worker, and their data in the page follows the same table.
+
+Consequences: after a logout, an identity change or a downgrade to limited access nothing private remains in the cache, in storage or on screen; offline, the shared and limited data stay available and private sections are empty. When security and offline data conflict, security wins. Versions before 0.1.0 kept every successful response in `<app.id>-api-v1` and every payload, the session included, in `localStorage`: both are deleted on start (the worker deletes the cache on activation and takes over at install time instead of waiting for the page when it finds it).
+
 ## Safety properties (must hold)
 
 - No secret in the repository, the bundle, logs, API responses or error messages.

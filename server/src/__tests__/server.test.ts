@@ -443,3 +443,85 @@ describe('listeners', () => {
     await expect(listen()).rejects.toThrow('must differ');
   });
 });
+
+describe('response scope (what a client may keep)', () => {
+  const SHARED = ['overview', 'services', 'diagnostics', 'health'];
+  const proxyConfig = {
+    access: {
+      mode: 'identity-proxy',
+      identityProxy: {
+        preset: 'tailscale',
+        trustedProxies: ['10.0.0.0/8'],
+        allowedUsers: ['me@example.com', 'you@example.com'],
+      },
+    },
+  };
+  const as = (login: string) => ({
+    headers: { 'tailscale-user-login': login },
+    remoteAddress: '10.1.2.3',
+  });
+  const scopeOf = async (app: FastifyInstance, url: string, init: object = {}) =>
+    (await app.inject({ url, ...init })).headers['x-orbis-scope'];
+
+  it('marks the routes that ignore who asks as shared, whatever the access level', async () => {
+    const core = createFakeCore({ features: { system: true, containers: true, storage: true } });
+    const open = await start({ core });
+    const full = await start({ core, config: trusted });
+    for (const route of [...SHARED, 'system', 'containers', 'storage']) {
+      expect(await scopeOf(open.app, `/api/${route}`), route).toBe('shared');
+      expect(await scopeOf(full.app, `/api/${route}`), route).toBe('shared');
+    }
+  });
+
+  it('marks everything else with the access level of the request, private by default', async () => {
+    const core = createFakeCore({ features: { activity: true } });
+    const open = await start({ core });
+    const full = await start({ core, config: trusted });
+    for (const url of ['/api/activity', '/api/session', '/api/push/config', '/api/x/unknown']) {
+      expect(await scopeOf(open.app, url), url).toBe('limited');
+      expect(await scopeOf(full.app, url), url).toBe('full');
+    }
+    // Errors are marked too: a proxy-less 404 of a full visitor is still `full`.
+    expect(await scopeOf(full.app, '/api/nope')).toBe('full');
+    // The query string does not turn a private route into a shared one.
+    expect(await scopeOf(full.app, '/api/activity?x=/api/overview')).toBe('full');
+  });
+
+  it('only calls the core without an access level for the routes it marks shared', async () => {
+    const core = createFakeCore({ features: { activity: true } });
+    const { app } = await start({ core, config: trusted });
+    for (const route of ['overview', 'services', 'diagnostics'])
+      await app.inject({ url: `/api/${route}` });
+    expect(core.calls.filter((c) => c.includes(':'))).toEqual([]);
+    await app.inject({ url: '/api/activity' });
+    expect(core.calls).toContain('activity:full');
+  });
+
+  it('gives a viewer tag that follows the identity and reveals nothing about it', async () => {
+    const { app } = await start({ config: proxyConfig });
+    const tag = async (init: object) =>
+      String((await app.inject({ url: '/api/session', ...init })).headers['x-orbis-viewer']);
+    const me = await tag(as('me@example.com'));
+    expect(await tag(as('me@example.com'))).toBe(me);
+    expect(await tag(as('ME@example.com'))).toBe(me);
+    const you = await tag(as('you@example.com'));
+    const nobody = await tag({ remoteAddress: '192.168.1.5' });
+    expect(new Set([me, you, nobody]).size).toBe(3);
+    // A forged identity from an untrusted address is the anonymous viewer, not that identity.
+    expect(await tag({ ...as('me@example.com'), remoteAddress: '192.168.1.5' })).toBe(nobody);
+    expect(me).toMatch(/^[A-Za-z0-9_-]{16}$/);
+    expect(me + you + nobody).not.toMatch(/example|me@/);
+  });
+
+  it('uses a different salt per process, so tags cannot be correlated across restarts', async () => {
+    const tag = async () =>
+      String(
+        (
+          await (
+            await start({ config: proxyConfig })
+          ).app.inject({ url: '/api/session', ...as('me@example.com') })
+        ).headers['x-orbis-viewer'],
+      );
+    expect(await tag()).not.toBe(await tag());
+  });
+});

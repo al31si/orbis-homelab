@@ -6,10 +6,24 @@
  * - Shell: precached, versioned cache, cache-first. Navigations are network-first (the server
  *   renders index.html per instance) and fall back to the stored index.html. Branding, manifest
  *   and extension bundles (/icons, /splash, /branding, /extensions) are network-first as well.
- * - /api/* GET: network-first (4 s timeout) with the last cached response as fallback.
- *   /api/session, /api/push/*, /api/health and extension routes (/api/x/*) are never cached,
- *   non-GET requests are never intercepted.
- * - Updates: a new worker waits until the page posts SKIP_WAITING.
+ * - /api/* GET: network-first (4 s timeout) with the last cached response as fallback, but only
+ *   for responses the server marked as safe to keep (see "What may be cached"). /api/session,
+ *   /api/push/*, /api/health and extension routes (/api/x/*) are never cached, non-GET requests
+ *   are never intercepted.
+ * - Updates: a new worker waits until the page posts SKIP_WAITING, except when it finds the
+ *   cache of an older version that did not separate private data (see "Migration").
+ *
+ * What may be cached. The cache is shared by every visitor of the origin and the key is the URL
+ * only, so nothing private may enter it: a visitor who loses access (logout at the proxy, a
+ * downgrade to limited access) would otherwise still be served what the previous visitor saw.
+ * The server marks every /api response with `X-Orbis-Scope` (shared/api.ts): `shared` and
+ * `limited` responses can be obtained by anybody who reaches the server and are cached; `full`
+ * responses, and any response without the header (a proxy page, an older server), are not, and
+ * a `full` answer also removes the entry stored for that URL.
+ *
+ * Migration. Versions before 0.1.0 kept every successful /api response in `<prefix>api-v1`.
+ * That cache can hold private data, so it is deleted on activation, and a worker that finds it
+ * at install time takes over at once instead of waiting for the page.
  */
 
 const BUILD_ID = '__BUILD_ID__';
@@ -22,7 +36,13 @@ const INSTANCE = /*__SW_INSTANCE__*/ { cachePrefix: 'orbis-homelab-', offlineTex
 
 const CACHE_PREFIX = INSTANCE.cachePrefix;
 const SHELL_CACHE = `${CACHE_PREFIX}shell-${BUILD_ID}`;
-const API_CACHE = `${CACHE_PREFIX}api-v1`;
+const API_CACHE = `${CACHE_PREFIX}api-v2`;
+// Instance assets (branding, manifest, extension bundles) are static files, never private: they
+// are not marked with a scope and live apart from the API data.
+const ASSET_CACHE = `${CACHE_PREFIX}assets-v1`;
+const LEGACY_API_CACHE = `${CACHE_PREFIX}api-v1`;
+const SCOPE_HEADER = 'X-Orbis-Scope';
+const CACHEABLE_SCOPES = ['shared', 'limited'];
 const API_TIMEOUT_MS = 4000;
 const API_UNCACHED = [
   /^\/api\/x(\/|$)/,
@@ -35,18 +55,19 @@ const INSTANCE_ASSETS = /^\/(icons|splash|branding|extensions)\/|^\/manifest\.we
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((cache) =>
-        cache.addAll(PRECACHE_URLS.map((url) => new Request(url, { cache: 'reload' }))),
-      ),
+    (async () => {
+      const cache = await caches.open(SHELL_CACHE);
+      await cache.addAll(PRECACHE_URLS.map((url) => new Request(url, { cache: 'reload' })));
+      // The older worker still serves (and fills) the unseparated cache until this one runs.
+      if (await caches.has(LEGACY_API_CACHE)) await self.skipWaiting();
+    })(),
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      const keep = new Set([SHELL_CACHE, API_CACHE]);
+      const keep = new Set([SHELL_CACHE, API_CACHE, ASSET_CACHE]);
       const names = await caches.keys();
       await Promise.all(
         names
@@ -75,13 +96,13 @@ self.addEventListener('fetch', (event) => {
 
   if (url.pathname.startsWith('/api/')) {
     if (API_UNCACHED.some((re) => re.test(url.pathname))) return;
-    event.respondWith(networkFirstApi(request));
+    event.respondWith(networkFirst(request, API_CACHE, isKeepable));
     return;
   }
 
   // Branding, manifest and extension bundles belong to the instance, not to this build.
   if (INSTANCE_ASSETS.test(url.pathname)) {
-    event.respondWith(networkFirstApi(request));
+    event.respondWith(networkFirst(request, ASSET_CACHE, () => true));
     return;
   }
 
@@ -135,12 +156,19 @@ function fetchWithTimeout(request, ms) {
   return fetch(request, { signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-async function networkFirstApi(request) {
-  const cache = await caches.open(API_CACHE);
+/** True when the server marked the response as obtainable by anybody (see the header comment). */
+function isKeepable(response) {
+  return CACHEABLE_SCOPES.includes(response.headers.get(SCOPE_HEADER) || '');
+}
+
+async function networkFirst(request, cacheName, keepable) {
+  const cache = await caches.open(cacheName);
   try {
     const response = await fetchWithTimeout(request, API_TIMEOUT_MS);
     if (response.ok) {
-      cache.put(request, response.clone());
+      if (keepable(response)) await cache.put(request, response.clone());
+      // A private answer must not leave an older, public one in its place to be served later.
+      else await cache.delete(request);
       return response;
     }
     // A BFF outage surfaces as a gateway error from the proxy in front of it.

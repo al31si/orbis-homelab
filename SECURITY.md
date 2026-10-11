@@ -12,14 +12,14 @@ You can expect an acknowledgement within a few days and a fix or a mitigation pl
 
 ## Security model
 
-Orbis Homelab is a read-only dashboard for a network you control.
+Orbis Homelab is a dashboard for a network you control. Its built-in integrations only read from your services; extensions are an exception (see below).
 
 - **Credentials stay in the backend.** API keys and tokens come from the environment or from files, are never part of the web bundle, API responses, logs or error messages, and the YAML schema has no field in which to write one.
 - **No accounts.** The backend assigns each request an access level, `limited` or `full`. `limited` withholds private details (for example task titles and playback sessions) and disables push. `full` shows everything.
 - **`limited` is the default.** `full` has to be configured:
   - `trusted-network`: everybody who can reach the port is trusted.
   - `identity-proxy`: only requests that come from a trusted proxy address (and, optionally, the trusted port) **and** carry an allowed identity header. Identity headers from any other source are ignored.
-- **Outbound requests** to your services are `GET`, with timeouts and size limits. Orbis Homelab itself has no Docker socket access; the optional Glances container does (see below).
+- **Outbound requests** of the built-in integrations and providers are `GET`, with timeouts and size limits. Orbis Homelab itself has no Docker socket access; the optional Glances container does (see below). This does **not** apply to extensions: the extension SDK offers an HTTP client that can also send `POST` requests.
 - **Mutating requests** (push subscription) require full access, a JSON body and a same-origin `Origin`.
 - **Hardened container:** non-root user, read-only filesystem, no Linux capabilities, `no-new-privileges`, resource limits. Strict content security policy, no inline script.
 - **Extensions run in-process** with the privileges of the backend. They are only loaded when listed in `config.yaml`. Install only extensions you trust.

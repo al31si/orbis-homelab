@@ -1,6 +1,6 @@
-import type { Snapshot } from '@shared/api';
+import type { ResponseScope, Snapshot } from '@shared/api';
 import { t } from '@/i18n';
-import { ApiError, apiFetch, isUnreachable } from './api';
+import { ApiError, apiFetchMeta, isUnreachable } from './api';
 import {
   ENDPOINT_KEYS,
   ENDPOINTS,
@@ -22,6 +22,8 @@ export interface EntryState<T = unknown> {
   fetchError: string | null;
   /** A request is in flight. */
   refreshing: boolean;
+  /** Who the held payload was produced for; null while there is none. */
+  scope: ResponseScope | null;
 }
 
 export interface ConnectionState {
@@ -43,6 +45,8 @@ interface Entry {
   lastPersistedAt: number;
 }
 
+/** Bump when what is persisted, or the rules for persisting it, change: older copies are dropped. */
+const PERSIST_FORMAT = 2;
 const PERSIST_EVERY_MS = 20_000;
 const MAX_BACKOFF_MS = 300_000;
 /** Consecutive unreachable responses before the connection is declared lost. */
@@ -55,18 +59,30 @@ const MIN_RETRY_GAP_MS = 2_000;
  * exponentially, and the last good payload is persisted (under `<app.id>.snapshot.<contract>.`)
  * so a cold offline launch has something to show. Besides the built-in endpoints, extensions
  * can poll arbitrary `/api` paths (`defineRemote`).
+ *
+ * Private data. Every answer says who it is for (`ResponseScope`). `shared` and `limited`
+ * payloads can be obtained by anybody who reaches the server, so they are persisted and may be
+ * shown offline. A `full` payload is held in memory only and is dropped as soon as the store
+ * cannot vouch for the visitor any more: the server reports another viewer, answers 401/403 or
+ * something that is not the API (a login page of the proxy), or the connection is lost. After a
+ * logout, an identity change or an access downgrade nothing private stays on screen, in memory
+ * or in storage; the price is that private sections are empty while offline.
  */
 export class DataStore {
   private readonly entries = new Map<string, Entry>();
   private readonly connectionListeners = new Set<() => void>();
   private connection: ConnectionState = { status: 'online', lastDataAt: null };
   private unreachableCount = 0;
+  /** Viewer tag of the latest answer; undefined before the first one. */
+  private viewer: string | null | undefined;
+  /** Counts purges, so an answer that was in flight during one can be recognised. */
+  private generation = 0;
   private readonly storageRoot: string;
   private readonly storagePrefix: string;
 
   constructor(appId: string) {
     this.storageRoot = `${appId}.snapshot.`;
-    this.storagePrefix = `${this.storageRoot}${__API_SCHEMA__}.`;
+    this.storagePrefix = `${this.storageRoot}${__API_SCHEMA__}.f${PERSIST_FORMAT}.`;
     this.dropObsoletePersisted();
     for (const key of ENDPOINT_KEYS) this.create(key, ENDPOINTS[key]);
     this.connection = {
@@ -99,6 +115,8 @@ export class DataStore {
         path: normalizeRemotePath(path),
         intervalMs: options.intervalMs,
         envelope: options.envelope ?? 'snapshot',
+        // Extension data follows the same rule as the built-in one: kept only when `shared` or `limited`.
+        persist: true,
       });
     }
     return key;
@@ -164,7 +182,7 @@ export class DataStore {
     this.entries.set(key, {
       def,
       state: {
-        ...this.readPersisted(key),
+        ...this.readPersisted(key, def),
         intervalMs: def.intervalMs,
         snapshotError: null,
         fetchError: null,
@@ -182,11 +200,15 @@ export class DataStore {
 
   /* ---------------------------------------------------------------- persistence */
 
-  /** Drops snapshots persisted under another API contract (they could crash the new code). */
+  /**
+   * Drops snapshots persisted under another API contract (they could crash the new code) or by a
+   * version that did not separate private data: those may hold what a `full` visitor saw.
+   */
   private dropObsoletePersisted(): void {
     try {
-      for (const name of Object.keys(localStorage)) {
-        if (name.startsWith(this.storageRoot) && !name.startsWith(this.storagePrefix)) {
+      for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+        const name = localStorage.key(i);
+        if (name?.startsWith(this.storageRoot) && !name.startsWith(this.storagePrefix)) {
           localStorage.removeItem(name);
         }
       }
@@ -195,25 +217,34 @@ export class DataStore {
     }
   }
 
-  private readPersisted(key: string): Pick<EntryState, 'data' | 'fetchedAt'> {
+  private readPersisted(
+    key: string,
+    def: EndpointDef,
+  ): Pick<EntryState, 'data' | 'fetchedAt' | 'scope'> {
+    const none = { data: null, fetchedAt: null, scope: null };
+    if (!def.persist) return none;
     try {
       const raw = localStorage.getItem(this.storagePrefix + key);
-      if (!raw) return { data: null, fetchedAt: null };
-      const parsed = JSON.parse(raw) as { data?: unknown; fetchedAt?: unknown };
-      if (parsed.data == null || typeof parsed.fetchedAt !== 'number') {
-        return { data: null, fetchedAt: null };
+      if (!raw) return none;
+      const parsed = JSON.parse(raw) as { data?: unknown; fetchedAt?: unknown; scope?: unknown };
+      // Only what anybody could have fetched is ever restored; anything else is ignored.
+      const scope = parsed.scope === 'shared' || parsed.scope === 'limited' ? parsed.scope : null;
+      if (parsed.data == null || typeof parsed.fetchedAt !== 'number' || scope === null) {
+        return none;
       }
-      return { data: parsed.data, fetchedAt: parsed.fetchedAt };
+      return { data: parsed.data, fetchedAt: parsed.fetchedAt, scope };
     } catch {
-      return { data: null, fetchedAt: null };
+      return none;
     }
   }
 
   private writePersisted(key: string, state: EntryState): void {
+    // `full` data never reaches storage; the caller checks, this is the last line of defence.
+    if (state.scope !== 'shared' && state.scope !== 'limited') return;
     try {
       localStorage.setItem(
         this.storagePrefix + key,
-        JSON.stringify({ data: state.data, fetchedAt: state.fetchedAt }),
+        JSON.stringify({ data: state.data, fetchedAt: state.fetchedAt, scope: state.scope }),
       );
     } catch {
       /* quota exceeded or storage disabled: the in-memory copy still works */
@@ -244,12 +275,22 @@ export class DataStore {
   private async load(key: string): Promise<void> {
     const entry = this.entry(key);
     const { def } = entry;
+    const startedIn = this.generation;
     try {
-      const body = await apiFetch<unknown>(def.path);
+      const { body, scope, viewer } = await apiFetchMeta<unknown>(def.path);
+      // A purge happened while this request was in flight, so a private answer may belong to the
+      // viewer that was just dropped: discard it, the next poll asks again.
+      if (scope === 'full' && this.generation !== startedIn) return;
+      this.noteViewer(viewer);
       entry.failures = 0;
       this.noteContact(true);
       if (def.envelope === 'plain') {
-        this.commit(key, { data: body, fetchedAt: Date.now(), intervalMs: def.intervalMs }, null);
+        this.commit(
+          key,
+          { data: body, fetchedAt: Date.now(), intervalMs: def.intervalMs },
+          null,
+          scope,
+        );
       } else {
         const snapshot = body as Snapshot<unknown>;
         this.commit(
@@ -260,10 +301,19 @@ export class DataStore {
             intervalMs: snapshot.intervalMs || def.intervalMs,
           },
           snapshot.error,
+          scope,
         );
       }
     } catch (error) {
       entry.failures += 1;
+      // 401/403 or a body that is not the API (the login page of a proxy): the visitor may have
+      // lost access, and the private data held for them goes with it.
+      if (
+        error instanceof ApiError &&
+        (error.status === 401 || error.status === 403 || error.kind === 'parse')
+      ) {
+        this.purgePrivate();
+      }
       this.noteContact(!isUnreachable(error));
       this.patch(key, {
         fetchError: error instanceof ApiError ? error.message : t('common.error.unexpected'),
@@ -275,19 +325,29 @@ export class DataStore {
     key: string,
     next: { data: unknown; fetchedAt: number | null; intervalMs: number },
     snapshotError: string | null,
+    scope: ResponseScope,
   ): void {
     const entry = this.entry(key);
-    // A snapshot that never collected keeps whatever good data we already hold.
-    const keepOld = next.data === null && entry.state.data !== null;
+    // A snapshot that never collected keeps whatever good data we already hold, except private
+    // data when the visitor no longer gets it (a downgrade from full to limited access).
+    const held = entry.state;
+    const keepOld =
+      next.data === null && held.data !== null && !(held.scope === 'full' && scope !== 'full');
     this.patch(key, {
-      data: keepOld ? entry.state.data : next.data,
-      fetchedAt: keepOld ? entry.state.fetchedAt : next.fetchedAt,
+      data: keepOld ? held.data : next.data,
+      fetchedAt: keepOld ? held.fetchedAt : next.fetchedAt,
+      scope: keepOld ? held.scope : next.data === null ? null : scope,
       intervalMs: next.intervalMs,
       snapshotError,
       fetchError: null,
     });
     const now = Date.now();
-    if (!keepOld && now - entry.lastPersistedAt >= PERSIST_EVERY_MS) {
+    if (
+      !keepOld &&
+      entry.def.persist &&
+      scope !== 'full' &&
+      now - entry.lastPersistedAt >= PERSIST_EVERY_MS
+    ) {
       entry.lastPersistedAt = now;
       this.writePersisted(key, entry.state);
     }
@@ -298,6 +358,24 @@ export class DataStore {
     const entry = this.entry(key);
     entry.state = { ...entry.state, ...changes };
     for (const listener of entry.listeners) listener();
+  }
+
+  /* -------------------------------------------------------------- private data */
+
+  /** Remembers who the server answers for; a different viewer takes the previous one's data. */
+  private noteViewer(viewer: string | null): void {
+    if (this.viewer !== undefined && viewer !== this.viewer) this.purgePrivate();
+    this.viewer = viewer;
+  }
+
+  /** Forgets every payload held in memory that was produced for a `full` visitor. */
+  private purgePrivate(): void {
+    this.generation += 1;
+    for (const [key, entry] of this.entries) {
+      if (entry.state.scope !== 'full') continue;
+      this.patch(key, { data: null, fetchedAt: null, scope: null, snapshotError: null });
+    }
+    this.setConnection({ lastDataAt: this.latestFetchedAt() });
   }
 
   /* ----------------------------------------------------------------- connection */
@@ -317,7 +395,10 @@ export class DataStore {
     if (next.status === this.connection.status && next.lastDataAt === this.connection.lastDataAt) {
       return;
     }
+    // Out of contact the store cannot tell whether the visitor still has access: private data goes.
+    const wentOffline = next.status === 'offline' && this.connection.status !== 'offline';
     this.connection = next;
+    if (wentOffline) this.purgePrivate();
     for (const listener of this.connectionListeners) listener();
   }
 

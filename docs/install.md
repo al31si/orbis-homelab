@@ -99,7 +99,7 @@ The container joins its own network. Two things matter:
 
 Services published on the Docker host itself can be reached by the host's LAN address, or through the optional `extra_hosts: ['host.docker.internal:host-gateway']` entry in `compose.yaml`.
 
-Orbis Homelab only makes outbound `GET` requests; nothing needs to be opened inbound except the app's own port.
+The built-in integrations only make outbound `GET` requests (an extension you install may do more, see [extensions](extensions.md)); nothing needs to be opened inbound except the app's own port.
 
 ## Optional: Glances (System and Storage pages)
 

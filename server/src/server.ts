@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from 'node:crypto';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
@@ -14,6 +15,7 @@ import type {
   PushConfig,
   Session,
 } from '../../shared/api.js';
+import { SCOPE_HEADER, VIEWER_HEADER } from '../../shared/api.js';
 import type { RouteHelpers } from '../../sdk/server.js';
 import { createAccessPolicy, isSameOriginJson, resolveAccess } from './access.js';
 import type { Config, Env } from './config/schema.js';
@@ -60,6 +62,21 @@ const ERROR_CODES = {
 } as const;
 type ErrorName = keyof typeof ERROR_CODES;
 
+/**
+ * Routes whose answer does not depend on who asks (they never look at the access level). Their
+ * responses are marked `shared`; every other `/api` response, extension routes included, is
+ * marked with the access level of the request, so a new route is private by default.
+ */
+const SHARED_ROUTES: ReadonlySet<string> = new Set([
+  '/api/health',
+  '/api/overview',
+  '/api/services',
+  '/api/system',
+  '/api/containers',
+  '/api/storage',
+  '/api/diagnostics',
+]);
+
 const EMPTY_ACTIVITY: ActivityInfo = {
   events: [],
   usage: [],
@@ -92,6 +109,15 @@ export function buildApp(deps: ServerDeps): {
   });
 
   const accessOf = (req: FastifyRequest): Access => resolveAccess(req.raw, policy);
+  // Opaque and unlinkable: salted per process, so it identifies "the same viewer as a moment ago"
+  // and nothing else (no login, no cross-restart correlation).
+  const viewerSalt = randomBytes(16);
+  const viewerTag = (access: Access): string =>
+    createHash('sha256')
+      .update(viewerSalt)
+      .update(`${access.level}\0${access.user?.login.toLowerCase() ?? ''}`)
+      .digest('base64url')
+      .slice(0, 16);
   const apiError = (name: ErrorName) => ({
     error: ERROR_CODES[name],
     message: t(`http.error.${name}`),
@@ -141,7 +167,13 @@ export function buildApp(deps: ServerDeps): {
     reply.header('X-Frame-Options', 'DENY');
     reply.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     reply.header('Content-Security-Policy', CSP);
-    if (req.url.startsWith('/api/')) reply.header('Cache-Control', 'no-store');
+    if (req.url.startsWith('/api/')) {
+      reply.header('Cache-Control', 'no-store');
+      const access = accessOf(req);
+      const route = req.url.split('?')[0] ?? '';
+      reply.header(SCOPE_HEADER, SHARED_ROUTES.has(route) ? 'shared' : access.level);
+      reply.header(VIEWER_HEADER, viewerTag(access));
+    }
   });
 
   /* ------------------------------------------------------------------ API */

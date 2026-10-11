@@ -29,17 +29,23 @@ export interface EndpointDef {
   intervalMs: number;
   /** `snapshot`: body is a Snapshot<T>. `plain`: body is the payload itself. */
   envelope: 'snapshot' | 'plain';
+  /**
+   * Keep the last payload in localStorage for a cold offline start. Even then only what the
+   * server marked `shared` or `limited` is written (see `ResponseScope`). Off for the session:
+   * it carries who the visitor is and has to be asked again on every start.
+   */
+  persist: boolean;
 }
 
 export const ENDPOINTS: Record<EndpointKey, EndpointDef> = {
-  session: { path: '/session', intervalMs: 300_000, envelope: 'plain' },
-  overview: { path: '/overview', intervalMs: 10_000, envelope: 'snapshot' },
-  system: { path: '/system', intervalMs: 10_000, envelope: 'snapshot' },
-  containers: { path: '/containers', intervalMs: 30_000, envelope: 'snapshot' },
-  services: { path: '/services', intervalMs: 30_000, envelope: 'snapshot' },
-  storage: { path: '/storage', intervalMs: 60_000, envelope: 'snapshot' },
-  activity: { path: '/activity', intervalMs: 30_000, envelope: 'plain' },
-  diagnostics: { path: '/diagnostics', intervalMs: 30_000, envelope: 'plain' },
+  session: { path: '/session', intervalMs: 300_000, envelope: 'plain', persist: false },
+  overview: { path: '/overview', intervalMs: 10_000, envelope: 'snapshot', persist: true },
+  system: { path: '/system', intervalMs: 10_000, envelope: 'snapshot', persist: true },
+  containers: { path: '/containers', intervalMs: 30_000, envelope: 'snapshot', persist: true },
+  services: { path: '/services', intervalMs: 30_000, envelope: 'snapshot', persist: true },
+  storage: { path: '/storage', intervalMs: 60_000, envelope: 'snapshot', persist: true },
+  activity: { path: '/activity', intervalMs: 30_000, envelope: 'plain', persist: true },
+  diagnostics: { path: '/diagnostics', intervalMs: 30_000, envelope: 'plain', persist: true },
 };
 
 export const ENDPOINT_KEYS = Object.keys(ENDPOINTS) as EndpointKey[];

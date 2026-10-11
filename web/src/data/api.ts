@@ -1,4 +1,4 @@
-import { API_PREFIX } from '@shared/api';
+import { API_PREFIX, SCOPE_HEADER, VIEWER_HEADER, type ResponseScope } from '@shared/api';
 import { t } from '@/i18n';
 
 export type ApiErrorKind = 'network' | 'timeout' | 'http' | 'parse';
@@ -33,8 +33,30 @@ export interface ApiRequest {
 
 const DEFAULT_TIMEOUT_MS = 12_000;
 
+/** A parsed answer plus who the server says it is for (see `SCOPE_HEADER`). */
+export interface ApiResult<T> {
+  body: T;
+  /** Anything but `shared` or `limited` counts as `full`: unknown means possibly private. */
+  scope: ResponseScope;
+  /** Opaque tag of the identity the answer was produced for; null when the server sent none. */
+  viewer: string | null;
+}
+
+function scopeOf(headers: Headers): ResponseScope {
+  const value = headers.get(SCOPE_HEADER);
+  return value === 'shared' || value === 'limited' ? value : 'full';
+}
+
 /** Same-origin JSON request against the BFF (`path` is relative to `/api`, e.g. `/overview`). */
 export async function apiFetch<T>(path: string, request: ApiRequest = {}): Promise<T> {
+  return (await apiFetchMeta<T>(path, request)).body;
+}
+
+/** Like `apiFetch`, keeping the scope and viewer tag the server attached to the answer. */
+export async function apiFetchMeta<T>(
+  path: string,
+  request: ApiRequest = {},
+): Promise<ApiResult<T>> {
   const { method = 'GET', body, headers, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = request;
   const controller = new AbortController();
   let timedOut = false;
@@ -76,7 +98,11 @@ export async function apiFetch<T>(path: string, request: ApiRequest = {}): Promi
       );
     }
     try {
-      return (await response.json()) as T;
+      return {
+        body: (await response.json()) as T,
+        scope: scopeOf(response.headers),
+        viewer: response.headers.get(VIEWER_HEADER),
+      };
     } catch {
       throw new ApiError(t('common.error.parse'), 'parse', response.status);
     }

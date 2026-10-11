@@ -46,7 +46,7 @@ CI runs all of them, plus a multi-architecture Docker build that is exported and
 - The configuration schema (`server/src/config/schema.ts`) is the single source of truth for `config.yaml` and `services.yaml`. Changing it means updating `config.example.yaml`, `services.example.yaml`, `docs/configuration.md` and the example tests (`server/src/__tests__/examples.test.ts` validates every optional block of the example file).
 - The API contract is `shared/api.ts`. Backend and web import it; change it deliberately and update both sides.
 - A feature that is not configured must not exist: no collector, no request, no alert, no page, no error. Anything new needs feature detection (see `docs/ARCHITECTURE.md`).
-- Security rules in the architecture document are not optional: no secret in code, logs or responses; outbound requests are `GET` with timeouts; no Docker socket.
+- Security rules in the architecture document are not optional: no secret in code, logs or responses; outbound requests of built-in integrations are `GET` with timeouts (the extension SDK is the only place that may send `POST`); no Docker socket.
 
 ## Internationalisation
 

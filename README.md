@@ -8,7 +8,7 @@ Orbis Homelab is a small Node.js backend that collects data from the services yo
 
 - **Everything optional.** You start with a service catalog and HTTP checks. Add a system provider, storage, usage trackers, integrations, push notifications and extensions when you want them; whatever is not configured does not exist (no page, no request, no placeholder).
 - **Configured, not built.** Two YAML files and a `.env`. Updating the image never touches them.
-- **Safe by default.** Visitors get a limited view; full access is an explicit decision (trusted network or an identity-aware reverse proxy). Read-only container, no Docker socket in the app, only `GET` requests to your services.
+- **Safe by default.** Visitors get a limited view; full access is an explicit decision (trusted network or an identity-aware reverse proxy). Read-only container, no Docker socket in the app, and the built-in integrations only send `GET` requests to your services.
 - **Installable.** PWA for iOS, Android and desktop, with offline shell, dark/light themes, your own name, accent color and icons.
 - **English and Italian.** One language per instance.
 
@@ -81,10 +81,11 @@ Every key is documented in [docs/configuration.md](docs/configuration.md); `conf
   - `identity-proxy`: full access only for requests that arrive from your reverse proxy **and** carry an allowed identity header. Anything else is limited.
 - **Do not expose Orbis Homelab to the Internet** without an identity-aware reverse proxy in front of it.
 - Credentials never leave the backend: not in the bundle, the API, the logs or the error messages.
-- Outbound requests to your services are `GET` only, with timeouts and size limits. The app itself has no Docker socket access: container state comes from a provider such as Glances.
+- The built-in integrations and providers send outbound `GET` requests only, with timeouts and size limits. The app itself has no Docker socket access: container state comes from a provider such as Glances. Extensions are not bound by this: the extension SDK can also send `POST` requests (see below).
 - **Glances is a separate, more privileged container.** If you add it for the System page, it needs the Docker socket (which is control of the host, even mounted `:ro`) and its web server has no authentication. Orbis Homelab's protections do not extend to it: read [docs/glances.md](docs/glances.md) before adding it.
 - Hardened container: non-root, read-only filesystem, no capabilities, `no-new-privileges`. Strict content security policy, no inline script.
-- Extensions run inside the backend process with its privileges: install only code you trust.
+- Extensions run inside the backend process with its privileges and are not limited to `GET`: they can make `GET` and `POST` requests, read the secrets you give them and mount their own API routes. Install only code you trust.
+- **Private data stays out of the browser's caches.** A response produced for a visitor with full access is held in memory only: it is never written to the service worker cache or to local storage, and it is dropped on a change of identity, an access downgrade, a rejected request or a lost connection. Offline, the limited and shared data stay available; private sections are empty. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#what-the-browser-keeps).
 
 Details and reporting instructions: [SECURITY.md](SECURITY.md).
 

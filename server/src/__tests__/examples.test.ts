@@ -1,5 +1,5 @@
 import type { IncomingMessage } from 'node:http';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -457,5 +457,48 @@ describe('release consistency', () => {
       expect(readRoot(file), file).not.toMatch(/\bOWNER\b|<owner>/);
     }
     expect(readRoot('compose.yaml')).toContain('ghcr.io/al31si/orbis-homelab:');
+  });
+});
+
+describe('documentation links', () => {
+  const root = fileURLToPath(new URL('../../../', import.meta.url));
+  const markdown = (dir: string): string[] =>
+    readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap((entry) => {
+      const rel = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        return ['node_modules', '.git', 'dist'].includes(entry.name) ? [] : markdown(rel);
+      }
+      return entry.name.endsWith('.md') ? [rel] : [];
+    });
+  const files = markdown('.').filter((f) => f !== 'THIRD_PARTY_NOTICES.md');
+  const slug = (heading: string): string =>
+    heading
+      .toLowerCase()
+      .replace(/`/g, '')
+      .replace(/[^\p{L}\p{N}\s-]/gu, '')
+      .trim()
+      .replace(/\s/g, '-');
+  const anchorsOf = (file: string): Set<string> =>
+    new Set(
+      readFileSync(path.join(root, file), 'utf8')
+        .split('\n')
+        .filter((line) => /^#{1,6}\s/.test(line))
+        .map((line) => slug(line.replace(/^#+\s+/, ''))),
+    );
+
+  it.each(files)('%s: every relative link points at an existing file and heading', (file) => {
+    const text = readFileSync(path.join(root, file), 'utf8').replace(/```[\s\S]*?```/g, '');
+    const broken: string[] = [];
+    for (const [, target = ''] of text.matchAll(/\]\(([^)\s]+)\)/g)) {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(target)) continue;
+      const [rawPath = '', anchor] = target.split('#');
+      const resolved = rawPath === '' ? file : path.join(path.dirname(file), rawPath);
+      if (!existsSync(path.join(root, resolved))) {
+        broken.push(target);
+      } else if (anchor && resolved.endsWith('.md') && !anchorsOf(resolved).has(anchor)) {
+        broken.push(target);
+      }
+    }
+    expect(broken).toEqual([]);
   });
 });

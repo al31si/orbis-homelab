@@ -112,6 +112,12 @@ check "/api/session: every feature is off" \
   json /api/session 'Object.values(d.features).length > 0 && Object.values(d.features).every((v) => v === false)'
 check "/api/session: custom name, language, limited access, no extensions" \
   json /api/session 'd.app.name === "Clean Install Check" && d.app.language === "en" && d.access === "limited" && d.extensions.length === 0'
+# Every API answer says who it is for, so the service worker and the app know what they may keep
+# (docs/ARCHITECTURE.md, "What the browser keeps"): shared routes `shared`, the rest the access level.
+header_of() { curl -fsS -D - -o /dev/null --max-time 10 "$BASE$1" | tr -d '\r' | grep -i "^$2:" | sed 's/^[^:]*: *//'; }
+check "/api/overview is marked shared" test "$(header_of /api/overview x-orbis-scope)" = shared
+check "/api/session is marked with the access level (limited)" test "$(header_of /api/session x-orbis-scope)" = limited
+check "/api responses carry an opaque viewer tag" bash -c '[[ "$1" =~ ^[A-Za-z0-9_-]{16}$ ]]' _ "$(header_of /api/session x-orbis-viewer)"
 for path in system containers storage activity; do
   check "GET /api/$path is 404 (feature off)" test "$(code "/api/$path")" = 404
 done

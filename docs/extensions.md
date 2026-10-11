@@ -56,7 +56,7 @@ The authoritative contract is [`sdk/server.ts`](../sdk/server.ts) (API version 1
 
 - its own `config` block, the instance `language` and a `log`;
 - `secret(ref)`: resolves `{ env: NAME }` and `{ file: PATH }` references found in the config (files are read on every call);
-- `http`: an HTTP client with timeouts and size limits (`getJson`, `requestJson`), whose errors never include request headers;
+- `http`: an HTTP client with timeouts and size limits (`getJson`, and `requestJson` for `GET` or `POST`), whose errors never include request headers. Unlike the built-in integrations, which only send `GET`, an extension can therefore change state in the services it talks to;
 - `createCollector({ id, label, intervalMs, run })`: a background collector that the core starts, stops and reports in Diagnostics;
 - `registerIntegration(...)`: attaches badges, metrics and alerts to a catalog service, like the built-in Radarr or qBittorrent adapters;
 - `registerAlertRules(() => candidates)`: contributes alerts (stable ids, severity, text);
@@ -103,3 +103,7 @@ The project was called Belvedere before 0.1.0 and a few extensions were built un
 - the file layout of the repository that extensions link against (`sdk/`, `web/src`, `shared/`) is unchanged, and the extension `apiVersion` is still 1.
 
 New extensions should use the current names (`window.__ORBIS__`, `orbis-sdk-client.js`). The old names are compatibility aliases, not a second contract: they stay as long as API version 1 does.
+
+## Access levels and what the browser keeps
+
+Responses of your routes are marked by the host with the access level of the request, so by default they are treated as private: never stored by the service worker, and in the web app never written to `localStorage` for a `full` visitor (see [What the browser keeps](ARCHITECTURE.md#what-the-browser-keeps)). Route handlers still have to withhold private details from limited visitors themselves (`helpers.accessOf`, `helpers.requireFull`): the marking does not replace that.

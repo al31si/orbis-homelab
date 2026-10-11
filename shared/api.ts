@@ -546,3 +546,26 @@ export interface Diagnostics {
  * from /extensions/<extension id>/ (see ExtensionRef).
  */
 export const API_PREFIX = '/api';
+
+/**
+ * Who a response is for. Every `/api` response carries `X-Orbis-Scope`:
+ *
+ *  - `shared`: identical for every visitor, whatever the access level (the routes that do not
+ *    look at who is asking). Safe to keep in any cache or storage.
+ *  - `limited`: produced for a visitor with limited access. By definition anybody who can reach
+ *    the server can obtain it, so it is as safe to keep as `shared`.
+ *  - `full`: produced for a visitor with full access and possibly private. It must never be
+ *    written to the service worker cache or to persistent storage, only held in memory, and
+ *    must not survive a change of identity or a loss of contact with the server.
+ *
+ * Anything without the header (a proxy error page, an older server) is treated as `full`.
+ */
+export const SCOPE_HEADER = 'X-Orbis-Scope';
+export type ResponseScope = 'shared' | AccessLevel;
+
+/**
+ * `X-Orbis-Viewer`: an opaque tag of the identity the response was produced for (a salted hash,
+ * different after every server restart, never the identity itself). A client that sees the tag
+ * change drops everything it holds from the previous viewer.
+ */
+export const VIEWER_HEADER = 'X-Orbis-Viewer';
