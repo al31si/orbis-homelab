@@ -2,6 +2,7 @@ import path from 'node:path';
 import { parseDocument } from 'yaml';
 import type { z } from 'zod';
 import { readTextIfExists } from '../lib/files.js';
+import { secureAddress } from './public-url.js';
 import {
   type Config,
   type Env,
@@ -137,6 +138,11 @@ export async function loadConfig(
     );
   }
   const config = cfg.data ?? configSchema.parse({});
+  if (config.publicUrl !== undefined && secureAddress(config.publicUrl) === null) {
+    log.info(
+      `publicUrl ${config.publicUrl} is not an https:// address: it is not offered as the secure address (see docs/https.md)`,
+    );
+  }
   const services = svc.data ?? servicesFileSchema.parse({});
 
   const crossProblems = crossCheck(config, services);

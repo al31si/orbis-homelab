@@ -18,6 +18,7 @@ import type {
 import { SCOPE_HEADER, VIEWER_HEADER } from '../../shared/api.js';
 import type { RouteHelpers } from '../../sdk/server.js';
 import { createAccessPolicy, isSameOriginJson, resolveAccess } from './access.js';
+import { secureAddress } from './config/public-url.js';
 import type { Config, Env } from './config/schema.js';
 import type { ControlCenterApi } from './core/control-center-api.js';
 import type { Access } from './core/types.js';
@@ -144,7 +145,7 @@ export function buildApp(deps: ServerDeps): {
     user: access.user,
     version: VERSION,
     startedAt: core.startedAt.toISOString(),
-    secureUrl: config.publicUrl ?? null,
+    secureUrl: secureAddress(config.publicUrl),
     integrations: core.integrationsInfo(),
   });
 

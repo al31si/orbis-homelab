@@ -111,7 +111,10 @@ export interface Session extends BootConfig {
   user: { login: string; name: string | null } | null;
   version: string;
   startedAt: string;
-  /** HTTPS origin that unlocks service worker/push on iOS; null if not configured. */
+  /**
+   * Secure (https) address of this instance, offered to visitors who opened it over plain HTTP;
+   * null when `publicUrl` is not set or is not an https URL. Never required to install or use the app.
+   */
   secureUrl: string | null;
   /** Integrations known to the BFF and whether their credentials are configured. */
   integrations: { id: string; label: string; configured: boolean }[];

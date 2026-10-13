@@ -92,6 +92,16 @@ describe('API edge', () => {
     expect((await json(it.app, '/api/nope')).body.message).toBe('Risorsa non trovata.');
   });
 
+  it('offers no secure address without publicUrl, and never an http one', async () => {
+    const secureUrlOf = async (publicUrl?: string): Promise<unknown> => {
+      const { app } = await start({ config: publicUrl === undefined ? {} : { publicUrl } });
+      return (await json(app, '/api/session')).body.secureUrl;
+    };
+    expect(await secureUrlOf()).toBeNull();
+    expect(await secureUrlOf('http://192.168.1.50:3100')).toBeNull();
+    expect(await secureUrlOf('https://orbis.example.com')).toBe('https://orbis.example.com');
+  });
+
   it('builds the session from the core: boot config + access fields', async () => {
     const { app } = await start({
       config: { publicUrl: 'https://demo.example.com' },
