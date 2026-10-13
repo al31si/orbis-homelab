@@ -8,6 +8,7 @@ import { setLanguage } from '@/i18n';
 import { applyAccent } from '@/lib/accent';
 import { initPrefs } from '@/lib/prefs';
 import { initTheme } from '@/lib/theme';
+import { initInstall } from '@/pwa/useInstall';
 import { registerServiceWorker } from '@/pwa/register';
 import { ErrorBoundary } from '@/ui/ErrorBoundary';
 import App from './App';
@@ -36,6 +37,7 @@ async function start(): Promise<void> {
   initPrefs(app);
   initTheme();
   registerServiceWorker();
+  initInstall(app.id);
   exposeHostGlobals();
 
   flushSync(() => {

@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { SW_FAILED_EVENT, serviceWorkerRegistrationFailed } from './register';
 import { useInstall } from './useInstall';
 
 export type ServiceWorkerStatus =
@@ -7,6 +8,8 @@ export type ServiceWorkerStatus =
   /** Development server: the worker is only registered in production builds. */
   | 'development'
   | 'none'
+  /** Secure origin but the browser refused the worker: usually a certificate it does not trust. */
+  | 'failed'
   | 'installing'
   | 'waiting'
   | 'active';
@@ -43,7 +46,10 @@ async function workerStatus(): Promise<ServiceWorkerStatus> {
   if (!('serviceWorker' in navigator)) return 'unsupported';
   if (!window.isSecureContext) return 'insecure';
   const registration = await navigator.serviceWorker.getRegistration();
-  if (!registration) return import.meta.env.PROD ? 'none' : 'development';
+  if (!registration) {
+    if (!import.meta.env.PROD) return 'development';
+    return serviceWorkerRegistrationFailed() ? 'failed' : 'none';
+  }
   if (registration.waiting) return 'waiting';
   if (registration.installing) return 'installing';
   return registration.active ? 'active' : 'none';
@@ -87,9 +93,11 @@ export function useClientInfo(): ClientInfo {
     if (!('serviceWorker' in navigator)) return;
     const onChange = () => void read();
     navigator.serviceWorker.addEventListener('controllerchange', onChange);
+    window.addEventListener(SW_FAILED_EVENT, onChange);
     return () => {
       cancelled = true;
       navigator.serviceWorker.removeEventListener('controllerchange', onChange);
+      window.removeEventListener(SW_FAILED_EVENT, onChange);
     };
   }, []);
 

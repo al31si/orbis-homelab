@@ -21,26 +21,139 @@ export const more = defineMessages({
   'more.install.installed.title': 'App installata',
   'more.install.installed.text': (p: { name: string }) =>
     `Stai usando ${p.name} come app sul tuo dispositivo.`,
-  'more.install.insecure.title': 'Serve l’indirizzo HTTPS',
-  'more.install.insecure.text': (p: { name: string }) =>
-    `Installazione completa, uso offline e notifiche richiedono l’indirizzo HTTPS. Da questo indirizzo ${p.name} funziona solo come sito web.`,
-  'more.install.noSecureUrl':
-    'L’indirizzo HTTPS non è ancora configurato sul server (`publicUrl` in `config.yaml`).',
+  'more.install.elsewhere.title': 'Già installata su questo dispositivo',
+  'more.install.elsewhere.text': (p: { name: string }) =>
+    `Apri ${p.name} dalle tue app o dalla schermata Home. Se l’hai rimossa, puoi installarla di nuovo.`,
+  'more.install.elsewhere.show': 'Mostra i passaggi',
   'more.install.prompt.title': (p: { name: string }) => `Installa ${p.name}`,
   'more.install.prompt.text':
-    'Aggiungilo alla schermata Home per aprirlo come un’app, a schermo intero.',
+    'Il browser può installarla come app, con una finestra e un’icona proprie.',
   'more.install.prompt.button': 'Installa',
-  'more.install.ios.title': 'Aggiungi alla schermata Home',
-  'more.install.ios.text': (p: { name: string }) =>
-    `Da Safari, così ${p.name} si apre come un’app.`,
-  'more.install.ios.step1': 'Tocca **Condividi**',
-  'more.install.ios.step1After': 'nella barra di Safari',
+
+  'more.install.kind.chromium-desktop.title': (p: { name: string }) =>
+    `Installa ${p.name} come app`,
+  'more.install.kind.chromium-android.title': 'Aggiungi alla schermata Home',
+  'more.install.kind.ios.title': 'Aggiungi alla schermata Home',
+  'more.install.kind.mac-safari.title': 'Aggiungi al Dock',
+  'more.install.kind.firefox-desktop.title': 'Firefox non installa le app web sul computer',
+  'more.install.kind.firefox-android.title': 'Aggiungi alla schermata Home',
+  'more.install.kind.in-app-browser.title': 'Apri questa pagina nel browser',
+  'more.install.kind.generic.title': 'Installa dal menu del browser',
+
+  'more.install.result.app': (p: { name: string }) =>
+    `${p.name} si apre in una finestra propria o da un’icona, come un’app.`,
+  'more.install.result.window': (p: { name: string }) =>
+    `${p.name} si apre in una finestra propria, come un’app. Uso offline e notifiche richiedono un indirizzo sicuro, vedi sotto.`,
+  'more.install.result.shortcut':
+    'Aggiunge un collegamento che si apre nel browser, non come app separata.',
+  'more.install.none.firefox-desktop':
+    'Aggiungi la pagina ai segnalibri o fissa la scheda (clic destro sulla scheda, **Fissa scheda**). Per usarla in una finestra propria aprila con Chrome, Edge, Brave o Safari.',
+  'more.install.none.in-app-browser':
+    'Questo browser non ha “Aggiungi alla schermata Home”. Apri prima questo indirizzo in Safari, o nel tuo browser abituale.',
+  'more.install.none.generic':
+    'Cerca “Installa”, “Aggiungi alla schermata Home” o “Crea collegamento” nel menu del browser. Se non c’è, aggiungi la pagina ai segnalibri.',
+
+  'more.install.step.chromium.chrome.secure':
+    'Clicca **Installa** all’estremità della barra degli indirizzi, oppure apri il menu **⋮** e scegli **Trasmetti, salva e condividi** → **Installa pagina come app…**',
+  'more.install.step.chromium.chrome.insecure':
+    'Apri il menu **⋮** e scegli **Trasmetti, salva e condividi** → **Installa pagina come app…** (nelle versioni meno recenti: **Crea collegamento…** con **Apri come finestra**)',
+  'more.install.step.chromium.edge.secure':
+    'Clicca **App disponibile** nella barra degli indirizzi, oppure apri **Impostazioni e altro (…)** → **Altri strumenti** → **App** → **Installa questo sito come app**',
+  'more.install.step.chromium.edge.insecure':
+    'Apri **Impostazioni e altro (…)** → **Altri strumenti** → **App** → **Installa questo sito come app**',
+  'more.install.step.chromium.brave.secure':
+    'Clicca **Installa** nella barra degli indirizzi, oppure apri il menu → **Salva e condividi** → **Installa…**',
+  'more.install.step.chromium.brave.insecure':
+    'Apri il menu → **Salva e condividi** → **Installa…**. Se vedi solo **Crea collegamento…**, sceglilo e attiva **Apri come finestra**',
+  'more.install.step.chromium.other.secure':
+    'Cerca **Installa…** nella barra degli indirizzi o nel menu del browser',
+  'more.install.step.chromium.other.insecure':
+    'Nel menu del browser cerca **Installa…**, **Installa questo sito come app** oppure **Crea collegamento…** (con **Apri come finestra**)',
+  'more.install.step.chromium.confirm': (p: { name: string }) =>
+    `Conferma, poi apri ${p.name} dalla nuova icona`,
+  'more.install.step.android.secure':
+    'Apri il menu del browser **⋮** e tocca **Installa app** (oppure **Aggiungi a schermata Home**)',
+  'more.install.step.android.insecure':
+    'Apri il menu del browser **⋮** e tocca **Aggiungi a schermata Home** (oppure **Crea collegamento**)',
+  'more.install.step.android.confirm': (p: { name: string }) =>
+    `Conferma, poi apri ${p.name} dall’icona`,
+  'more.install.step.firefox-android':
+    'Apri il menu di Firefox e scegli **Installa** oppure **Aggiungi alla schermata Home**',
+  'more.install.step.mac.menu': 'In Safari scegli **File** → **Aggiungi al Dock…**',
+  'more.install.step.mac.confirm': (p: { name: string }) =>
+    `Clicca **Aggiungi**, poi apri ${p.name} dal Dock o da Launchpad`,
+  'more.install.ios.step1': 'Apri il menu **Condividi**',
+  'more.install.ios.step1After': 'del browser',
   'more.install.ios.step2': 'Scegli **Aggiungi alla schermata Home**',
   'more.install.ios.step3': (p: { name: string }) =>
-    `Tocca **Aggiungi** e apri ${p.name} dall’icona`,
-  'more.install.browser.title': 'Installazione dal browser',
-  'more.install.browser.text':
-    'Cerca “Installa app” o “Aggiungi alla schermata Home” nel menu del browser. Non tutti i browser lo permettono.',
+    `Lascia attivo **Apri come app web**, tocca **Aggiungi**, poi apri ${p.name} dall’icona`,
+
+  'more.install.note.chromium-desktop.insecure':
+    'I nomi dei menu cambiano con la lingua e la versione del browser. Da un indirizzo HTTP il browser installa la pagina come finestra di app.',
+  'more.install.note.chromium-desktop.secure':
+    'I nomi dei menu cambiano con la lingua e la versione del browser.',
+  'more.install.note.chromium-android.insecure':
+    'Da un indirizzo HTTP il collegamento si apre nel browser. Un’app vera (finestra propria, uso offline, notifiche) richiede un indirizzo sicuro, vedi sotto.',
+  'more.install.note.chromium-android.secure':
+    'Chrome e Samsung Internet la installano come app vera; gli altri browser aggiungono un collegamento.',
+  'more.install.note.firefox-android':
+    'Firefox aggiunge un collegamento che si apre in Firefox, non un’app separata.',
+  'more.install.note.mac':
+    'Serve Safari 17 su macOS Sonoma (14) o successivo. Il nome dei comandi dipende dalla lingua.',
+  'more.install.note.ios.insecure':
+    'Da un indirizzo HTTP si apre come app, ma uso offline e notifiche richiedono un indirizzo sicuro, vedi sotto.',
+  'more.install.note.ios.secure':
+    'Le notifiche su iPhone e iPad funzionano solo con l’app aggiunta alla schermata Home.',
+
+  'more.install.here.title': 'Su questo indirizzo',
+  'more.install.cap.installs.title': 'Si installa come',
+  'more.install.cap.installs.app':
+    'Un’app vera: finestra o icona proprie, con uso offline e notifiche.',
+  'more.install.cap.installs.window':
+    'Una finestra di app. Questo indirizzo è HTTP semplice: niente modalità offline né notifiche.',
+  'more.install.cap.installs.window-without-worker':
+    'Per ora una finestra di app: il browser ha rifiutato il service worker (vedi sotto), quindi niente uso offline né notifiche.',
+  'more.install.cap.installs.shortcut': 'Un collegamento che si apre nel browser.',
+  'more.install.cap.installs.none': 'Niente: questo browser non installa app web.',
+  'more.install.cap.offline.title': 'Uso offline',
+  'more.install.cap.offline.ready':
+    'Pronto: l’app si apre anche senza connessione e mostra gli ultimi dati che ha.',
+  'more.install.cap.offline.preparing':
+    'In preparazione: ricarica la pagina una volta e ricontrolla.',
+  'more.install.cap.offline.needs-https': 'Serve un indirizzo sicuro (HTTPS).',
+  'more.install.cap.offline.failed':
+    'Il browser ha rifiutato il service worker. Su HTTPS di solito il certificato non è considerato attendibile da questo dispositivo: vedi la guida HTTPS.',
+  'more.install.cap.offline.unsupported': 'Questo browser non supporta i service worker.',
+  'more.install.cap.offline.development': 'Disattivato nel server di sviluppo.',
+  'more.install.cap.notifications.title': 'Notifiche',
+  'more.install.cap.notifications.available': 'Supportate qui. Attivale nella sezione Notifiche.',
+  'more.install.cap.notifications.needs-https': 'Serve un indirizzo sicuro (HTTPS).',
+  'more.install.cap.notifications.server-off':
+    'Disattivate su questo server (`push.enabled` in `config.yaml`).',
+  'more.install.cap.notifications.install-first':
+    'Su iPhone e iPad installa prima l’app, poi attivale da lì.',
+
+  'more.install.https.title': 'Vuoi uso offline e notifiche?',
+  'more.install.https.text':
+    'I browser le permettono solo su un indirizzo sicuro (HTTPS). HTTP semplice, come questo, va bene per l’uso di ogni giorno. Scegli quello che si adatta al tuo ambiente:',
+  'more.install.https.opt.tailscale':
+    '**Tailscale**: se i tuoi dispositivi lo usano già, Tailscale Serve può darle un indirizzo HTTPS privato con un solo comando.',
+  'more.install.https.opt.proxy':
+    '**Un reverse proxy che hai già** (Caddy, Nginx Proxy Manager, Traefik…): aggiungila lì e usa il suo indirizzo HTTPS.',
+  'more.install.https.opt.caddy':
+    '**Caddy con un tuo nome di dominio**: ottiene e rinnova da solo certificati gratuiti.',
+  'more.install.https.opt.local-ca':
+    '**Solo rete di casa**: un’autorità di certificazione locale (la CA interna di Caddy, mkcert). Ogni dispositivo deve fidarsene una volta.',
+  'more.install.https.opt.localhost':
+    '**Solo su questo computer**: aprila come `localhost` (per esempio con un tunnel SSH verso il server). I browser lo considerano sicuro.',
+  'more.install.https.guide': 'Guida HTTPS passo passo',
+  'more.install.https.secureUrl.title': 'Il tuo indirizzo sicuro',
+  'more.install.https.secureUrl.text': (p: { name: string }) =>
+    `Apri ${p.name} da questo indirizzo per installarla come app vera.`,
+  'more.install.https.secureUrl.hint':
+    'Ne hai già uno? Imposta `publicUrl` in `config.yaml` e comparirà qui.',
+  'more.install.https.recommended': 'Consigliato: installa dall’indirizzo sicuro',
+  'more.install.https.orHere': 'Oppure installa da questo indirizzo',
 
   'more.secure.open': 'Apri',
   'more.secure.copy': 'Copia',
@@ -57,9 +170,9 @@ export const more = defineMessages({
   'more.notifications.inactive.text': 'Attivale per ricevere un avviso su questo dispositivo.',
   'more.notifications.active.title': 'Notifiche attive',
   'more.notifications.active.text': 'Questo dispositivo riceverà gli avvisi critici.',
-  'more.notifications.insecure.title': 'Serve l’indirizzo HTTPS',
+  'more.notifications.insecure.title': 'Serve un indirizzo sicuro',
   'more.notifications.insecure.text': (p: { name: string }) =>
-    `Le notifiche funzionano solo dall’indirizzo HTTPS di ${p.name}, indicato nella sezione Installazione.`,
+    `Le notifiche funzionano solo su un indirizzo sicuro (HTTPS), mentre ${p.name} è aperta qui in HTTP semplice. La sezione Installazione qui sopra spiega come ottenerlo.`,
   'more.notifications.needsInstall.title': 'Installa prima l’app',
   'more.notifications.needsInstall.text': (p: { name: string }) =>
     `Su iPhone e iPad le notifiche funzionano solo con ${p.name} installata: aggiungila alla schermata Home e aprila da lì.`,

@@ -59,6 +59,7 @@ export const diagnostics = defineMessages({
   'diagnostics.client.sw.insecure': 'Non disponibile (serve HTTPS)',
   'diagnostics.client.sw.development': 'Non registrato (sviluppo)',
   'diagnostics.client.sw.none': 'Non registrato',
+  'diagnostics.client.sw.failed': 'Rifiutato dal browser',
   'diagnostics.client.sw.installing': 'In installazione',
   'diagnostics.client.sw.waiting': 'Aggiornamento in attesa',
   'diagnostics.client.sw.active': 'Attivo',
