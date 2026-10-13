@@ -4,7 +4,7 @@
 
 - A recent Docker Engine with the Compose plugin (`docker compose version`).
 - A host reachable by the devices that will open the app. The image is built for `linux/amd64` and `linux/arm64` (Raspberry Pi 4/5, Apple silicon, most servers).
-- For installation on a phone, push notifications and the offline shell: an HTTPS address in front of Orbis Homelab (see [HTTPS](#https)).
+- Nothing else: plain `http://<host>:3100` works. Only the offline shell, push notifications and installation as a full app need an HTTPS address, which is optional (see [HTTPS](#https)).
 
 Orbis Homelab needs no database and no other container..
 
@@ -116,9 +116,9 @@ Orbis Homelab never touches the Docker socket: the socket stays with the Glances
 
 ## HTTPS
 
-Browsers only enable service workers (offline shell, updates), installation as an app and Web Push on secure origins; iOS and iPadOS additionally require the app to be installed from an HTTPS address. Plain `http://<host>:3100` is fine for looking at the dashboard from a desktop browser.
+Optional. Over plain `http://<host>:3100` the dashboard works, and most browsers can open it as an app window or add it to the Home Screen (Settings → Installation lists what yours offers). Browsers enable the service worker (offline shell, updates), the install dialog for a full app and Web Push only on secure origins: HTTPS, or `localhost`. iOS and iPadOS additionally need the app on the Home Screen for push.
 
-Terminate TLS in front of Orbis Homelab with the reverse proxy or VPN feature you already use (Caddy, nginx, Traefik, a tunnel, ...), then set `publicUrl` in `config.yaml` to the HTTPS address. People who open the plain HTTP address are pointed to it. If the proxy also authenticates users, use [`access.mode: identity-proxy`](configuration.md#access-modes) so the full view is available only to them, and publish the container port only to the proxy (see the comments in `compose.yaml`).
+[Installing the app and getting HTTPS](https.md) explains what each kind of address gives you and how to get an HTTPS address with Tailscale Serve, a reverse proxy you already run, Caddy with a domain, or a local certificate authority. Setting `publicUrl` is optional and only adds a link to your HTTPS address in Settings for people who opened the HTTP one. If the proxy also authenticates users, use [`access.mode: identity-proxy`](configuration.md#access-modes) so the full view is available only to them, and publish the container port only to the proxy (see the comments in `compose.yaml`).
 
 ## Changing the port
 
