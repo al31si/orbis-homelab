@@ -1,7 +1,7 @@
 import { useApp } from '@/boot';
 import { t } from '@/i18n';
 import type { PushBlockReason } from '@/pwa/push';
-import { usePush, type PushController } from '@/pwa/usePush';
+import type { PushController } from '@/pwa/usePush';
 import type { UiTone } from '@/lib/tone';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
@@ -16,6 +16,7 @@ const BLOCKED_TONE: Record<PushBlockReason, UiTone> = {
   insecure: 'neutral',
   'needs-install': 'neutral',
   unsupported: 'neutral',
+  'worker-failed': 'warn',
   limited: 'neutral',
   unavailable: 'neutral',
   denied: 'crit',
@@ -38,6 +39,11 @@ function describeBlocked(reason: PushBlockReason, name: string): { title: string
       return {
         title: t('more.notifications.unsupported.title'),
         text: t('more.notifications.unsupported.text'),
+      };
+    case 'worker-failed':
+      return {
+        title: t('more.notifications.workerFailed.title'),
+        text: t('more.notifications.workerFailed.text'),
       };
     case 'limited':
       return {
@@ -146,8 +152,7 @@ function Actions({ push }: { push: PushController }) {
   return null;
 }
 
-export function NotificationsSection() {
-  const push = usePush();
+export function NotificationsSection({ push }: { push: PushController }) {
   const { name } = useApp();
   const { state } = push;
 

@@ -56,19 +56,19 @@ export const more = defineMessages({
   'more.install.step.chromium.chrome.secure':
     'Clicca **Installa** all’estremità della barra degli indirizzi, oppure apri il menu **⋮** e scegli **Trasmetti, salva e condividi** → **Installa pagina come app…**',
   'more.install.step.chromium.chrome.insecure':
-    'Apri il menu **⋮** e scegli **Trasmetti, salva e condividi** → **Installa pagina come app…** (nelle versioni meno recenti: **Crea collegamento…** con **Apri come finestra**)',
+    'Apri il menu **⋮** e scegli **Trasmetti, salva e condividi** → **Installa pagina come app…**',
   'more.install.step.chromium.edge.secure':
-    'Clicca **App disponibile** nella barra degli indirizzi, oppure apri **Impostazioni e altro (…)** → **Altri strumenti** → **App** → **Installa questo sito come app**',
+    'Clicca **App disponibile** nella barra degli indirizzi, oppure apri **Impostazioni e altro ancora (…)** → **Altri strumenti** → **App** e scegli la voce che installa il sito come app (in inglese **Install this site as an app**)',
   'more.install.step.chromium.edge.insecure':
-    'Apri **Impostazioni e altro (…)** → **Altri strumenti** → **App** → **Installa questo sito come app**',
+    'Apri **Impostazioni e altro ancora (…)** → **Altri strumenti** → **App** e scegli la voce che installa il sito come app (in inglese **Install this site as an app**)',
   'more.install.step.chromium.brave.secure':
-    'Clicca **Installa** nella barra degli indirizzi, oppure apri il menu → **Salva e condividi** → **Installa…**',
+    'Clicca **Installa** nella barra degli indirizzi, oppure apri il menu → **Salva e condividi** → **Installa pagina come app…**',
   'more.install.step.chromium.brave.insecure':
-    'Apri il menu → **Salva e condividi** → **Installa…**. Se vedi solo **Crea collegamento…**, sceglilo e attiva **Apri come finestra**',
+    'Apri il menu → **Salva e condividi** → **Installa pagina come app…**',
   'more.install.step.chromium.other.secure':
     'Cerca **Installa…** nella barra degli indirizzi o nel menu del browser',
   'more.install.step.chromium.other.insecure':
-    'Nel menu del browser cerca **Installa…**, **Installa questo sito come app** oppure **Crea collegamento…** (con **Apri come finestra**)',
+    'Nel menu del browser cerca **Installa pagina come app…** o una voce simile che installa il sito come app',
   'more.install.step.chromium.confirm': (p: { name: string }) =>
     `Conferma, poi apri ${p.name} dalla nuova icona`,
   'more.install.step.android.secure':
@@ -126,7 +126,18 @@ export const more = defineMessages({
   'more.install.cap.offline.unsupported': 'Questo browser non supporta i service worker.',
   'more.install.cap.offline.development': 'Disattivato nel server di sviluppo.',
   'more.install.cap.notifications.title': 'Notifiche',
-  'more.install.cap.notifications.available': 'Supportate qui. Attivale nella sezione Notifiche.',
+  'more.install.cap.notifications.available':
+    'Pronte da attivare: usa la sezione Notifiche qui sotto.',
+  'more.install.cap.notifications.active': 'Attive su questo dispositivo.',
+  'more.install.cap.notifications.checking': 'Verifica in corso…',
+  'more.install.cap.notifications.error': 'Non riesco a leggere lo stato dal server.',
+  'more.install.cap.notifications.unsupported': 'Questo browser non supporta le notifiche push.',
+  'more.install.cap.notifications.worker-failed':
+    'Il browser ha rifiutato il service worker, quindi non sono attivabili.',
+  'more.install.cap.notifications.limited':
+    'Servono i permessi completi: con accesso limitato sono disattivate.',
+  'more.install.cap.notifications.denied':
+    'Il browser le ha bloccate per questo sito: riattivale dalle sue impostazioni.',
   'more.install.cap.notifications.needs-https': 'Serve un indirizzo sicuro (HTTPS).',
   'more.install.cap.notifications.server-off':
     'Disattivate su questo server (`push.enabled` in `config.yaml`).',
@@ -178,6 +189,9 @@ export const more = defineMessages({
     `Su iPhone e iPad le notifiche funzionano solo con ${p.name} installata: aggiungila alla schermata Home e aprila da lì.`,
   'more.notifications.unsupported.title': 'Notifiche non supportate',
   'more.notifications.unsupported.text': 'Questo browser non supporta le notifiche push.',
+  'more.notifications.workerFailed.title': 'Service worker rifiutato',
+  'more.notifications.workerFailed.text':
+    'Il browser ha rifiutato il service worker, di solito perché non si fida del certificato HTTPS. Senza non si possono attivare le notifiche: vedi la guida HTTPS.',
   'more.notifications.limited.title': 'Serve l’accesso completo',
   'more.notifications.limited.text':
     'Le notifiche sono disponibili solo con l’accesso completo: con l’accesso limitato sono disattivate.',

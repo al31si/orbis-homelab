@@ -51,19 +51,19 @@ export const more: Localized<typeof ref> = {
   'more.install.step.chromium.chrome.secure':
     'Click **Install** at the right end of the address bar, or open the menu **⋮** and choose **Cast, save, and share** → **Install page as app…**',
   'more.install.step.chromium.chrome.insecure':
-    'Open the menu **⋮** and choose **Cast, save, and share** → **Install page as app…** (older versions: **Create shortcut…** with **Open as window**)',
+    'Open the menu **⋮** and choose **Cast, save, and share** → **Install page as app…**',
   'more.install.step.chromium.edge.secure':
     'Click **App available** in the address bar, or open **Settings and more (…)** → **More tools** → **Apps** → **Install this site as an app**',
   'more.install.step.chromium.edge.insecure':
     'Open **Settings and more (…)** → **More tools** → **Apps** → **Install this site as an app**',
   'more.install.step.chromium.brave.secure':
-    'Click **Install** in the address bar, or open the menu → **Save and Share** → **Install…**',
+    'Click **Install** in the address bar, or open the menu → **Save and share** → **Install page as app…**',
   'more.install.step.chromium.brave.insecure':
-    'Open the menu → **Save and Share** → **Install…**. If you only see **Create shortcut…**, choose it and tick **Open as window**',
+    'Open the menu → **Save and share** → **Install page as app…**',
   'more.install.step.chromium.other.secure':
     'Look for **Install…** in the address bar or in the browser menu',
   'more.install.step.chromium.other.insecure':
-    'In the browser menu look for **Install…**, **Install this site as an app** or **Create shortcut…** (with **Open as window**)',
+    'In the browser menu look for **Install page as app…**, **Install this site as an app** or a similar entry',
   'more.install.step.chromium.confirm': (p) => `Confirm, then open ${p.name} from the new icon`,
   'more.install.step.android.secure':
     'Open the browser menu **⋮** and tap **Install app** (or **Add to Home screen**)',
@@ -119,7 +119,17 @@ export const more: Localized<typeof ref> = {
   'more.install.cap.offline.development': 'Off in the development server.',
   'more.install.cap.notifications.title': 'Notifications',
   'more.install.cap.notifications.available':
-    'Supported here. Turn them on in the Notifications section.',
+    'Ready to turn on: use the Notifications section below.',
+  'more.install.cap.notifications.active': 'On for this device.',
+  'more.install.cap.notifications.checking': 'Checking…',
+  'more.install.cap.notifications.error': 'Can’t read the status from the server.',
+  'more.install.cap.notifications.unsupported': 'This browser doesn’t support push notifications.',
+  'more.install.cap.notifications.worker-failed':
+    'The browser refused the service worker, so they can’t be turned on.',
+  'more.install.cap.notifications.limited':
+    'Full access is required: they are off with limited access.',
+  'more.install.cap.notifications.denied':
+    'The browser blocked them for this site: allow them again in its settings.',
   'more.install.cap.notifications.needs-https': 'Needs a secure (HTTPS) address.',
   'more.install.cap.notifications.server-off':
     'Turned off on this server (`push.enabled` in `config.yaml`).',
@@ -170,6 +180,9 @@ export const more: Localized<typeof ref> = {
     `On iPhone and iPad notifications only work with ${p.name} installed: add it to your Home Screen and open it from there.`,
   'more.notifications.unsupported.title': 'Notifications not supported',
   'more.notifications.unsupported.text': 'This browser doesn’t support push notifications.',
+  'more.notifications.workerFailed.title': 'Service worker refused',
+  'more.notifications.workerFailed.text':
+    'The browser refused the service worker, usually because it does not trust the HTTPS certificate. Notifications can’t be turned on without it: see the HTTPS guide.',
   'more.notifications.limited.title': 'Full access required',
   'more.notifications.limited.text':
     'Notifications are only available with full access; they are turned off with limited access.',

@@ -17,7 +17,13 @@ export function urlBase64ToUint8Array(base64Url: string): Uint8Array<ArrayBuffer
 }
 
 export type PushBlockReason =
-  'insecure' | 'needs-install' | 'unsupported' | 'limited' | 'unavailable' | 'denied';
+  | 'insecure'
+  | 'needs-install'
+  | 'unsupported'
+  | 'worker-failed'
+  | 'limited'
+  | 'unavailable'
+  | 'denied';
 
 export type PushState =
   | { kind: 'checking' }
@@ -29,6 +35,8 @@ export type PushState =
 export interface PushEnvironment {
   secureContext: boolean;
   support: { serviceWorker: boolean; pushManager: boolean; notification: boolean };
+  /** The browser refused to register the service worker (usually an untrusted certificate). */
+  workerFailed: boolean;
   /** iOS/iPadOS in a browser tab: web push only exists in the installed app. */
   needsInstall: boolean;
   /** Null until the session is known. */
@@ -55,6 +63,7 @@ export function derivePushState(env: PushEnvironment): PushState {
     return { kind: 'blocked', reason: 'unsupported' };
   }
   if (env.access === 'limited') return { kind: 'blocked', reason: 'limited' };
+  if (env.workerFailed) return { kind: 'blocked', reason: 'worker-failed' };
   if (env.access === null) return { kind: 'checking' };
   if (env.permission === 'denied') return { kind: 'blocked', reason: 'denied' };
   if (env.config === null || env.subscribed === null) {

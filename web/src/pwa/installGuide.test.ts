@@ -1,3 +1,4 @@
+import { derivePushState, type PushEnvironment, type PushState } from './push';
 import { describe, expect, it } from 'vitest';
 import {
   deriveCapabilities,
@@ -372,7 +373,11 @@ describe('invariants over every browser and every situation', () => {
       for (const s of situations.filter((x) => !x.secureContext)) {
         const guide = deriveInstallGuide({ browser: b.expect, ...s });
         expect(guide.result).not.toBe('app');
-        const rows = deriveCapabilities({ guide, serviceWorker: 'insecure', serverPush: true });
+        const rows = deriveCapabilities({
+          guide,
+          serviceWorker: 'insecure',
+          push: derivePushState({ ...PUSH_READY, secureContext: false }),
+        });
         for (const id of ['offline', 'notifications'] as const) {
           const row = rows.find((r) => r.id === id)!;
           expect(row).toMatchObject({ tone: 'warn', reason: 'needs-https' });
@@ -405,7 +410,7 @@ describe('deriveCapabilities on a secure address', () => {
     env({ browser: browser('chrome', 'windows'), secureContext: true }),
   );
   const offline = (state: ServiceWorkerState) =>
-    deriveCapabilities({ guide: chrome, serviceWorker: state, serverPush: true }).find(
+    deriveCapabilities({ guide: chrome, serviceWorker: state, push: ACTIVE }).find(
       (r) => r.id === 'offline',
     )!;
 
@@ -417,7 +422,7 @@ describe('deriveCapabilities on a secure address', () => {
     // The browser refused the worker on an https address (untrusted certificate): say so, do not wait forever.
     expect(offline('failed')).toMatchObject({ tone: 'warn', reason: 'failed' });
     // ...and then the install row must not promise a full app either.
-    const caps = deriveCapabilities({ guide: chrome, serviceWorker: 'failed', serverPush: true });
+    const caps = deriveCapabilities({ guide: chrome, serviceWorker: 'failed', push: ACTIVE });
     expect(caps.find((c) => c.id === 'installs-as')).toMatchObject({
       tone: 'warn',
       reason: 'window-without-worker',
@@ -429,34 +434,31 @@ describe('deriveCapabilities on a secure address', () => {
     expect(offline('development')).toMatchObject({ tone: 'neutral', reason: 'development' });
   });
 
-  it('notifications: available, or off because the server has push disabled', () => {
-    const rows = (serverPush: boolean) =>
-      deriveCapabilities({ guide: chrome, serviceWorker: 'active', serverPush }).find(
-        (r) => r.id === 'notifications',
-      )!;
-    expect(rows(true)).toMatchObject({ tone: 'ok', reason: 'available' });
-    expect(rows(false)).toMatchObject({ tone: 'neutral', reason: 'server-off' });
+  it('notifications: nothing to turn on when the server has push disabled', () => {
+    const row = deriveCapabilities({ guide: chrome, serviceWorker: 'active', push: null }).find(
+      (r) => r.id === 'notifications',
+    );
+    expect(row).toMatchObject({ tone: 'neutral', reason: 'server-off' });
   });
 
   it('notifications on iPhone need the app on the Home Screen first', () => {
     const tab = deriveInstallGuide(env({ browser: browser('safari', 'ios'), secureContext: true }));
-    const installed = deriveInstallGuide(
-      env({ browser: browser('safari', 'ios'), secureContext: true, standalone: true }),
-    );
-    const row = (guide: typeof tab) =>
-      deriveCapabilities({ guide, serviceWorker: 'active', serverPush: true }).find(
-        (r) => r.id === 'notifications',
-      )!;
-    expect(row(tab).reason).toBe('install-first');
-    expect(row(installed).reason).toBe('available');
+    const row = (guide: typeof tab, needsInstall: boolean) =>
+      deriveCapabilities({
+        guide,
+        serviceWorker: 'active',
+        push: derivePushState({ ...PUSH_READY, needsInstall }),
+      }).find((r) => r.id === 'notifications')!;
+    expect(row(tab, true).reason).toBe('install-first');
+    expect(row(tab, false).reason).toBe('available');
   });
 
   it('describes what the install gives: the result of the guide', () => {
-    const row = deriveCapabilities({ guide: chrome, serviceWorker: 'active', serverPush: true })[0];
+    const row = deriveCapabilities({ guide: chrome, serviceWorker: 'active', push: ACTIVE })[0];
     expect(row).toMatchObject({ id: 'installs-as', tone: 'ok', reason: 'app' });
     const firefox = deriveInstallGuide(env({ browser: browser('firefox', 'linux') }));
     expect(
-      deriveCapabilities({ guide: firefox, serviceWorker: 'insecure', serverPush: false })[0],
+      deriveCapabilities({ guide: firefox, serviceWorker: 'insecure', push: null })[0],
     ).toMatchObject({ tone: 'warn', reason: 'none' });
   });
 });
@@ -506,6 +508,118 @@ describe('suggestHttpsOptions', () => {
       expect(new Set(options).size, host).toBe(options.length);
       expect(options.length, host).toBeGreaterThanOrEqual(3);
       expect(options, host).toContain('localhost');
+    }
+  });
+});
+
+const ACTIVE: PushState = { kind: 'active' };
+const PUSH_READY: PushEnvironment = {
+  secureContext: true,
+  support: { serviceWorker: true, pushManager: true, notification: true },
+  workerFailed: false,
+  needsInstall: false,
+  access: 'full',
+  permission: 'default',
+  config: { available: true },
+  subscribed: false,
+  loadFailed: false,
+};
+
+describe('the Installation notifications row follows the Notifications settings', () => {
+  const guide = (secureContext: boolean) =>
+    deriveInstallGuide(env({ browser: browser('chrome', 'windows'), secureContext }));
+  const rowFor = (environment: PushEnvironment) =>
+    deriveCapabilities({
+      guide: guide(environment.secureContext),
+      serviceWorker: environment.secureContext ? 'active' : 'insecure',
+      push: derivePushState(environment),
+    }).find((r) => r.id === 'notifications')!;
+
+  const cases: [string, Partial<PushEnvironment>, string, string][] = [
+    ['everything in place, not subscribed', {}, 'neutral', 'available'],
+    ['subscribed with permission', { subscribed: true, permission: 'granted' }, 'ok', 'active'],
+    ['plain HTTP', { secureContext: false }, 'warn', 'needs-https'],
+    ['iPhone tab', { needsInstall: true }, 'neutral', 'install-first'],
+    [
+      'browser without Push API',
+      { support: { serviceWorker: true, pushManager: false, notification: true } },
+      'warn',
+      'unsupported',
+    ],
+    [
+      'browser without Notification API',
+      { support: { serviceWorker: true, pushManager: true, notification: false } },
+      'warn',
+      'unsupported',
+    ],
+    [
+      'browser without service workers',
+      { support: { serviceWorker: false, pushManager: true, notification: true } },
+      'warn',
+      'unsupported',
+    ],
+    ['service worker refused', { workerFailed: true }, 'warn', 'worker-failed'],
+    ['limited access', { access: 'limited' }, 'neutral', 'limited'],
+    [
+      'limited access beats a refused worker',
+      { access: 'limited', workerFailed: true },
+      'neutral',
+      'limited',
+    ],
+    ['permission denied', { permission: 'denied' }, 'warn', 'denied'],
+    ['server says push is unavailable', { config: { available: false } }, 'neutral', 'server-off'],
+    ['session still loading', { access: null }, 'neutral', 'checking'],
+    [
+      'server configuration still loading',
+      { config: null, subscribed: null },
+      'neutral',
+      'checking',
+    ],
+    [
+      'server configuration unreadable',
+      { config: null, subscribed: null, loadFailed: true },
+      'warn',
+      'error',
+    ],
+  ];
+
+  it.each(cases)('%s', (_name, change, tone, reason) => {
+    expect(rowFor({ ...PUSH_READY, ...change })).toMatchObject({ tone, reason });
+  });
+
+  it('says "ready" or "active" only when the Notifications section can really turn them on', () => {
+    const accesses: PushEnvironment['access'][] = ['full', 'limited', null];
+    const permissions: PushEnvironment['permission'][] = ['default', 'granted', 'denied', null];
+    for (const secureContext of [true, false]) {
+      for (const access of accesses) {
+        for (const permission of permissions) {
+          for (const workerFailed of [true, false]) {
+            for (const needsInstall of [true, false]) {
+              for (const config of [null, { available: true }, { available: false }]) {
+                const environment: PushEnvironment = {
+                  ...PUSH_READY,
+                  secureContext,
+                  access,
+                  permission,
+                  workerFailed,
+                  needsInstall,
+                  config,
+                  subscribed: config === null ? null : permission === 'granted',
+                };
+                const state: PushState = derivePushState(environment);
+                const { reason } = rowFor(environment);
+                const usable = state.kind === 'inactive' || state.kind === 'active';
+                expect(reason === 'available' || reason === 'active').toBe(usable);
+                if (usable) {
+                  expect(secureContext && access === 'full' && !workerFailed && !needsInstall).toBe(
+                    true,
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
     }
   });
 });

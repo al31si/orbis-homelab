@@ -60,6 +60,14 @@ export function serviceWorkerRegistrationFailed(): boolean {
   return registrationFailed;
 }
 
+/** Re-renders when the browser refuses the service worker; true from then on. */
+export function useServiceWorkerFailed(): boolean {
+  return useSyncExternalStore((listener) => {
+    window.addEventListener(SW_FAILED_EVENT, listener);
+    return () => window.removeEventListener(SW_FAILED_EVENT, listener);
+  }, serviceWorkerRegistrationFailed);
+}
+
 /**
  * Asks the waiting worker to take over; the page reloads once it does.
  * Returns false when there is no update waiting (nothing was done).

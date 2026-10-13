@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { useApp, useFeatures } from '@/boot';
+import { useApp } from '@/boot';
 import { useSession } from '@/data';
 import { t } from '@/i18n';
 import { HTTPS_GUIDE_URL } from '@/lib/docs';
@@ -11,6 +11,7 @@ import {
   type InstallGuide,
   type InstallKind,
 } from '@/pwa/installGuide';
+import type { PushState } from '@/pwa/push';
 import { useClientInfo } from '@/pwa/useClientInfo';
 import { useInstall } from '@/pwa/useInstall';
 import { Button } from '@/ui/Button';
@@ -218,11 +219,10 @@ function HttpsHelp() {
  * address and, over plain HTTP, how to get an address that unlocks the rest. Every statement
  * follows from the browser and the address, never from what would be nice to offer.
  */
-export function InstallSection() {
+export function InstallSection({ push }: { push: PushState | null }) {
   const install = useInstall();
   const client = useClientInfo();
   const session = useSession();
-  const features = useFeatures();
   const { name } = useApp();
   const [showSteps, setShowSteps] = useState(false);
   const { guide } = install;
@@ -242,7 +242,7 @@ export function InstallSection() {
   const capabilities = deriveCapabilities({
     guide,
     serviceWorker: client.serviceWorker,
-    serverPush: features.push,
+    push,
   });
   const secureUrl = install.secureContext ? null : (session?.secureUrl ?? null);
 

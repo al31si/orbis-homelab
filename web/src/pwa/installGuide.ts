@@ -13,6 +13,7 @@
  * Brave and Edge help pages, Apple's iPhone and Safari guides, WebKit "Web Push for Web Apps on
  * iOS and iPadOS". Nothing here touches the DOM, so it is covered by plain unit tests.
  */
+import type { PushBlockReason, PushState } from './push';
 
 export type BrowserFamily =
   'chrome' | 'edge' | 'brave' | 'opera' | 'samsung' | 'firefox' | 'safari' | 'chromium' | 'other';
@@ -177,7 +178,24 @@ export type CapabilityTone = 'ok' | 'neutral' | 'warn';
 
 export type OfflineReason =
   'ready' | 'preparing' | 'needs-https' | 'unsupported' | 'development' | 'failed';
-export type NotificationsReason = 'available' | 'needs-https' | 'server-off' | 'install-first';
+/**
+ * Why notifications are or are not usable here. Each reason is one of: not configured on the
+ * server (`server-off`), not possible with this browser or address (`needs-https`, `unsupported`,
+ * `worker-failed`, `install-first`, `limited`, `denied`), still being read (`checking`, `error`),
+ * ready to be turned on (`available`) or already on (`active`).
+ */
+export type NotificationsReason =
+  | 'checking'
+  | 'error'
+  | 'server-off'
+  | 'needs-https'
+  | 'install-first'
+  | 'unsupported'
+  | 'worker-failed'
+  | 'limited'
+  | 'denied'
+  | 'available'
+  | 'active';
 
 /** One row of "what works on this address"; `reason` selects the message that explains it. */
 export type Capability =
@@ -188,8 +206,42 @@ export type Capability =
 export interface CapabilityInput {
   guide: InstallGuide;
   serviceWorker: ServiceWorkerState;
-  /** Web Push is configured on this server (`push.enabled`). */
-  serverPush: boolean;
+  /**
+   * The state of the notification settings (`derivePushState`), the single source of truth for
+   * what Notifications says. Null when Web Push is not enabled on this server.
+   */
+  push: PushState | null;
+}
+
+const PUSH_BLOCK_REASON: Record<PushBlockReason, NotificationsReason> = {
+  insecure: 'needs-https',
+  'needs-install': 'install-first',
+  unsupported: 'unsupported',
+  'worker-failed': 'worker-failed',
+  limited: 'limited',
+  unavailable: 'server-off',
+  denied: 'denied',
+};
+
+function notificationsRow(push: PushState | null): Extract<Capability, { id: 'notifications' }> {
+  const row = (tone: CapabilityTone, reason: NotificationsReason) =>
+    ({ id: 'notifications', tone, reason }) as const;
+  if (push === null) return row('neutral', 'server-off');
+  switch (push.kind) {
+    case 'checking':
+      return row('neutral', 'checking');
+    case 'error':
+      return row('warn', 'error');
+    case 'inactive':
+      return row('neutral', 'available');
+    case 'active':
+      return row('ok', 'active');
+    case 'blocked': {
+      const reason = PUSH_BLOCK_REASON[push.reason];
+      const calm = reason === 'server-off' || reason === 'limited' || reason === 'install-first';
+      return row(calm ? 'neutral' : 'warn', reason);
+    }
+  }
 }
 
 /**
@@ -197,7 +249,7 @@ export interface CapabilityInput {
  * this address: nothing is promised that the page cannot do right now.
  */
 export function deriveCapabilities(input: CapabilityInput): Capability[] {
-  const { guide, serviceWorker, serverPush } = input;
+  const { guide, serviceWorker, push } = input;
 
   // A refused worker (untrusted certificate) leaves a plain app window: nothing offline, no push.
   const workerRefused = guide.secure && guide.result === 'app' && serviceWorker === 'failed';
@@ -225,16 +277,7 @@ export function deriveCapabilities(input: CapabilityInput): Capability[] {
     offline = { id: 'offline', tone: 'ok', reason: 'ready' };
   } else offline = { id: 'offline', tone: 'neutral', reason: 'preparing' };
 
-  let notifications: Extract<Capability, { id: 'notifications' }>;
-  if (!guide.secure) {
-    notifications = { id: 'notifications', tone: 'warn', reason: 'needs-https' };
-  } else if (!serverPush) {
-    notifications = { id: 'notifications', tone: 'neutral', reason: 'server-off' };
-  } else if (guide.os === 'ios' && guide.kind !== 'installed') {
-    notifications = { id: 'notifications', tone: 'neutral', reason: 'install-first' };
-  } else notifications = { id: 'notifications', tone: 'ok', reason: 'available' };
-
-  return [installs, offline, notifications];
+  return [installs, offline, notificationsRow(push)];
 }
 
 /* ------------------------------------------------------------------------- HTTPS guidance */
