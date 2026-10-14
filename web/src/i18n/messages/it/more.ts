@@ -43,7 +43,7 @@ export const more = defineMessages({
   'more.install.result.app': (p: { name: string }) =>
     `${p.name} si apre in una finestra propria o da un’icona, come un’app.`,
   'more.install.result.window': (p: { name: string }) =>
-    `${p.name} si apre in una finestra propria, come un’app. Uso offline e notifiche richiedono un indirizzo sicuro, vedi sotto.`,
+    `${p.name} si apre in una finestra propria, come un’app.`,
   'more.install.result.shortcut':
     'Aggiunge un collegamento che si apre nel browser, non come app separata.',
   'more.install.none.firefox-desktop':
@@ -89,7 +89,7 @@ export const more = defineMessages({
     `Lascia attivo **Apri come app web**, tocca **Aggiungi**, poi apri ${p.name} dall’icona`,
 
   'more.install.note.chromium-desktop.insecure':
-    'I nomi dei menu cambiano con la lingua e la versione del browser. Da un indirizzo HTTP il browser installa la pagina come finestra di app.',
+    'I nomi dei menu cambiano con la lingua e la versione del browser.',
   'more.install.note.chromium-desktop.secure':
     'I nomi dei menu cambiano con la lingua e la versione del browser.',
   'more.install.note.chromium-android.insecure':
@@ -144,25 +144,25 @@ export const more = defineMessages({
   'more.install.cap.notifications.install-first':
     'Su iPhone e iPad installa prima l’app, poi attivale da lì.',
 
-  'more.install.https.title': 'Vuoi uso offline e notifiche?',
+  'more.install.https.title': 'Indirizzo sicuro',
+  'more.install.https.heading': 'Sblocca uso offline e notifiche',
   'more.install.https.text':
-    'I browser le permettono solo su un indirizzo sicuro (HTTPS). HTTP semplice, come questo, va bene per l’uso di ogni giorno. Scegli quello che si adatta al tuo ambiente:',
-  'more.install.https.opt.tailscale':
-    '**Tailscale**: se i tuoi dispositivi lo usano già, Tailscale Serve può darle un indirizzo HTTPS privato con un solo comando.',
-  'more.install.https.opt.proxy':
-    '**Un reverse proxy che hai già** (Caddy, Nginx Proxy Manager, Traefik…): aggiungila lì e usa il suo indirizzo HTTPS.',
-  'more.install.https.opt.caddy':
-    '**Caddy con un tuo nome di dominio**: ottiene e rinnova da solo certificati gratuiti.',
-  'more.install.https.opt.local-ca':
-    '**Solo rete di casa**: un’autorità di certificazione locale (la CA interna di Caddy, mkcert). Ogni dispositivo deve fidarsene una volta.',
-  'more.install.https.opt.localhost':
-    '**Solo su questo computer**: aprila come `localhost` (per esempio con un tunnel SSH verso il server). I browser lo considerano sicuro.',
-  'more.install.https.guide': 'Guida HTTPS passo passo',
-  'more.install.https.secureUrl.title': 'Il tuo indirizzo sicuro',
+    'Serve un indirizzo HTTPS. Per l’uso di ogni giorno non è necessario: scegli la strada più adatta a te.',
+  'more.install.https.opt.tailscale.title': 'Tailscale',
+  'more.install.https.opt.tailscale.desc':
+    'Indirizzo HTTPS privato per i tuoi dispositivi, con un solo comando.',
+  'more.install.https.opt.proxy.title': 'Il tuo reverse proxy',
+  'more.install.https.opt.proxy.desc': 'Hai già Caddy, Nginx o Traefik? Aggiungi Orbis lì.',
+  'more.install.https.opt.caddy.title': 'Caddy con un dominio',
+  'more.install.https.opt.caddy.desc': 'Certificati gratuiti che si rinnovano da soli.',
+  'more.install.https.opt.local-ca.title': 'Solo rete di casa',
+  'more.install.https.opt.local-ca.desc':
+    'Autorità di certificazione locale: ogni dispositivo la accetta una volta.',
+  'more.install.https.opt.localhost.title': 'Solo questo computer',
+  'more.install.https.opt.localhost.desc': 'Aprila come localhost, per esempio con un tunnel SSH.',
+  'more.install.https.guide': 'Tutte le opzioni e la guida',
   'more.install.https.secureUrl.text': (p: { name: string }) =>
     `Apri ${p.name} da questo indirizzo per installarla come app vera.`,
-  'more.install.https.secureUrl.hint':
-    'Ne hai già uno? Imposta `publicUrl` in `config.yaml` e comparirà qui.',
   'more.install.https.recommended': 'Consigliato: installa dall’indirizzo sicuro',
   'more.install.https.orHere': 'Oppure installa da questo indirizzo',
 
@@ -182,8 +182,8 @@ export const more = defineMessages({
   'more.notifications.active.title': 'Notifiche attive',
   'more.notifications.active.text': 'Questo dispositivo riceverà gli avvisi critici.',
   'more.notifications.insecure.title': 'Serve un indirizzo sicuro',
-  'more.notifications.insecure.text': (p: { name: string }) =>
-    `Le notifiche funzionano solo su un indirizzo sicuro (HTTPS), mentre ${p.name} è aperta qui in HTTP semplice. La sezione Installazione qui sopra spiega come ottenerlo.`,
+  'more.notifications.insecure.text':
+    'Le notifiche richiedono HTTPS: vedi la sezione Installazione qui sopra.',
   'more.notifications.needsInstall.title': 'Installa prima l’app',
   'more.notifications.needsInstall.text': (p: { name: string }) =>
     `Su iPhone e iPad le notifiche funzionano solo con ${p.name} installata: aggiungila alla schermata Home e aprila da lì.`,

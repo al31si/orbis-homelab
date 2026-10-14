@@ -294,8 +294,8 @@ function ipv4(hostname: string): [number, number, number, number] | null {
 
 /**
  * The ways to get a secure address, most fitting first for the address the page was opened from.
- * A Tailscale address suggests Tailscale, a LAN address a proxy or a local CA, a real domain name
- * a proxy with a public certificate. Always at least three options, never a single "right" one.
+ * A Tailscale address suggests Tailscale, a LAN address Tailscale first (it needs no domain or
+ * existing proxy) then a proxy or a local CA, a real domain name a proxy with a public certificate. Always at least three options, never a single "right" one.
  */
 export function suggestHttpsOptions(hostname: string): HttpsOption[] {
   const host = hostname.toLowerCase();
@@ -313,7 +313,7 @@ export function suggestHttpsOptions(hostname: string): HttpsOption[] {
     host.endsWith('.lan') ||
     host.endsWith('.home.arpa') ||
     (ip === null && !host.includes('.'));
-  if (privateIp || lanName) return ['proxy', 'local-ca', 'tailscale', 'localhost'];
+  if (privateIp || lanName) return ['tailscale', 'proxy', 'local-ca', 'localhost'];
   if (ip === null && host.includes('.')) return ['proxy', 'caddy', 'tailscale', 'localhost'];
   return ['proxy', 'tailscale', 'local-ca', 'localhost'];
 }

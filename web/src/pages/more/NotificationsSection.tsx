@@ -28,7 +28,7 @@ function describeBlocked(reason: PushBlockReason, name: string): { title: string
     case 'insecure':
       return {
         title: t('more.notifications.insecure.title'),
-        text: t('more.notifications.insecure.text', { name }),
+        text: t('more.notifications.insecure.text'),
       };
     case 'needs-install':
       return {

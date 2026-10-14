@@ -37,8 +37,7 @@ export const more: Localized<typeof ref> = {
 
   'more.install.result.app': (p) =>
     `${p.name} opens in its own window or from an icon, like an app.`,
-  'more.install.result.window': (p) =>
-    `${p.name} opens in its own window, like an app. Offline use and notifications need a secure address, see below.`,
+  'more.install.result.window': (p) => `${p.name} opens in its own window, like an app.`,
   'more.install.result.shortcut':
     'It adds a shortcut that opens in the browser, not as a separate app.',
   'more.install.none.firefox-desktop':
@@ -82,7 +81,7 @@ export const more: Localized<typeof ref> = {
     `Keep **Open as Web App** on, tap **Add**, then open ${p.name} from its icon`,
 
   'more.install.note.chromium-desktop.insecure':
-    'Menu names change with the browser language and version. From an HTTP address the browser installs the page as an app window.',
+    'Menu names change with the browser language and version.',
   'more.install.note.chromium-desktop.secure':
     'Menu names change with the browser language and version.',
   'more.install.note.chromium-android.insecure':
@@ -136,25 +135,26 @@ export const more: Localized<typeof ref> = {
   'more.install.cap.notifications.install-first':
     'On iPhone and iPad, install the app first, then turn them on from it.',
 
-  'more.install.https.title': 'Want offline use and notifications?',
+  'more.install.https.title': 'Secure address',
+  'more.install.https.heading': 'Unlock offline use and notifications',
   'more.install.https.text':
-    'Browsers only allow them on a secure address (HTTPS). Plain HTTP, like this one, is fine for everyday use. Pick what fits your setup:',
-  'more.install.https.opt.tailscale':
-    '**Tailscale**: if your devices already use it, Tailscale Serve can give it a private HTTPS address with one command.',
-  'more.install.https.opt.proxy':
-    '**A reverse proxy you already run** (Caddy, Nginx Proxy Manager, Traefik…): add it there and use its HTTPS address.',
-  'more.install.https.opt.caddy':
-    '**Caddy with a domain name of yours**: it gets and renews free certificates by itself.',
-  'more.install.https.opt.local-ca':
-    '**Home network only**: a local certificate authority (Caddy’s internal CA, mkcert). Each device has to trust it once.',
-  'more.install.https.opt.localhost':
-    '**Only on this computer**: open it as `localhost` (for example through an SSH tunnel to the server). Browsers treat that as secure.',
-  'more.install.https.guide': 'Step-by-step HTTPS guide',
-  'more.install.https.secureUrl.title': 'Your secure address',
+    'They need an HTTPS address. Everyday use works without it: pick the route that fits you.',
+  'more.install.https.opt.tailscale.title': 'Tailscale',
+  'more.install.https.opt.tailscale.desc':
+    'A private HTTPS address for your devices, with one command.',
+  'more.install.https.opt.proxy.title': 'Your reverse proxy',
+  'more.install.https.opt.proxy.desc': 'Already running Caddy, Nginx or Traefik? Add Orbis there.',
+  'more.install.https.opt.caddy.title': 'Caddy with a domain',
+  'more.install.https.opt.caddy.desc': 'Free certificates that renew themselves.',
+  'more.install.https.opt.local-ca.title': 'Home network only',
+  'more.install.https.opt.local-ca.desc':
+    'A local certificate authority: each device trusts it once.',
+  'more.install.https.opt.localhost.title': 'Only this computer',
+  'more.install.https.opt.localhost.desc':
+    'Open it as localhost, for example through an SSH tunnel.',
+  'more.install.https.guide': 'All options and the guide',
   'more.install.https.secureUrl.text': (p) =>
     `Open ${p.name} from this address to install it as a full app.`,
-  'more.install.https.secureUrl.hint':
-    'Already have one? Set `publicUrl` in `config.yaml` and it shows up here.',
   'more.install.https.recommended': 'Recommended: install from the secure address',
   'more.install.https.orHere': 'Or install from this address',
 
@@ -173,8 +173,8 @@ export const more: Localized<typeof ref> = {
   'more.notifications.active.title': 'Notifications are on',
   'more.notifications.active.text': 'This device will receive critical alerts.',
   'more.notifications.insecure.title': 'Needs a secure address',
-  'more.notifications.insecure.text': (p) =>
-    `Notifications only work on a secure (HTTPS) address, and ${p.name} is open over plain HTTP here. The Installation section above explains how to get one.`,
+  'more.notifications.insecure.text':
+    'Notifications need HTTPS: see the Installation section above.',
   'more.notifications.needsInstall.title': 'Install the app first',
   'more.notifications.needsInstall.text': (p) =>
     `On iPhone and iPad notifications only work with ${p.name} installed: add it to your Home Screen and open it from there.`,

@@ -476,7 +476,7 @@ describe('suggestHttpsOptions', () => {
     expect(suggestHttpsOptions('100.128.0.1')[0]).not.toBe('tailscale');
   });
 
-  it('starts with a reverse proxy, then a local CA, on a home network address or name', () => {
+  it('starts with Tailscale (no domain or proxy needed), then a proxy, on a home network address or name', () => {
     for (const host of [
       '192.168.1.50',
       '10.0.0.7',
@@ -485,7 +485,11 @@ describe('suggestHttpsOptions', () => {
       'homelab',
       'x.lan',
     ]) {
-      expect(suggestHttpsOptions(host).slice(0, 2), host).toEqual(['proxy', 'local-ca']);
+      expect(suggestHttpsOptions(host).slice(0, 3), host).toEqual([
+        'tailscale',
+        'proxy',
+        'local-ca',
+      ]);
     }
   });
 

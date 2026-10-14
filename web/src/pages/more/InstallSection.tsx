@@ -2,11 +2,12 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useApp } from '@/boot';
 import { useSession } from '@/data';
 import { t } from '@/i18n';
-import { HTTPS_GUIDE_URL } from '@/lib/docs';
+import { HTTPS_GUIDE_URL, HTTPS_OPTION_URL } from '@/lib/docs';
 import {
   deriveCapabilities,
   deriveInstallGuide,
   suggestHttpsOptions,
+  type HttpsOption,
   type Capability,
   type InstallGuide,
   type InstallKind,
@@ -17,6 +18,7 @@ import { useInstall } from '@/pwa/useInstall';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { Icon, type IconName } from '@/ui/icons';
+import { List, ListRow } from '@/ui/List';
 import { Section } from '@/ui/Section';
 import { RichText } from './RichText';
 import { SecureAddress } from './SecureAddress';
@@ -185,29 +187,47 @@ function CapabilityRow({ capability }: { capability: Capability }) {
   );
 }
 
-/** Ways to a secure address, the most fitting first for the address this page was opened from. */
+const HTTPS_OPTION_ICON: Record<HttpsOption, IconName> = {
+  tailscale: 'network',
+  proxy: 'server',
+  caddy: 'cloud',
+  'local-ca': 'shield',
+  localhost: 'monitor',
+};
+
+/**
+ * Over plain HTTP: why a secure address is worth it and the routes to one, the most fitting first
+ * for the address this page was opened from. Each route opens its own section of the guide.
+ */
 function HttpsHelp() {
   const options = suggestHttpsOptions(window.location.hostname).slice(0, HTTPS_OPTIONS_SHOWN);
   return (
     <Section title={t('more.install.https.title')}>
       <Card padding="none">
-        <div className={styles.block}>
-          <p className={styles.rowSub}>{t('more.install.https.text')}</p>
-          <ul className={styles.options}>
-            {options.map((option) => (
-              <li key={option}>
-                <RichText text={t(`more.install.https.opt.${option}`)} />
-              </li>
-            ))}
-          </ul>
-          <div className={styles.actions}>
-            <Button variant="secondary" icon="external-link" href={HTTPS_GUIDE_URL}>
-              {t('more.install.https.guide')}
-            </Button>
+        <div className={styles.row}>
+          <StatusIcon icon="lock" tone="info" />
+          <div className={styles.rowText}>
+            <p className={styles.rowTitle}>{t('more.install.https.heading')}</p>
+            <p className={styles.rowSub}>{t('more.install.https.text')}</p>
           </div>
-          <p className={styles.note}>
-            <RichText text={t('more.install.https.secureUrl.hint')} />
-          </p>
+        </div>
+        <List variant="plain" className={styles.routes} aria-label={t('more.install.https.title')}>
+          {options.map((option) => (
+            <ListRow
+              key={option}
+              multiline
+              href={HTTPS_OPTION_URL[option]}
+              leading={<StatusIcon icon={HTTPS_OPTION_ICON[option]} />}
+              title={t(`more.install.https.opt.${option}.title`)}
+              subtitle={t(`more.install.https.opt.${option}.desc`)}
+              trailing={<Icon name="external-link" size={18} className={styles.external} />}
+            />
+          ))}
+        </List>
+        <div className={styles.footer}>
+          <Button variant="ghost" size="sm" icon="external-link" href={HTTPS_GUIDE_URL}>
+            {t('more.install.https.guide')}
+          </Button>
         </div>
       </Card>
     </Section>
