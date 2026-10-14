@@ -15,6 +15,7 @@ import {
   type PushEnvironment,
   type PushState,
 } from './push';
+import { useServiceWorkerFailed } from './register';
 import { useInstall } from './useInstall';
 
 export type PushAction = 'enable' | 'disable' | 'test';
@@ -61,6 +62,7 @@ export function usePush(): PushController {
   const app = useApp();
   const session = useSession();
   const install = useInstall();
+  const workerFailed = useServiceWorkerFailed();
   const [permission, setPermission] = useState(readNotificationPermission);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -78,6 +80,7 @@ export function usePush(): PushController {
     () => ({
       secureContext: install.secureContext,
       support: detectPushSupport(),
+      workerFailed,
       needsInstall: install.showIosHint,
       access: session?.access ?? null,
       permission,
@@ -85,7 +88,15 @@ export function usePush(): PushController {
       subscribed: loaded?.subscribed ?? null,
       loadFailed,
     }),
-    [install.secureContext, install.showIosHint, session?.access, permission, loaded, loadFailed],
+    [
+      install.secureContext,
+      install.showIosHint,
+      workerFailed,
+      session?.access,
+      permission,
+      loaded,
+      loadFailed,
+    ],
   );
   const state = derivePushState(environment);
 

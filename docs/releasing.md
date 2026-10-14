@@ -40,9 +40,9 @@ Both architectures, without emulation (the Dockerfile runs every build step on t
 ```sh
 docker buildx create --name orbis-oci --driver docker-container   # once
 docker buildx build --builder orbis-oci --platform linux/amd64,linux/arm64 \
-  --build-arg VERSION=0.1.0 --build-arg REVISION=$(git rev-parse HEAD) \
+  --build-arg VERSION=X.Y.Z --build-arg REVISION=$(git rev-parse HEAD) \
   --output type=oci,dest=orbis-homelab-oci.tar .
-node scripts/verify-oci.mjs orbis-homelab-oci.tar 0.1.0
+node scripts/verify-oci.mjs orbis-homelab-oci.tar X.Y.Z
 ```
 
 `verify-oci.mjs` checks the platforms, the OCI labels (`title`, `licenses`, `source`, `version`), the non-root user, that the application files and the licence files are present and that no layer contains a native executable of the wrong architecture. **It does not run the image.** The `arm64` image is therefore built and inspected, never executed, by this repository's automation (QEMU is not used); only `amd64` runs in the clean-install test. State this in the release notes until an `arm64` run has been done on real hardware.
@@ -60,27 +60,25 @@ Targets: `runtime` (default: backend and web app) and `server` (backend only).
 5. Run `release.yml` with **`dry_run` on** (the default) on the commit to release and read the result.
 6. Publish: run `release.yml` again with `dry_run` off, or by hand (below).
 
-## Publishing `0.1.0` (not done yet)
+## Publishing a release
 
-Nothing has been published: the repository is private, no image exists on GHCR and there is no release. When the owner approves publication:
-
-1. Make the repository public (Settings, General, Danger Zone) if it should be. Check **Settings, Code security**: enable _Private vulnerability reporting_, because `SECURITY.md` tells people to use it.
-2. Actions tab, **Release (manual)**, `version` = `0.1.0`, `dry_run` on: it must be green.
-3. Run it again with `dry_run` off. It builds and pushes `ghcr.io/al31si/orbis-homelab:0.1.0`, `:0.1` and `:latest`, tags `v0.1.0` on the commit and creates the GitHub Release with the four files and `SHA256SUMS`.
-4. The first push of a GHCR package is **private** by default: open the package settings (Packages, `orbis-homelab`) and set its visibility to _Public_, and link it to the repository. Until then `docker compose pull` fails for everybody else.
-5. Verify as a user would, on a machine without a checkout: the Quick Start of the README on a clean directory, `docker compose pull`, `docker compose up -d`, healthy, `http://<host>:3100` answers and the Settings page shows access `limited`. Check `docker buildx imagetools inspect ghcr.io/al31si/orbis-homelab:0.1.0` lists both platforms.
+1. Work on a branch, merge to `main`, and make sure the checklist above holds on the commit you will release.
+2. Actions tab, **Release (manual)**, `version` = `X.Y.Z`, `dry_run` on: it must be green.
+3. Run it again with `dry_run` off. It builds and pushes `ghcr.io/al31si/orbis-homelab:X.Y.Z`, `:X.Y` and `:latest` (stable releases), tags `vX.Y.Z` on the commit and creates the GitHub Release with the four files and `SHA256SUMS`.
+4. The first push of a GHCR package is **private** by default: check the package settings (Packages, `orbis-homelab`) show _Public_ and are linked to the repository (done once, for 0.1.0).
+5. Verify as a user would, on a machine without a checkout: the Quick Start of the README in a clean directory, `docker compose pull`, `docker compose up -d`, healthy, `http://<host>:3100` answers and Settings shows access `limited`. Check `docker buildx imagetools inspect ghcr.io/al31si/orbis-homelab:X.Y.Z` lists both platforms, and that the release lists `compose.yaml`, `config.example.yaml`, `services.example.yaml`, `.env.example` and `SHA256SUMS`.
 
 By hand instead of `release.yml` (after `docker login ghcr.io`):
 
 ```sh
 docker buildx build --builder orbis-oci --platform linux/amd64,linux/arm64 \
-  --build-arg VERSION=0.1.0 --build-arg REVISION=$(git rev-parse HEAD) \
+  --build-arg VERSION=X.Y.Z --build-arg REVISION=$(git rev-parse HEAD) \
   --build-arg SOURCE=https://github.com/al31si/orbis-homelab \
-  -t ghcr.io/al31si/orbis-homelab:0.1.0 -t ghcr.io/al31si/orbis-homelab:0.1 -t ghcr.io/al31si/orbis-homelab:latest \
+  -t ghcr.io/al31si/orbis-homelab:X.Y.Z -t ghcr.io/al31si/orbis-homelab:X.Y -t ghcr.io/al31si/orbis-homelab:latest \
   --push .
-git tag -a v0.1.0 -m "Orbis Homelab 0.1.0" && git push origin v0.1.0
-gh release create v0.1.0 compose.yaml config.example.yaml services.example.yaml .env.example \
-  --title "Orbis Homelab 0.1.0" --notes-file docs/release-notes/0.1.0.md
+git tag -a vX.Y.Z -m "Orbis Homelab X.Y.Z" && git push origin vX.Y.Z
+gh release create vX.Y.Z compose.yaml config.example.yaml services.example.yaml .env.example \
+  --title "Orbis Homelab X.Y.Z" --notes-file docs/release-notes/X.Y.Z.md
 ```
 
-Later releases: update the version everywhere (checklist item 3), add `docs/release-notes/X.Y.Z.md`, and repeat. Move `latest`, `X` and `X.Y` only for stable releases.
+Move `latest`, `X` and `X.Y` only for stable releases.

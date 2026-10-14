@@ -54,6 +54,7 @@ export const diagnostics: Localized<typeof ref> = {
   'diagnostics.client.sw.insecure': 'Unavailable (needs HTTPS)',
   'diagnostics.client.sw.development': 'Not registered (development)',
   'diagnostics.client.sw.none': 'Not registered',
+  'diagnostics.client.sw.failed': 'Refused by the browser',
   'diagnostics.client.sw.installing': 'Installing',
   'diagnostics.client.sw.waiting': 'Update waiting',
   'diagnostics.client.sw.active': 'Active',

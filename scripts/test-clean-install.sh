@@ -18,6 +18,16 @@ for tool in docker curl; do
 done
 docker compose version >/dev/null 2>&1 || { echo "FAIL: the Docker Compose plugin is required" >&2; exit 2; }
 
+# The quick-start checks below start installs from a folder called `orbis-homelab`, which Compose
+# turns into the project `orbis-homelab` (that is what they verify), and remove it afterwards.
+# A real installation in a folder with that name would be recreated and then deleted: refuse to run.
+if [ -n "$(docker ps -aq --filter label=com.docker.compose.project=orbis-homelab)" ]; then
+  echo "FAIL: a Compose project named 'orbis-homelab' already exists on this host and this test would" >&2
+  echo "      recreate and remove it. Run the test on a host without it (CI does), or stop and move" >&2
+  echo "      that installation to another folder name / COMPOSE_PROJECT_NAME first." >&2
+  exit 2
+fi
+
 PASSED=()
 FAILED=()
 LOGS_ON_EXIT=0

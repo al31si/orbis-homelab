@@ -20,6 +20,17 @@ docker compose logs --tail 50 orbis
 
 `config.example.yaml` is only a reference (`diff config.example.yaml config/config.yaml` shows new options); your `config/` is never overwritten. Open the app on a device where it is installed: the service worker downloads the new app shell in the background and the app switches to it (reload or relaunch the app if it still shows the old version).
 
+## From 0.1.0 to 0.2.0
+
+No configuration change is required: `config.yaml`, `services.yaml`, `.env`, `data/` and extensions work as they are, and push keys and subscriptions in `data/` are read as before. Follow [Update with Compose](#update-with-compose) with `VERSION=0.2.0`. What you will notice:
+
+- **Settings → Installation** is rewritten. It names what your browser can do on the address you are using (full app, app window, shortcut or nothing), shows the steps for it, and says plainly that offline use and notifications need HTTPS. See [Installing the app and getting HTTPS](https.md).
+- **`publicUrl`** is optional and only an `https://` address is offered as a link in Settings. A value starting with `http://` still loads, is ignored and is mentioned in the startup log. You never need it when you already open Orbis over HTTPS.
+- **Installed apps update by themselves**: the service worker downloads the new version and Settings offers **Update**. The address, the push subscriptions and the data stay. Notifications that already worked keep working; if the browser refuses the push service (Brave without its Google push setting) see [the browser push service is unreachable](troubleshooting.md#the-browser-push-service-is-unreachable).
+- The `scripts/test-clean-install.sh` of a checkout refuses to run on a host that already has a Compose project named `orbis-homelab` (it would recreate it).
+
+Roll back as described in [Roll back](#roll-back): set `ORBIS_VERSION=0.1.0`; the data written by 0.2.0 is the same format.
+
 ## Choosing a version
 
 `compose.yaml` pulls `ghcr.io/al31si/orbis-homelab:$ORBIS_VERSION` and has no default: set it in `.env` to the release of your `compose.yaml` and example files.

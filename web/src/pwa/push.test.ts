@@ -13,6 +13,7 @@ import {
 const READY: PushEnvironment = {
   secureContext: true,
   support: { serviceWorker: true, pushManager: true, notification: true },
+  workerFailed: false,
   needsInstall: false,
   access: 'full',
   permission: 'default',
@@ -76,6 +77,15 @@ describe('derivePushState', () => {
     ).toEqual({
       kind: 'blocked',
       reason: 'unsupported',
+    });
+    expect(derivePushState({ ...READY, workerFailed: true })).toEqual({
+      kind: 'blocked',
+      reason: 'worker-failed',
+    });
+    // limited access is the more fundamental blocker: a working worker would not help
+    expect(derivePushState({ ...READY, workerFailed: true, access: 'limited' })).toEqual({
+      kind: 'blocked',
+      reason: 'limited',
     });
     expect(derivePushState({ ...READY, access: 'limited' })).toEqual({
       kind: 'blocked',

@@ -97,9 +97,10 @@ access:
   #   allowedUsers: [alice@example.com]
 
 # ---- Optional: Public HTTPS address ----
-# # HTTPS origin of this instance. Browsers only allow installing the app, the service worker and
-# # push notifications over HTTPS (iOS requires it); people opening the plain-HTTP address are
-# # pointed here.
+# # Not needed to use or install Orbis, and not needed when you already open it over HTTPS.
+# # Only set it if you have an https address for this instance (reverse proxy, Tailscale Serve,
+# # see docs/https.md): people who open the plain-HTTP address get a link to it in Settings >
+# # Installation. Only https:// addresses are offered; an http:// one is ignored.
 # publicUrl: https://orbis.example.com
 
 # ---- Optional: Listening port ----

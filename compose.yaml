@@ -3,7 +3,7 @@
 # Quick start (details in docs/install.md). Download this file, the example configuration and
 # .env.example from the SAME release as the image: they are versioned together.
 #
-#   VERSION=0.1.0          # the release you want to install
+#   VERSION=0.2.0          # the release you want to install
 #   BASE=https://raw.githubusercontent.com/al31si/orbis-homelab/v$VERSION
 #   mkdir -p orbis-homelab/config orbis-homelab/data && cd orbis-homelab
 #   curl -fsSLO $BASE/compose.yaml

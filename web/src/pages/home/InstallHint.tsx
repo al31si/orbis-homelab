@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useApp } from '@/boot';
 import { useSession } from '@/data';
 import { t } from '@/i18n';
+import type { InstallKind } from '@/pwa/installGuide';
 import { useInstall } from '@/pwa/useInstall';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
@@ -19,21 +20,29 @@ function wasDismissed(appId: string): boolean {
   }
 }
 
-/** Dismissible "install the app" hint: Chromium prompt, iOS instructions, or the HTTPS address. */
+/** The kinds worth a card on the Home page: there is something to do for the visitor right now. */
+const HINTED: readonly InstallKind[] = [
+  'prompt',
+  'ios',
+  'mac-safari',
+  'chromium-desktop',
+  'chromium-android',
+];
+
+/**
+ * Dismissible "install the app" hint. It only appears when the visitor can actually act on it:
+ * the browser's own install dialog, or the steps for their browser (the Installation settings
+ * explain them). Nothing shows when installed, and nothing is offered that the browser cannot do.
+ */
 export function InstallHint() {
   const install = useInstall();
   const session = useSession();
   const app = useApp();
   const [dismissed, setDismissed] = useState(() => wasDismissed(app.id));
 
-  const needsHttps = !install.secureContext && session?.secureUrl != null;
-  if (
-    dismissed ||
-    install.standalone ||
-    !(install.canPrompt || install.showIosHint || needsHttps)
-  ) {
-    return null;
-  }
+  const { guide } = install;
+  const secureUrl = install.secureContext ? null : (session?.secureUrl ?? null);
+  if (dismissed || install.standalone || !HINTED.includes(guide.kind)) return null;
 
   function dismiss() {
     setDismissed(true);
@@ -44,32 +53,49 @@ export function InstallHint() {
     }
   }
 
-  return (
-    <Card className={styles.install}>
-      <span className={styles.installIcon}>
-        <Icon name={install.showIosHint ? 'share' : 'download'} size={22} />
-      </span>
-      <div className={styles.installText}>
-        <p className={styles.installTitle}>{t('home.install.title', { name: app.name })}</p>
-        {install.canPrompt && <p>{t('home.install.prompt')}</p>}
-        {!install.canPrompt && install.showIosHint && (
+  const body = (() => {
+    switch (guide.kind) {
+      case 'prompt':
+        return <p>{t('home.install.prompt')}</p>;
+      case 'ios':
+        return (
           <p>
             {t('home.install.iosTap')} <strong>{t('home.install.iosShare')}</strong>
             {t('home.install.iosThen')} <strong>{t('home.install.iosAdd')}</strong>.
           </p>
-        )}
-        {!install.canPrompt && !install.showIosHint && needsHttps && (
-          <p>{t('home.install.needsHttps')}</p>
-        )}
-        {install.canPrompt && (
+        );
+      case 'mac-safari':
+        return <p>{t('home.install.dock')}</p>;
+      case 'chromium-android':
+        return <p>{t('home.install.android')}</p>;
+      default:
+        return <p>{guide.secure ? t('home.install.browser') : t('home.install.window')}</p>;
+    }
+  })();
+
+  return (
+    <Card className={styles.install}>
+      <span className={styles.installIcon}>
+        <Icon name={guide.kind === 'ios' ? 'share' : 'download'} size={22} />
+      </span>
+      <div className={styles.installText}>
+        <p className={styles.installTitle}>{t('home.install.title', { name: app.name })}</p>
+        {body}
+        {guide.kind === 'prompt' ? (
           <Button variant="primary" size="sm" onClick={() => void install.promptInstall()}>
             {t('home.install.install')}
           </Button>
-        )}
-        {!install.canPrompt && needsHttps && session?.secureUrl && (
-          <Button variant="secondary" size="sm" href={session.secureUrl}>
-            {t('home.install.openSecure')}
-          </Button>
+        ) : (
+          <>
+            {secureUrl && (
+              <Button variant="secondary" size="sm" href={secureUrl}>
+                {t('home.install.openSecure')}
+              </Button>
+            )}
+            <Button variant={secureUrl ? 'ghost' : 'secondary'} size="sm" href="/more">
+              {t('home.install.howTo')}
+            </Button>
+          </>
         )}
       </div>
       <IconButton icon="close" label={t('home.install.dismiss')} iconSize={18} onClick={dismiss} />

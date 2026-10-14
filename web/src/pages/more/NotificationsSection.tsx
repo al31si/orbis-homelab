@@ -1,8 +1,10 @@
 import { useApp } from '@/boot';
 import { t } from '@/i18n';
 import type { PushBlockReason } from '@/pwa/push';
-import { usePush, type PushController } from '@/pwa/usePush';
+import type { PushController } from '@/pwa/usePush';
 import type { UiTone } from '@/lib/tone';
+import { PUSH_HELP_URL } from '@/lib/docs';
+import { AppLink } from '@/ui/AppLink';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import type { IconName } from '@/ui/icons';
@@ -16,6 +18,7 @@ const BLOCKED_TONE: Record<PushBlockReason, UiTone> = {
   insecure: 'neutral',
   'needs-install': 'neutral',
   unsupported: 'neutral',
+  'worker-failed': 'warn',
   limited: 'neutral',
   unavailable: 'neutral',
   denied: 'crit',
@@ -27,7 +30,7 @@ function describeBlocked(reason: PushBlockReason, name: string): { title: string
     case 'insecure':
       return {
         title: t('more.notifications.insecure.title'),
-        text: t('more.notifications.insecure.text', { name }),
+        text: t('more.notifications.insecure.text'),
       };
     case 'needs-install':
       return {
@@ -38,6 +41,11 @@ function describeBlocked(reason: PushBlockReason, name: string): { title: string
       return {
         title: t('more.notifications.unsupported.title'),
         text: t('more.notifications.unsupported.text'),
+      };
+    case 'worker-failed':
+      return {
+        title: t('more.notifications.workerFailed.title'),
+        text: t('more.notifications.workerFailed.text'),
       };
     case 'limited':
       return {
@@ -146,8 +154,7 @@ function Actions({ push }: { push: PushController }) {
   return null;
 }
 
-export function NotificationsSection() {
-  const push = usePush();
+export function NotificationsSection({ push }: { push: PushController }) {
   const { name } = useApp();
   const { state } = push;
 
@@ -218,6 +225,13 @@ export function NotificationsSection() {
       <p className={styles.note}>
         {t('more.notifications.note')} {devices && <span>{devices}.</span>}
       </p>
+      {(state.kind === 'inactive' || state.kind === 'active') && (
+        <p className={styles.note}>
+          <AppLink href={PUSH_HELP_URL} className={styles.noteLink}>
+            {t('more.notifications.help')}
+          </AppLink>
+        </p>
+      )}
     </Section>
   );
 }

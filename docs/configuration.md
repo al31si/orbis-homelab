@@ -70,9 +70,13 @@ Branding and presentation.
 
 Service names, descriptions, category labels and links are your text and are never translated.
 
+**Renaming an instance that is already installed.** Change `name` / `shortName` and restart the container. The header, the browser tab, the manifest and the notification title follow after the next load. An installed app may keep its old name for a while: Chromium browsers (Chrome, Edge, Brave) re-read the manifest periodically, usually within a day, and may ask to confirm the change; to see it at once, uninstall the app and install it again from the same address. On iPhone and iPad the name under the icon is fixed when it is added to the Home Screen: remove the icon and add it again, then turn notifications on again from the installed app if they show as off. Push subscriptions live on the server (`data/push.json`) and in the browser for that address, so they normally survive a rename; if notifications stop, turn them off and on again in Settings.
+
+**Do not change `id` just to rename.** `id` names the offline caches and the browser storage of each device: after changing it, every device forgets its local preferences (favorites, theme, hidden services) once and keeps the old offline cache until its site data is cleared. Push subscriptions are not affected.
+
 ### `publicUrl`
 
-Optional `http(s)` URL: the HTTPS origin of the instance. Browsers enable the service worker, installation and Web Push only on secure origins (iOS and iPadOS require it); people who open the plain-HTTP address are pointed to this one.
+Optional. The `https://` address of the instance, if you have one (see [HTTPS](https.md)). It is only shown as a link in Settings → Installation to people who opened the plain-HTTP address. It is **not needed** to use or install the app, and not needed when you already open it over HTTPS: the app then works from whatever address the browser used. An `http://` value is accepted for older configurations but never offered (it cannot give a secure context); the server logs a line at startup to say so.
 
 ### `server`
 
@@ -181,7 +185,7 @@ Web Push notifications for new alerts.
 | `enabled` | `false` | Turns push on. VAPID keys are generated into `/data` on first start                                     |
 | `subject` | none    | Required when enabled: contact claim sent to push services, `mailto:you@example.com` or an `https:` URL |
 
-Push needs full access (it is disabled for `limited` visitors) and an HTTPS address; on iOS the app must be installed to the home screen first. Back up `/data`: see [Backup and restore](backup-restore.md).
+Push needs full access (it is disabled for `limited` visitors) and a secure address (HTTPS or `localhost`, see [HTTPS](https.md)); on iOS the app must be installed to the home screen first. Back up `/data`: see [Backup and restore](backup-restore.md).
 
 ### `links`
 

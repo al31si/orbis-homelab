@@ -248,7 +248,11 @@ const extensionSchema = z.strictObject({
 export const configSchema = z
   .strictObject({
     app: appSchema,
-    /** Public HTTPS origin, shown to users who open the plain-HTTP address. */
+    /**
+     * Optional. The https address of this instance, offered to users who open the plain-HTTP
+     * address (Settings > Installation). An http URL is accepted for older configurations but
+     * never offered. See `secureAddress`.
+     */
     publicUrl: httpUrl.optional(),
     server: z.strictObject({ port: port.default(3100) }).default({ port: 3100 }),
     access: accessSchema,

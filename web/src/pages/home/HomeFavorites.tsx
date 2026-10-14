@@ -1,4 +1,5 @@
 import type { ServiceView } from '@shared/api';
+import { t } from '@/i18n';
 import { resolveServiceUrl } from '@/lib/links';
 import { usePrefs } from '@/lib/prefs';
 import { AppLink } from '@/ui/AppLink';
@@ -14,9 +15,9 @@ export function HomeFavorites({ services }: { services: readonly ServiceView[] }
     .filter((service): service is ServiceView => service !== undefined);
 
   return (
-    <Section title="Preferiti">
+    <Section title={t('home.favorites.title')}>
       {items.length === 0 ? (
-        <p className={styles.hint}>Aggiungi i servizi che usi di più dalla pagina Servizi.</p>
+        <p className={styles.hint}>{t('home.favorites.empty')}</p>
       ) : (
         <ul className={styles.favorites}>
           {items.map((service) => {

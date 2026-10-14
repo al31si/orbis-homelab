@@ -1,5 +1,9 @@
 import { useSyncExternalStore } from 'react';
 
+/** Fired on `window` when the browser refused to register the service worker. */
+export const SW_FAILED_EVENT = 'orbis:sw-failed';
+
+let registrationFailed = false;
 let waiting: ServiceWorker | null = null;
 let updateRequested = false;
 const listeners = new Set<() => void>();
@@ -43,8 +47,25 @@ export function registerServiceWorker(): void {
           if (!document.hidden) void registration.update().catch(() => undefined);
         });
       })
-      .catch((error: unknown) => console.warn('Service worker non registrato', error));
+      .catch((error: unknown) => {
+        console.warn('Service worker not registered', error);
+        registrationFailed = true;
+        window.dispatchEvent(new Event(SW_FAILED_EVENT));
+      });
   });
+}
+
+/** True once the browser refused to register the worker (typically an untrusted certificate). */
+export function serviceWorkerRegistrationFailed(): boolean {
+  return registrationFailed;
+}
+
+/** Re-renders when the browser refuses the service worker; true from then on. */
+export function useServiceWorkerFailed(): boolean {
+  return useSyncExternalStore((listener) => {
+    window.addEventListener(SW_FAILED_EVENT, listener);
+    return () => window.removeEventListener(SW_FAILED_EVENT, listener);
+  }, serviceWorkerRegistrationFailed);
 }
 
 /**

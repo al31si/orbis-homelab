@@ -4,12 +4,12 @@ A self-hosted control center for your homelab: one installable web app (PWA) tha
 
 Orbis Homelab is a small Node.js backend that collects data from the services you already run, and a mobile-friendly interface served by the same container. Only the backend holds credentials and talks to your services; the browser talks to the backend.
 
-> **Status: 0.1.0, the first release.** It is used on a real homelab, but the configuration format and the extension API may still change between `0.x` minor versions; changes are listed in the [release notes](docs/release-notes/0.1.0.md) and a breaking change is never silent (the configuration is validated at startup and errors name the file and the field).
+> **Status: 0.2.0.** It is used on a real homelab, but the configuration format and the extension API may still change between `0.x` minor versions; changes are listed in the [release notes](docs/release-notes/0.2.0.md) and a breaking change is never silent (the configuration is validated at startup and errors name the file and the field).
 
 - **Everything optional.** You start with a service catalog and HTTP checks. Add a system provider, storage, usage trackers, integrations, push notifications and extensions when you want them; whatever is not configured does not exist (no page, no request, no placeholder).
 - **Configured, not built.** Two YAML files and a `.env`. Updating the image never touches them.
 - **Safe by default.** Visitors get a limited view; full access is an explicit decision (trusted network or an identity-aware reverse proxy). Read-only container, no Docker socket in the app, and the built-in integrations only send `GET` requests to your services.
-- **Installable.** PWA for iOS, Android and desktop, with offline shell, dark/light themes, your own name, accent color and icons.
+- **Installable, with or without HTTPS.** Works as a website over plain `http://<ip>:3100`; most browsers can also open it as an app window or add it to the Home Screen from there, and Settings → Installation tells you exactly what your browser offers. A real PWA (offline shell, notifications) needs an HTTPS address: [what each address gives you and how to get one](docs/https.md). Dark/light themes, your own name, accent color and icons.
 - **English and Italian.** One language per instance.
 
 ## Features
@@ -33,7 +33,7 @@ Extensions let you add your own collectors, alert rules, API routes and PWA page
 You need Docker with the Compose plugin. The image is published for `linux/amd64` and `linux/arm64`.
 
 ```sh
-VERSION=0.1.0   # the release to install
+VERSION=0.2.0   # the release to install
 BASE=https://raw.githubusercontent.com/al31si/orbis-homelab/v$VERSION
 
 mkdir -p orbis-homelab/config orbis-homelab/data && cd orbis-homelab
@@ -96,6 +96,7 @@ The image is built for `linux/amd64` and `linux/arm64`. The `amd64` image is wha
 ## Documentation
 
 - [Installation](docs/install.md)
+- [Installing the app and getting HTTPS](docs/https.md)
 - [Configuration reference](docs/configuration.md)
 - [Updating](docs/update.md)
 - [Backup and restore](docs/backup-restore.md)
@@ -105,7 +106,7 @@ The image is built for `linux/amd64` and `linux/arm64`. The `amd64` image is wha
 - [Usage providers](docs/usage-providers.md) and the optional [Claude Code usage writer](contrib/claude-usage/README.md)
 - [Extensions](docs/extensions.md)
 - [Architecture](docs/ARCHITECTURE.md)
-- [Releasing](docs/releasing.md) and the [release notes](docs/release-notes/0.1.0.md)
+- [Releasing](docs/releasing.md) and the release notes ([0.2.0](docs/release-notes/0.2.0.md), [0.1.0](docs/release-notes/0.1.0.md))
 - [Contributing](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 
