@@ -6,6 +6,9 @@ const DOCS = 'https://github.com/al31si/orbis-homelab/blob/main/docs';
 /** Step-by-step guide to a secure (HTTPS) address for a self-hosted install. */
 export const HTTPS_GUIDE_URL = `${DOCS}/https.md`;
 
+/** Troubleshooting entry for notifications that cannot be turned on or do not arrive. */
+export const PUSH_HELP_URL = `${DOCS}/troubleshooting.md#the-browser-push-service-is-unreachable`;
+
 /** The section of the guide for each way to a secure address (anchors of `docs/https.md`). */
 export const HTTPS_OPTION_URL: Record<HttpsOption, string> = {
   tailscale: `${HTTPS_GUIDE_URL}#option-1-tailscale-serve`,

@@ -130,7 +130,7 @@ and open `http://localhost:3100`. It is not reachable from other devices.
 Both need a secure context (above) plus:
 
 - **Offline shell:** nothing to configure. After the first visit over HTTPS the service worker caches the app shell; Settings → Installation shows "Ready" once it is active. Without a connection the app opens and shows the shared (limited) data it last had; private data is never cached (see [what the browser keeps](ARCHITECTURE.md#what-the-browser-keeps)).
-- **Notifications:** `push.enabled: true` with a `subject` in `config.yaml` ([push settings](configuration.md#push)), **full access** for the device, then turn them on in Settings → Notifications. On iPhone and iPad the app must first be added to the Home Screen and opened from there (an Apple requirement).
+- **Notifications:** `push.enabled: true` with a `subject` in `config.yaml` ([push settings](configuration.md#push)), **full access** for the device, then turn them on in Settings → Notifications. On iPhone and iPad the app must first be added to the Home Screen and opened from there (an Apple requirement). Brave needs an extra browser setting first: see [the browser push service is unreachable](troubleshooting.md#the-browser-push-service-is-unreachable).
 
 ## Checking that it works
 

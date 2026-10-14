@@ -465,8 +465,8 @@ describe('deriveCapabilities on a secure address', () => {
 
 describe('suggestHttpsOptions', () => {
   it('starts with Tailscale for a tailnet name or a Tailscale address', () => {
-    expect(suggestHttpsOptions('atlas.tail1234.ts.net')[0]).toBe('tailscale');
-    expect(suggestHttpsOptions('100.101.192.118')[0]).toBe('tailscale');
+    expect(suggestHttpsOptions('media-server.tail1234.ts.net')[0]).toBe('tailscale');
+    expect(suggestHttpsOptions('100.100.100.100')[0]).toBe('tailscale');
     expect(suggestHttpsOptions('100.64.0.1')[0]).toBe('tailscale');
     expect(suggestHttpsOptions('100.127.255.254')[0]).toBe('tailscale');
   });
@@ -499,7 +499,7 @@ describe('suggestHttpsOptions', () => {
 
   it('never offers fewer than three distinct ways, and always the localhost route', () => {
     for (const host of [
-      'atlas.ts.net',
+      'nas.ts.net',
       '100.100.100.100',
       '192.168.0.2',
       'nas',

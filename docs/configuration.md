@@ -70,6 +70,10 @@ Branding and presentation.
 
 Service names, descriptions, category labels and links are your text and are never translated.
 
+**Renaming an instance that is already installed.** Change `name` / `shortName` and restart the container. The header, the browser tab, the manifest and the notification title follow after the next load. An installed app may keep its old name for a while: Chromium browsers (Chrome, Edge, Brave) re-read the manifest periodically, usually within a day, and may ask to confirm the change; to see it at once, uninstall the app and install it again from the same address. On iPhone and iPad the name under the icon is fixed when it is added to the Home Screen: remove the icon and add it again, then turn notifications on again from the installed app if they show as off. Push subscriptions live on the server (`data/push.json`) and in the browser for that address, so they normally survive a rename; if notifications stop, turn them off and on again in Settings.
+
+**Do not change `id` just to rename.** `id` names the offline caches and the browser storage of each device: after changing it, every device forgets its local preferences (favorites, theme, hidden services) once and keeps the old offline cache until its site data is cleared. Push subscriptions are not affected.
+
 ### `publicUrl`
 
 Optional. The `https://` address of the instance, if you have one (see [HTTPS](https.md)). It is only shown as a link in Settings → Installation to people who opened the plain-HTTP address. It is **not needed** to use or install the app, and not needed when you already open it over HTTPS: the app then works from whatever address the browser used. An `http://` value is accepted for older configurations but never offered (it cannot give a secure context); the server logs a line at startup to say so.

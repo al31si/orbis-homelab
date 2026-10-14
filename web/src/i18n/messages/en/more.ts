@@ -218,13 +218,15 @@ export const more: Localized<typeof ref> = {
     'Permission not granted: tap “Turn on” again and allow notifications.',
   'more.pushError.incompleteSubscription': 'The browser returned an incomplete subscription.',
   'more.pushError.notConfigured': 'The server doesn’t have notifications configured.',
+  'more.notifications.help': 'Notifications not working? Troubleshooting guide',
   'more.pushError.unreachable': (p) => `${p.name} is unreachable. Try again shortly.`,
   'more.pushError.forbidden': 'Not allowed: notifications require full access.',
   'more.pushError.tooManyDevices': 'Too many registered devices: remove one before adding another.',
   'more.pushError.rejected': 'The server rejected this device’s subscription.',
   'more.pushError.server': (p) => `The server answered with an error (${p.status ?? 'unknown'}).`,
   'more.pushError.browserDenied': 'Permission for notifications was denied.',
-  'more.pushError.pushService': 'The browser’s push service is unreachable. Try again shortly.',
+  'more.pushError.pushService':
+    'The browser’s push service is unreachable. Try again shortly; if it keeps happening, open the guide below.',
   'more.pushError.generic': 'Couldn’t complete the operation. Try again.',
 
   'more.links.title': 'Quick links',

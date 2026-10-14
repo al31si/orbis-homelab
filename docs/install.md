@@ -19,7 +19,7 @@ Orbis Homelab needs no database and no other container..
 2. Download the Compose file and the examples **from the same release as the image** (or copy them from a checkout of that tag). They are versioned together: a newer `main` may use configuration keys that an older image does not know, and the reverse.
 
    ```sh
-   VERSION=0.1.0   # the release these instructions belong to
+   VERSION=0.2.0   # the release these instructions belong to
    BASE=https://raw.githubusercontent.com/al31si/orbis-homelab/v$VERSION
    curl -fsSLO $BASE/compose.yaml
    curl -fsSLO $BASE/config.example.yaml

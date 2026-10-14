@@ -79,6 +79,27 @@ The Settings page shows the access mode and level of the current device.
 - iOS and iPadOS: open the HTTPS address in Safari, **Add to Home Screen**, open the installed app, then enable notifications in Settings. It does not work from a Safari tab.
 - Notifications stop after deleting `data/`: the keys changed; turn them off and on again on each device ([Backup and restore](backup-restore.md#what-happens-to-push-notifications)).
 - The test notification in Settings tells you whether the server can reach your device.
+- The page says **"The browser's push service is unreachable"** when turning notifications on: see the next section.
+
+### The browser push service is unreachable
+
+Web Push does not go from Orbis straight to your device: the browser registers with a push service run by its vendor, and the server sends through it. The message appears when the browser accepted the permission but could not reach that service. Try again first (a short outage or a lost connection is the usual cause), then check:
+
+- **Brave (and other privacy-hardened Chromium browsers).** Brave delivers Web Push through Google's push messaging, and ships with that switched off. Without it no website can register for notifications in Brave. To allow it:
+  1. Open `brave://settings/privacy`.
+  2. Turn on **Use Google services for push messaging**.
+  3. Restart Brave.
+  4. Open the installed app (or the page) again.
+  5. In Settings → Notifications turn notifications on again if the status says they are off, then use **Send test**.
+
+  The path and the wording of the setting can change with the version and the language of the browser.
+
+  **Privacy.** This setting makes the browser register with Google's push service and receive pushes through it. The content of a push is encrypted between Orbis and the browser (Web Push, RFC 8291), but the push service still sees that a push for that browser was sent, when, and how large it was. It is a choice, not a requirement: if you prefer not to enable it, use notifications from a browser or device that already has a push service (Safari on iPhone, Chrome, Edge, Firefox), or live without them. Everything else in Orbis works the same.
+
+- **Any browser:** a VPN, firewall, DNS filter or ad blocker that blocks the browser vendor's push service. Try from another network or with the filter off.
+- **iPhone and iPad:** push only exists in the installed app, opened from the Home Screen, not in a Safari tab.
+
+Orbis never changes browser settings for you and never sends a notification outside the push service you chose.
 
 ## The app cannot be installed or is not offline-capable
 

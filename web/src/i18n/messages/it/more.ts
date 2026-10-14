@@ -227,6 +227,7 @@ export const more = defineMessages({
     'Permesso non concesso: tocca di nuovo “Attiva” e consenti le notifiche.',
   'more.pushError.incompleteSubscription': 'Il browser ha restituito un’iscrizione incompleta.',
   'more.pushError.notConfigured': 'Il server non ha le notifiche configurate.',
+  'more.notifications.help': 'Le notifiche non funzionano? Guida alla risoluzione',
   'more.pushError.unreachable': (p: { name: string }) =>
     `${p.name} non è raggiungibile. Riprova tra poco.`,
   'more.pushError.forbidden': 'Accesso non consentito: le notifiche richiedono l’accesso completo.',
@@ -237,7 +238,7 @@ export const more = defineMessages({
     `Il server ha risposto con un errore (${p.status ?? 'sconosciuto'}).`,
   'more.pushError.browserDenied': 'Il permesso per le notifiche è stato negato.',
   'more.pushError.pushService':
-    'Il servizio push del browser non è raggiungibile. Riprova tra poco.',
+    'Il servizio push del browser non è raggiungibile. Riprova tra poco; se succede ancora, apri la guida qui sotto.',
   'more.pushError.generic': 'Impossibile completare l’operazione. Riprova.',
 
   'more.links.title': 'Collegamenti rapidi',

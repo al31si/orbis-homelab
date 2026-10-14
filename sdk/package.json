@@ -1,6 +1,6 @@
 {
   "name": "@orbis-homelab/sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Extension contracts for Orbis Homelab: server extensions and client (PWA) extensions",

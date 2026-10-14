@@ -3,6 +3,8 @@ import { t } from '@/i18n';
 import type { PushBlockReason } from '@/pwa/push';
 import type { PushController } from '@/pwa/usePush';
 import type { UiTone } from '@/lib/tone';
+import { PUSH_HELP_URL } from '@/lib/docs';
+import { AppLink } from '@/ui/AppLink';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import type { IconName } from '@/ui/icons';
@@ -223,6 +225,13 @@ export function NotificationsSection({ push }: { push: PushController }) {
       <p className={styles.note}>
         {t('more.notifications.note')} {devices && <span>{devices}.</span>}
       </p>
+      {(state.kind === 'inactive' || state.kind === 'active') && (
+        <p className={styles.note}>
+          <AppLink href={PUSH_HELP_URL} className={styles.noteLink}>
+            {t('more.notifications.help')}
+          </AppLink>
+        </p>
+      )}
     </Section>
   );
 }
