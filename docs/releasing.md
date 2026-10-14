@@ -66,7 +66,7 @@ Targets: `runtime` (default: backend and web app) and `server` (backend only).
 2. Actions tab, **Release (manual)**, `version` = `X.Y.Z`, `dry_run` on: it must be green.
 3. Run it again with `dry_run` off. It builds and pushes `ghcr.io/al31si/orbis-homelab:X.Y.Z`, `:X.Y` and `:latest` (stable releases), tags `vX.Y.Z` on the commit and creates the GitHub Release with the four files and `SHA256SUMS`.
 4. The first push of a GHCR package is **private** by default: check the package settings (Packages, `orbis-homelab`) show _Public_ and are linked to the repository (done once, for 0.1.0).
-5. Verify as a user would, on a machine without a checkout: the Quick Start of the README in a clean directory, `docker compose pull`, `docker compose up -d`, healthy, `http://<host>:3100` answers and Settings shows access `limited`. Check `docker buildx imagetools inspect ghcr.io/al31si/orbis-homelab:X.Y.Z` lists both platforms, and that the release lists `compose.yaml`, `config.example.yaml`, `services.example.yaml`, `.env.example` and `SHA256SUMS`.
+5. Verify as a user would, on a machine without a checkout: the Quick Start of the README in a clean directory, `docker compose pull`, `docker compose up -d`, healthy, `http://<host>:3100` answers and Settings shows access `limited`. Check `docker buildx imagetools inspect ghcr.io/al31si/orbis-homelab:X.Y.Z` lists both platforms, and that the release lists `compose.yaml`, `config.example.yaml`, `services.example.yaml`, `default.env.example` (GitHub renames a file that starts with a dot; the Quick Start fetches `.env.example` from the tag through `raw.githubusercontent.com`) and `SHA256SUMS`.
 
 By hand instead of `release.yml` (after `docker login ghcr.io`):
 

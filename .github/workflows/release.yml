@@ -128,7 +128,8 @@ jobs:
           set -euo pipefail
           prerelease=()
           [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
-          # an explicit list: the glob `release/*` skips dot files such as .env.example
+          # an explicit list: the glob `release/*` skips dot files such as .env.example (GitHub then stores it
+          # as `default.env.example`: the Quick Start reads .env.example from the tag, not from the assets)
           gh release create "v$VERSION" \
             release/compose.yaml release/config.example.yaml release/services.example.yaml \
             release/.env.example release/SHA256SUMS \
