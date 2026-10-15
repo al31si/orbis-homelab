@@ -13,23 +13,29 @@ export const activity = defineMessages({
   'activity.alerts.title': 'Avvisi',
   'activity.alerts.none': 'Nessun avviso attivo',
   'activity.alerts.failed': 'Non riesco a leggere gli avvisi',
+  'activity.alerts.critical': 'Critico',
+  'activity.alerts.warning': 'Avviso',
+  'activity.alerts.info': 'Informazione',
 
   'activity.snapshot.failed': (p: { label: string }) => `Non riesco a leggere ${p.label}`,
   'activity.snapshot.stale': 'Non aggiornato',
 
-  'activity.usage.title': (p: { label: string }) => `${p.label} · settimana`,
-  'activity.usage.remaining': 'Rimasta questa settimana',
-  'activity.usage.resets': (p: { moment: string; relative: string }) =>
-    `Si azzera ${p.moment} · ${p.relative}`,
+  'activity.usage.title': 'Quota AI',
+  'activity.usage.remaining': 'rimasta questa settimana',
+  'activity.usage.resets': (p: { moment: string }) => `Si azzera ${p.moment}`,
   'activity.usage.plan': (p: { plan: string }) => `Piano ${p.plan}`,
-  'activity.usage.ringLabel': (p: { label: string; percent: number }) =>
+  'activity.usage.meterLabel': (p: { label: string; percent: number }) =>
     `${p.label}: ${p.percent}% della quota settimanale rimasta`,
   'activity.usage.pending': 'In attesa dei dati',
   'activity.usage.pendingText': 'I dati di questa fonte non sono ancora disponibili.',
 
-  'activity.notConfigured.title': (p: { names: string }) => `${p.names}: non configurato`,
-  'activity.notConfigured.text': (p: { benefit: string; credential: string; secrets: string }) =>
-    `${p.benefit} Serve ${p.credential}: imposta ${p.secrets} nell’ambiente del server (o indica un altro segreto nell’integrazione in \`services.yaml\`).`,
+  'activity.setup.title': (p: { name: string }) => `Collega ${p.name}`,
+  'activity.setup.create': (p: { name: string; credential: string }) =>
+    `In ${p.name} crea ${p.credential}`,
+  'activity.setup.save': (p: { secret: string }) =>
+    `Salvalo come \`${p.secret}\` nel file \`.env\``,
+  'activity.setup.apply': 'Applica con `docker compose up -d`',
+  'activity.setup.help': 'Dove si imposta',
 
   'activity.downloads.title': 'Download',
   'activity.downloads.benefit': 'Qui compariranno velocità e stato dei torrent.',
@@ -55,8 +61,7 @@ export const activity = defineMessages({
   'activity.media.queueErrors': 'Errori nella coda',
   'activity.media.queueWarnings': 'Avvisi nella coda',
   'activity.media.update': (p: { version: string }) => `Aggiornamento ${p.version}`,
-  'activity.media.queueEmpty': 'Coda vuota',
-  'activity.media.queued': (p: { n: number }) => (p.n === 1 ? '1 in coda' : `${p.n} in coda`),
+  'activity.media.inQueue': 'in coda',
 
   'activity.tasks.title': 'Task',
   'activity.tasks.benefit': 'Qui compariranno i task aperti e quelli in ritardo.',
@@ -76,6 +81,7 @@ export const activity = defineMessages({
     p.n === 1 ? '1 riproduzione in corso' : `${p.n} riproduzioni in corso`,
   'activity.playback.restricted': 'Dettagli nascosti con accesso limitato',
   'activity.playback.listLabel': 'Riproduzioni in corso',
+  'activity.playback.playing': 'In riproduzione',
   'activity.playback.paused': 'In pausa',
   'activity.playback.transcoding': 'Transcodifica',
 
@@ -84,4 +90,8 @@ export const activity = defineMessages({
   'activity.events.showMore': (p: { n: number }) => `Mostra altro (${p.n})`,
   'activity.events.today': 'Oggi',
   'activity.events.yesterday': 'Ieri',
+  'activity.events.tone.ok': 'Ripristinato',
+  'activity.events.tone.warn': 'Avviso',
+  'activity.events.tone.crit': 'Critico',
+  'activity.events.tone.neutral': 'Informazione',
 });

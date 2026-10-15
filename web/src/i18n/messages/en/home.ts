@@ -8,9 +8,7 @@ export const home: Localized<typeof ref> = {
     'There is no saved data on this device yet. I’ll retry as soon as the connection is back.',
   'home.offline.retry': 'Retry',
 
-  /* hero */
-  'home.hero.score': (p) => `Health score ${p.score} out of 100`,
-  'home.hero.scoreLabel': 'health',
+  /* state of the system */
   'home.status.ok': 'All good',
   'home.status.warning': 'Needs a look',
   'home.status.critical': 'Needs attention',
@@ -24,11 +22,15 @@ export const home: Localized<typeof ref> = {
 
   /* alerts */
   'home.alerts.title': 'Alerts',
+  'home.alerts.critical': 'Critical',
+  'home.alerts.warning': 'Needs a look',
+  'home.alerts.info': 'Information',
 
   /* vitals */
   'home.vitals.title': 'At a glance',
   'home.vitals.cpu': 'CPU',
-  'home.vitals.cpuDetail': (p) => `${p.cores} ${p.cores === 1 ? 'core' : 'cores'} · load ${p.load}`,
+  'home.vitals.cpuDetail': (p) =>
+    `Load ${p.load} on ${p.cores} ${p.cores === 1 ? 'core' : 'cores'}`,
   'home.vitals.memory': 'Memory',
   'home.vitals.usedOf': (p) => `${p.used} of ${p.total}`,
   'home.vitals.storage': 'Storage',
@@ -37,11 +39,14 @@ export const home: Localized<typeof ref> = {
   'home.vitals.temperature.warn': 'High',
   'home.vitals.temperature.crit': 'Critical',
   'home.vitals.temperature.none': 'Unavailable',
+  'home.vitals.high': 'High value',
+  'home.vitals.critical': 'Critical value',
 
   /* services */
   'home.services.title': 'Services',
-  'home.services.all': 'All',
-  'home.services.online': (p) => `${p.up} of ${p.monitored} online`,
+  'home.services.all': 'All services',
+  'home.services.of': (p) => `of ${p.monitored} online`,
+  'home.services.lamps': 'State of each service',
   'home.services.noneMonitored': (p) =>
     p.total === 0
       ? 'No services configured'
@@ -49,8 +54,6 @@ export const home: Localized<typeof ref> = {
         ? '1 service, not monitored'
         : `${p.total} services, not monitored`,
   'home.services.unmonitored': (p) => `${p.n} not monitored`,
-  'home.services.allUp': 'Everything responds',
-  'home.services.progress': 'Services online',
   'home.services.problems': 'Services to check',
 
   /* favorites */

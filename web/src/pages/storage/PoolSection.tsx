@@ -1,52 +1,66 @@
 import { useT } from '@/i18n';
 import { formatBytes, formatNumber, formatPercent } from '@/lib/format';
-import { Badge } from '@/ui/Badge';
+import { StatusDot } from '@/ui/Badge';
 import { Card } from '@/ui/Card';
+import { ProgressBar } from '@/ui/ProgressBar';
 import { Section } from '@/ui/Section';
 import { SegmentedGauge } from '@/ui/SegmentedGauge';
-import { StackedBar } from '@/ui/StackedBar';
-import { memberShares, usageTone, usageVerdict, type PoolView } from './derive';
-import { VolumeCards } from './Volumes';
+import {
+  memberShares,
+  POOL_CRITICAL_PERCENT,
+  POOL_WARN_PERCENT,
+  usageTone,
+  usageVerdict,
+  type PoolView,
+} from './derive';
 import styles from './storage.module.css';
 
-function PoolCard({ view }: { view: PoolView }) {
+function PoolPlate({ view }: { view: PoolView }) {
   const t = useT();
   const { pool, members } = view;
   const tone = usageTone(pool.percent);
-  const segments = memberShares(members).map((share) => ({
-    id: share.mount,
-    label: share.label,
-    value: share.usedBytes,
-    color: share.color,
-    detail: `${formatBytes(share.usedBytes)} · ${formatPercent(share.percent)}`,
-    text: t('storage.pool.shareText', {
-      name: share.label,
-      size: formatBytes(share.usedBytes),
-      percent: formatPercent(share.percent),
-    }),
-  }));
+  const verdict = usageVerdict(pool.percent);
+  const shares = memberShares(members);
 
   return (
-    <div className={styles.pool}>
-      <Card padding="lg" className={styles.hero}>
-        <div className={styles.heroMain}>
-          <div className={styles.heroTop}>
-            <div className={styles.poolName}>
-              <h3 className={styles.poolTitle}>{pool.label}</h3>
-              <span className={styles.mount}>{pool.mount}</span>
-            </div>
-            <Badge tone={tone} dot>
-              {usageVerdict(pool.percent)}
-            </Badge>
+    <Card padding="none" className={styles.plate} tone={tone === 'ok' ? undefined : tone}>
+      <div className={styles.plateBody}>
+        <div className={styles.plateHead}>
+          <div className={styles.poolName}>
+            <h3 className={styles.poolTitle}>{pool.label}</h3>
+            <span className={styles.path}>{pool.mount}</span>
           </div>
-          <div className={styles.figure}>
-            <span className={styles.bigValue} data-tone={tone}>
-              {formatNumber(pool.percent, 1)}
-              <span className={styles.bigUnit}>%</span>
-            </span>
+          <span className={styles.verdict} data-tone={tone}>
+            <StatusDot tone={tone} />
+            {verdict}
+          </span>
+        </div>
+
+        <div className={styles.figure}>
+          <span className={styles.bigValue} data-tone={tone}>
+            {formatNumber(pool.percent)}
+            <span className={styles.bigUnit}>%</span>
+          </span>
+          <span className={styles.figureText}>
             <span className={styles.figureLabel}>{t('storage.pool.usage')}</span>
-          </div>
-          <dl className={styles.heroStats}>
+            <span className={styles.figureOf}>
+              {t('storage.pool.usedOf', {
+                used: formatBytes(pool.usedBytes),
+                total: formatBytes(pool.sizeBytes),
+              })}
+            </span>
+          </span>
+        </div>
+
+        <SegmentedGauge
+          value={pool.percent}
+          warnAt={POOL_WARN_PERCENT}
+          critAt={POOL_CRITICAL_PERCENT}
+          label={t('storage.pool.gauge')}
+        />
+
+        <div className={styles.plateDetail}>
+          <dl className={styles.facts}>
             <div>
               <dt>{t('storage.pool.used')}</dt>
               <dd>{formatBytes(pool.usedBytes)}</dd>
@@ -60,37 +74,47 @@ function PoolCard({ view }: { view: PoolView }) {
               <dd>{formatBytes(pool.sizeBytes)}</dd>
             </div>
           </dl>
-        </div>
 
-        <div className={styles.heroSide}>
-          <SegmentedGauge value={pool.percent} label={t('storage.pool.gauge')} />
-          {segments.length > 0 && (
+          {shares.length > 0 && (
             <div className={styles.share}>
               <h4 className={styles.subhead}>{t('storage.pool.share')}</h4>
-              <StackedBar segments={segments} label={t('storage.pool.share')} height={12} />
+              <ul className={styles.shareRows}>
+                {shares.map((share) => (
+                  <li key={share.mount} className={styles.shareRow}>
+                    <span className={styles.shareName} title={share.label}>
+                      {share.label}
+                    </span>
+                    <ProgressBar
+                      value={share.percent}
+                      tone="neutral"
+                      label={t('storage.pool.shareText', {
+                        name: share.label,
+                        size: formatBytes(share.usedBytes),
+                        percent: formatPercent(share.percent),
+                      })}
+                      size="sm"
+                      cells={20}
+                    />
+                    <span className={styles.sharePercent}>{formatPercent(share.percent)}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
-      </Card>
-
-      {members.length > 0 && (
-        <div className={styles.members}>
-          <h4 className={styles.subhead}>{t('storage.pool.members')}</h4>
-          <VolumeCards items={members} />
-        </div>
-      )}
-    </div>
+      </div>
+    </Card>
   );
 }
 
-/** One hero per pool: capacity, thresholds, and how its member volumes share the used space. */
+/** One plate per pool: capacity, thresholds, and how its member volumes share the used space. */
 export function PoolSection({ views }: { views: readonly PoolView[] }) {
   const t = useT();
   return (
     <Section title={views.length === 1 ? t('storage.pool.section') : t('storage.pool.sectionMany')}>
       <div className={styles.pools}>
         {views.map((view) => (
-          <PoolCard key={view.pool.id} view={view} />
+          <PoolPlate key={view.pool.id} view={view} />
         ))}
       </div>
     </Section>

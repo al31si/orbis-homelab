@@ -8,9 +8,7 @@ export const home = defineMessages({
     'Non ci sono ancora dati salvati su questo dispositivo. Riproverò appena la connessione torna.',
   'home.offline.retry': 'Riprova',
 
-  /* hero */
-  'home.hero.score': (p: { score: number }) => `Punteggio di salute ${p.score} su 100`,
-  'home.hero.scoreLabel': 'salute',
+  /* state of the system */
   'home.status.ok': 'Tutto in ordine',
   'home.status.warning': 'Da controllare',
   'home.status.critical': 'Richiede attenzione',
@@ -27,12 +25,15 @@ export const home = defineMessages({
 
   /* alerts */
   'home.alerts.title': 'Avvisi',
+  'home.alerts.critical': 'Critico',
+  'home.alerts.warning': 'Da controllare',
+  'home.alerts.info': 'Informazione',
 
   /* vitals */
   'home.vitals.title': 'In sintesi',
   'home.vitals.cpu': 'CPU',
   'home.vitals.cpuDetail': (p: { cores: number; load: string }) =>
-    `${p.cores} core · carico ${p.load}`,
+    `Carico ${p.load} su ${p.cores} core`,
   'home.vitals.memory': 'Memoria',
   'home.vitals.usedOf': (p: { used: string; total: string }) => `${p.used} di ${p.total}`,
   'home.vitals.storage': 'Storage',
@@ -41,12 +42,14 @@ export const home = defineMessages({
   'home.vitals.temperature.warn': 'Elevata',
   'home.vitals.temperature.crit': 'Critica',
   'home.vitals.temperature.none': 'Non disponibile',
+  'home.vitals.high': 'Valore alto',
+  'home.vitals.critical': 'Valore critico',
 
   /* services */
   'home.services.title': 'Servizi',
-  'home.services.all': 'Tutti',
-  'home.services.online': (p: { up: number; monitored: number }) =>
-    `${p.up} su ${p.monitored} online`,
+  'home.services.all': 'Tutti i servizi',
+  'home.services.of': (p: { monitored: number }) => `su ${p.monitored} online`,
+  'home.services.lamps': 'Stato di ogni servizio',
   'home.services.noneMonitored': (p: { total: number }) =>
     p.total === 0
       ? 'Nessun servizio configurato'
@@ -55,8 +58,6 @@ export const home = defineMessages({
         : `${p.total} servizi, non monitorati`,
   'home.services.unmonitored': (p: { n: number }) =>
     `${p.n} ${p.n === 1 ? 'servizio non monitorato' : 'servizi non monitorati'}`,
-  'home.services.allUp': 'Tutto risponde',
-  'home.services.progress': 'Servizi online',
   'home.services.problems': 'Servizi da controllare',
 
   /* favorites */

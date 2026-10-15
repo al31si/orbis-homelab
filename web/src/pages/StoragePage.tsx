@@ -9,29 +9,24 @@ import { Notice } from '@/ui/Notice';
 import { Page, PageHeader } from '@/ui/Page';
 import { Skeleton } from '@/ui/Skeleton';
 import { UpdatedAt } from '@/ui/UpdatedAt';
-import { DiskList } from './storage/DiskList';
+import { HealthSection } from './storage/HealthSection';
 import {
-  memberColors,
   poolViews,
   problemDisks,
   type SmartView,
   smartView,
   standaloneVolumes,
-  storageSummary,
 } from './storage/derive';
-import { HealthSection } from './storage/HealthSection';
 import { PoolSection } from './storage/PoolSection';
-import { VolumesSection } from './storage/Volumes';
+import { baysOf, VolumesSection } from './storage/Volumes';
 import styles from './storage/storage.module.css';
 
 function StorageSkeleton() {
   const t = useT();
   return (
     <div className={styles.page} aria-busy="true" aria-label={t('storage.loading')}>
-      <Skeleton height={300} radius={20} />
-      <Skeleton height={88} radius={20} />
-      <Skeleton height={260} radius={20} />
-      <Skeleton height={260} radius={20} />
+      <Skeleton height={300} radius={10} />
+      <Skeleton height={260} radius={10} />
     </div>
   );
 }
@@ -54,15 +49,20 @@ function StorageSections({ storage, smart }: { storage: StorageInfo; smart: Smar
 
   const health = smart && <HealthSection {...smart} />;
   const pool = pools.length > 0 && <PoolSection views={pools} />;
-  // A disk that needs attention comes before everything else; otherwise the pools lead.
+  const bays = baysOf(pools, volumes, smart?.disks ?? []);
+  const main = (pool || bays.length > 0) && (
+    <div className={styles.main}>
+      {pool}
+      <VolumesSection bays={bays} />
+    </div>
+  );
+  // A disk that needs attention comes first on narrow screens; wide screens keep the columns.
   const attention = smart !== null && problemDisks(smart.disks).length > 0;
   return (
-    <>
-      {attention ? health : pool}
-      {attention ? pool : health}
-      {smart && <DiskList {...smart} colors={memberColors(pools)} />}
-      <VolumesSection volumes={volumes} afterPools={pools.length > 0} />
-    </>
+    <div className={styles.layout} data-solo={!(main && health) || undefined}>
+      {attention ? health : main}
+      {attention ? main : health}
+    </div>
   );
 }
 
@@ -115,7 +115,6 @@ export default function StoragePage() {
     <Page>
       <PageHeader
         title={t('storage.title')}
-        eyebrow={data && storageSummary(data, smart)}
         subtitle={<UpdatedAt fetchedAt={storage.fetchedAt} status={storage.status} />}
       />
       {body}

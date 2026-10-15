@@ -1,8 +1,8 @@
 import { t } from '@/i18n';
 import { setPrefs, usePrefs, type ThemePref } from '@/lib/prefs';
-import { Card } from '@/ui/Card';
 import { Section } from '@/ui/Section';
 import { Segmented } from '@/ui/Segmented';
+import { Row, Rows } from './rows';
 import { Switch } from './Switch';
 import styles from './more.module.css';
 
@@ -15,32 +15,35 @@ export function AppearanceSection() {
   ];
   return (
     <Section title={t('more.appearance.title')}>
-      <Card padding="none">
-        <div className={styles.block}>
-          <div className={styles.rowText}>
-            <p className={styles.rowTitle}>{t('more.appearance.theme')}</p>
-            <p className={styles.rowSub}>{t('more.appearance.themeHint')}</p>
-          </div>
-          <Segmented
-            options={themeOptions}
-            value={prefs.theme}
-            onChange={(theme) => setPrefs({ theme })}
-            ariaLabel={t('more.appearance.theme')}
-            fullWidth
-          />
-        </div>
-        <div className={styles.row}>
-          <div className={styles.rowText}>
-            <p className={styles.rowTitle}>{t('more.appearance.showNoUi')}</p>
-            <p className={styles.rowSub}>{t('more.appearance.showNoUiHint')}</p>
-          </div>
-          <Switch
-            label={t('more.appearance.showNoUi')}
-            checked={prefs.showServicesWithoutUi}
-            onChange={(showServicesWithoutUi) => setPrefs({ showServicesWithoutUi })}
-          />
-        </div>
-      </Card>
+      <Rows>
+        <Row
+          wideControl
+          title={t('more.appearance.theme')}
+          help={t('more.appearance.themeHint')}
+          trailing={
+            <div className={styles.theme}>
+              <Segmented
+                options={themeOptions}
+                value={prefs.theme}
+                onChange={(theme) => setPrefs({ theme })}
+                ariaLabel={t('more.appearance.theme')}
+                fullWidth
+              />
+            </div>
+          }
+        />
+        <Row
+          title={t('more.appearance.showNoUi')}
+          help={t('more.appearance.showNoUiHint')}
+          trailing={
+            <Switch
+              label={t('more.appearance.showNoUi')}
+              checked={prefs.showServicesWithoutUi}
+              onChange={(showServicesWithoutUi) => setPrefs({ showServicesWithoutUi })}
+            />
+          }
+        />
+      </Rows>
     </Section>
   );
 }

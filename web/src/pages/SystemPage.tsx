@@ -22,11 +22,9 @@ function ResourcesSkeleton() {
   const t = useT();
   return (
     <div className={styles.resources} aria-busy="true" aria-label={t('system.loading')}>
-      <Skeleton height={96} radius={20} className={styles.hostCell} />
-      <Skeleton height={520} radius={20} />
-      <Skeleton height={520} radius={20} />
-      <Skeleton height={300} radius={20} />
-      <Skeleton height={300} radius={20} />
+      <Skeleton height={420} radius={10} className={styles.areaCpu} />
+      <Skeleton height={360} radius={10} className={styles.areaMemory} />
+      <Skeleton height={240} radius={10} className={styles.areaTemperature} />
     </div>
   );
 }
@@ -42,38 +40,50 @@ export default function SystemPage() {
     <Page>
       <PageHeader
         title={t('system.title')}
-        eyebrow={data?.host.hostname}
         subtitle={<UpdatedAt fetchedAt={system.fetchedAt} status={system.status} />}
       />
 
       {hasContainers && (
-        <Segmented
-          className={styles.tabs}
-          options={[
-            { value: 'resources', label: t('system.tabs.resources') },
-            { value: 'docker', label: t('system.tabs.docker') },
-          ]}
-          value={tab}
-          onChange={setTab}
-          ariaLabel={t('system.tabs.label')}
-          fullWidth
-        />
+        <div className={styles.tabs}>
+          <Segmented
+            options={[
+              { value: 'resources', label: t('system.tabs.resources') },
+              { value: 'docker', label: t('system.tabs.docker') },
+            ]}
+            value={tab}
+            onChange={setTab}
+            ariaLabel={t('system.tabs.label')}
+            fullWidth
+          />
+        </div>
       )}
 
       <div className={styles.panel} data-active={!hasContainers || tab === 'resources'}>
         {data ? (
-          <div className={styles.resources}>
+          <>
             {system.status === 'stale' && system.error && (
-              <Notice tone="warn" title={t('system.stale')} className={styles.hostCell}>
+              <Notice tone="warn" title={t('system.stale')}>
                 {system.error}
               </Notice>
             )}
-            <HostOverview host={data.host} />
-            <CpuPanel system={data} />
-            <MemoryPanel system={data} />
-            <TemperaturePanel sensors={data.temperatures} />
-            <DiskIoPanel diskIo={data.diskIo} />
-          </div>
+            <div className={styles.resources}>
+              <div className={styles.areaCpu}>
+                <CpuPanel system={data} />
+              </div>
+              <div className={styles.areaMemory}>
+                <MemoryPanel system={data} />
+              </div>
+              <div className={styles.areaTemperature}>
+                <TemperaturePanel sensors={data.temperatures} />
+              </div>
+              <div className={styles.areaDisk}>
+                <DiskIoPanel diskIo={data.diskIo} />
+              </div>
+              <div className={styles.areaHost}>
+                <HostOverview host={data.host} />
+              </div>
+            </div>
+          </>
         ) : (
           <Unavailable
             snapshot={system}

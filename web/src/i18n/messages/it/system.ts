@@ -19,15 +19,16 @@ export const system = defineMessages({
   'system.section.containers': 'Container',
 
   // host
-  'system.host.title': 'Panoramica host',
-  'system.host.host': 'Host',
+  'system.host.title': 'Host',
+  'system.host.host': 'Nome',
   'system.host.uptime': 'Attivo da',
   'system.host.os': 'Sistema',
   'system.host.kernel': 'Kernel',
   'system.host.cores': 'Core',
 
   // shared by the charts
-  'system.stats': (p: { avg: string; peak: string }) => `media ${p.avg} · picco ${p.peak}`,
+  'system.stats.avg': (p: { value: string }) => `media ${p.value}`,
+  'system.stats.peak': (p: { value: string }) => `picco ${p.value}`,
   'system.chart.label': (p: { label: string }) => `Andamento ${p.label}`,
   'system.chart.summary': (p: {
     label: string;
@@ -41,7 +42,7 @@ export const system = defineMessages({
 
   // cpu
   'system.cpu.title': 'CPU',
-  'system.cpu.inUse': (p: { cores: number }) => `in uso · ${p.cores} core`,
+  'system.cpu.inUse': (p: { cores: number }) => `in uso su ${p.cores} core`,
   'system.cpu.user': 'Utente',
   'system.cpu.system': 'Sistema',
   'system.cpu.iowait': 'Attesa I/O',
@@ -52,7 +53,7 @@ export const system = defineMessages({
   'system.cpu.usageSeries': 'Utilizzo CPU',
   'system.cpu.loadSeries': 'Carico medio a 1 minuto',
   'system.cpu.loadTitle': 'Carico medio',
-  'system.cpu.loadScale': (p: { cores: number }) => `${p.cores} core = 100%`,
+  'system.cpu.loadScale': (p: { cores: number }) => `${p.cores} core = scala piena`,
   'system.cpu.window': (p: { minutes: number }) => `${p.minutes} min`,
   'system.cpu.loadAt': (p: { window: string }) => `Carico a ${p.window}`,
   'system.cpu.perCore': 'Per core',
@@ -67,23 +68,21 @@ export const system = defineMessages({
   'system.memory.free': 'Libera',
   'system.memory.freeText': (p: { value: string }) => `Libera ${p.value}`,
   'system.memory.ofTotal': (p: { used: string; total: string }) => `${p.used} di ${p.total}`,
-  'system.memory.available': 'Disponibile',
-  'system.memory.cached': 'Cache',
+  'system.memory.availableOf': (p: { value: string }) => `${p.value} disponibili`,
   'system.memory.series': 'Uso della memoria',
   'system.swap.title': 'Swap',
-  'system.swap.usage': (p: { used: string; total: string; percent: string }) =>
-    `${p.used} di ${p.total} · ${p.percent}`,
+  'system.swap.usage': (p: { used: string; total: string }) => `${p.used} di ${p.total}`,
   'system.swap.none': 'Non configurata',
   'system.swap.bar': 'Swap usata',
   'system.swap.lowMemory.title': 'RAM disponibile molto bassa',
   'system.swap.lowMemory.text': (p: { critical: number }) =>
-    `Resta meno del ${p.critical}% di RAM disponibile: il sistema potrebbe iniziare a terminare processi.`,
+    `Resta meno del ${p.critical}% di RAM: il sistema potrebbe terminare dei processi.`,
   'system.swap.pressure.title': 'Swap quasi piena e poca RAM',
   'system.swap.pressure.text': (p: { swap: number; low: number }) =>
-    `La swap è all’${p.swap}% o più e la RAM disponibile è sotto il ${p.low}%: il sistema sta usando attivamente il disco come memoria.`,
-  'system.swap.normal.title': 'Uso elevato, ma normale',
+    `La swap è all’${p.swap}% o più e la RAM disponibile è sotto il ${p.low}%: il disco sta facendo da memoria.`,
+  'system.swap.normal.title': 'Swap alta, ma normale',
   'system.swap.normal.text': (p: { critical: number; low: number; swap: number }) =>
-    `Linux sposta in swap le pagine poco usate anche con molta RAM libera, per tenere più cache. L’avviso scatta solo se la RAM disponibile scende sotto il ${p.critical}%, o sotto il ${p.low}% con la swap all’${p.swap}% o più.`,
+    `Linux sposta in swap le pagine poco usate anche con RAM libera. Ti avviso solo se la RAM disponibile scende sotto il ${p.critical}%, o sotto il ${p.low}% con la swap all’${p.swap}% o più.`,
 
   // temperature
   'system.temperature.title': 'Temperatura',
@@ -96,28 +95,32 @@ export const system = defineMessages({
   'system.temperature.noLimits': 'Senza limiti',
   'system.temperature.warnAt': (p: { value: string }) => `attenzione a ${p.value}`,
   'system.temperature.critAt': (p: { value: string }) => `critica a ${p.value}`,
-  'system.temperature.limits': (p: { parts: string }) =>
-    `I segni sulle barre indicano le soglie: ${p.parts}.`,
+  'system.temperature.limits': (p: { parts: string }) => `Soglie: ${p.parts}.`,
 
   // disk I/O
   'system.diskIo.title': 'I/O disco',
   'system.diskIo.empty': 'Nessun dato di I/O disponibile.',
   'system.diskIo.list': 'Velocità di lettura e scrittura per disco',
+  'system.diskIo.colDisk': 'Disco',
   'system.diskIo.read': 'Lettura',
   'system.diskIo.write': 'Scrittura',
 
   // docker
-  'system.docker.healthy': 'Sani',
-  'system.docker.unhealthy': 'Non sani',
-  'system.docker.starting': 'In avvio',
   'system.docker.runningOf': (p: { total: string }) => `su ${p.total}`,
   'system.docker.running': 'container in esecuzione',
   'system.docker.runningBar': 'Container in esecuzione',
+  'system.docker.summary': (p: { healthy: number; unhealthy: number; starting: number }) => {
+    const parts = [
+      p.healthy > 0 && `${p.healthy} ${p.healthy === 1 ? 'sano' : 'sani'}`,
+      p.unhealthy > 0 && `${p.unhealthy} non ${p.unhealthy === 1 ? 'sano' : 'sani'}`,
+      p.starting > 0 && `${p.starting} in avvio`,
+    ].filter(Boolean);
+    return parts.length > 0 ? `${parts.join(', ')}.` : 'Nessun controllo di salute attivo.';
+  },
   'system.docker.traffic': 'Traffico dei container',
   'system.docker.received': 'in ricezione',
   'system.docker.sent': 'in invio',
-  'system.docker.trafficNote':
-    'Somma del traffico di rete di tutti i container, non della scheda di rete dell’host.',
+  'system.docker.trafficNote': 'Somma dei container, non della scheda di rete dell’host.',
 
   // containers
   'system.state.healthy': 'Sano',
@@ -135,14 +138,13 @@ export const system = defineMessages({
   'system.containers.sortName': 'Nome',
   'system.containers.sortLabel': 'Ordina container per',
   'system.containers.search': 'Cerca container o servizio',
-  'system.containers.all': (p: { n: number }) => `Tutti · ${p.n}`,
-  'system.containers.problems': (p: { n: number }) => `Con problemi · ${p.n}`,
+  'system.containers.all': 'Tutti',
+  'system.containers.problems': 'Con problemi',
   'system.containers.none': 'Nessun container trovato.',
   'system.containers.allFine': 'Nessun container con problemi: tutto in ordine.',
   'system.containers.noMatch': 'Nessun container corrisponde alla ricerca.',
   'system.containers.list': 'Container',
   'system.containers.colContainer': 'Container',
-  'system.containers.colState': 'Stato',
   'system.containers.colCpu': 'CPU',
   'system.containers.colMemory': 'Memoria',
   'system.containers.colUptime': 'Attivo da',

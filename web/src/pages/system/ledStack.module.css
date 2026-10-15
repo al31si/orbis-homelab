@@ -1,0 +1,54 @@
+/* Same cell geometry as ui/ProgressBar: a row of squares cut out of a flat fill. */
+.track {
+  --gap: 2px;
+  height: 14px;
+  background: var(--lamp-off);
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - var(--gap)), transparent 0);
+  mask-image: linear-gradient(90deg, #000 calc(100% - var(--gap)), transparent 0);
+  -webkit-mask-size: calc(100% / var(--cells)) 100%;
+  mask-size: calc(100% / var(--cells)) 100%;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.legendRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.legendRow dt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--text-2);
+}
+
+.legendRow dd {
+  flex: none;
+  color: var(--text);
+  font-stretch: var(--stretch-gauge);
+  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+}
+
+.swatch[data-kind='off'] {
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+}

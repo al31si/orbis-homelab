@@ -4,14 +4,11 @@ import type { PushBlockReason } from '@/pwa/push';
 import type { PushController } from '@/pwa/usePush';
 import type { UiTone } from '@/lib/tone';
 import { PUSH_HELP_URL } from '@/lib/docs';
-import { AppLink } from '@/ui/AppLink';
 import { Button } from '@/ui/Button';
-import { Card } from '@/ui/Card';
-import type { IconName } from '@/ui/icons';
 import { Section } from '@/ui/Section';
 import { Skeleton } from '@/ui/Skeleton';
 import { useToast } from '@/ui/Toast';
-import { StatusIcon } from './StatusIcon';
+import { Row, Rows } from './rows';
 import styles from './more.module.css';
 
 const BLOCKED_TONE: Record<PushBlockReason, UiTone> = {
@@ -108,21 +105,19 @@ function Actions({ push }: { push: PushController }) {
 
   if (state.kind === 'inactive') {
     return (
-      <div className={styles.actions}>
-        <Button
-          variant="primary"
-          icon="bell"
-          loading={busy === 'enable'}
-          onClick={() => void enable()}
-        >
-          {t('more.notifications.enable')}
-        </Button>
-      </div>
+      <Button
+        variant="primary"
+        icon="bell"
+        loading={busy === 'enable'}
+        onClick={() => void enable()}
+      >
+        {t('more.notifications.enable')}
+      </Button>
     );
   }
   if (state.kind === 'active') {
     return (
-      <div className={styles.actions}>
+      <>
         <Button
           icon="bell"
           loading={busy === 'test'}
@@ -139,16 +134,14 @@ function Actions({ push }: { push: PushController }) {
         >
           {t('more.notifications.disable')}
         </Button>
-      </div>
+      </>
     );
   }
   if (state.kind === 'error') {
     return (
-      <div className={styles.actions}>
-        <Button icon="refresh" onClick={() => void push.reload()}>
-          {t('more.notifications.retry')}
-        </Button>
-      </div>
+      <Button icon="refresh" onClick={() => void push.reload()}>
+        {t('more.notifications.retry')}
+      </Button>
     );
   }
   return null;
@@ -158,9 +151,8 @@ export function NotificationsSection({ push }: { push: PushController }) {
   const { name } = useApp();
   const { state } = push;
 
-  let icon: IconName = 'bell';
   let tone: UiTone = 'neutral';
-  let title = t('more.notifications.heading');
+  let title = '';
   let text = '';
 
   switch (state.kind) {
@@ -170,7 +162,6 @@ export function NotificationsSection({ push }: { push: PushController }) {
       title = t('more.notifications.error.title');
       text = t('more.notifications.error.text', { name });
       tone = 'warn';
-      icon = 'alert';
       break;
     case 'blocked':
       ({ title, text } = describeBlocked(state.reason, name));
@@ -187,51 +178,34 @@ export function NotificationsSection({ push }: { push: PushController }) {
       break;
   }
 
-  const devices =
-    push.devices !== null && (state.kind === 'active' || state.kind === 'inactive')
-      ? t('more.notifications.devices', { n: push.devices })
-      : null;
+  const showDevices =
+    push.devices !== null && (state.kind === 'active' || state.kind === 'inactive');
+  const hasActions = state.kind === 'inactive' || state.kind === 'active' || state.kind === 'error';
+  const hasHelp = state.kind === 'inactive' || state.kind === 'active';
 
   return (
     <Section title={t('more.notifications.title')}>
-      <Card padding="none">
+      <Rows label={t('more.notifications.title')}>
         {state.kind === 'checking' ? (
-          <div
-            className={styles.row}
-            aria-busy="true"
-            aria-label={t('more.notifications.checking')}
-          >
-            <Skeleton width={36} height={36} radius={999} />
-            <div className={styles.rowText}>
-              <Skeleton width="55%" height={16} />
-              <Skeleton width="80%" height={13} />
-            </div>
-          </div>
+          <Row
+            title={<Skeleton width="55%" height={16} />}
+            help={<Skeleton width="80%" height={13} />}
+            lamp={{ tone: 'neutral', label: t('more.notifications.checking') }}
+          />
         ) : (
-          <div className={styles.row}>
-            <StatusIcon icon={icon} tone={tone} />
-            <div className={styles.rowText}>
-              <p className={styles.rowTitle}>{title}</p>
-              <p className={styles.rowSub}>{text}</p>
-            </div>
-          </div>
+          <Row lamp={{ tone }} title={title} help={text}>
+            {hasActions && <Actions push={push} />}
+          </Row>
         )}
-        {(state.kind === 'inactive' || state.kind === 'active' || state.kind === 'error') && (
-          <div className={styles.extra}>
-            <Actions push={push} />
-          </div>
+        {showDevices && (
+          <Row
+            title={t('more.notifications.devicesLabel')}
+            trailing={<span className={styles.figure}>{push.devices}</span>}
+          />
         )}
-      </Card>
-      <p className={styles.note}>
-        {t('more.notifications.note')} {devices && <span>{devices}.</span>}
-      </p>
-      {(state.kind === 'inactive' || state.kind === 'active') && (
-        <p className={styles.note}>
-          <AppLink href={PUSH_HELP_URL} className={styles.noteLink}>
-            {t('more.notifications.help')}
-          </AppLink>
-        </p>
-      )}
+        {hasHelp && <Row href={PUSH_HELP_URL} title={t('more.notifications.help')} />}
+      </Rows>
+      <p className={styles.note}>{t('more.notifications.note')}</p>
     </Section>
   );
 }

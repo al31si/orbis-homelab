@@ -15,13 +15,13 @@ export function HostOverview({ host }: { host: SystemInfo['host'] }) {
     { id: 'cores', label: t('system.host.cores'), value: formatNumber(host.cores) },
   ];
   return (
-    <Section title={t('system.host.title')} className={styles.hostCell}>
-      <Card>
+    <Section title={t('system.host.title')}>
+      <Card padding="none">
         <dl className={styles.facts}>
           {facts.map((fact) => (
             <div key={fact.id} className={styles.fact}>
               <dt>{fact.label}</dt>
-              <dd>{fact.value}</dd>
+              <dd title={fact.value}>{fact.value}</dd>
             </div>
           ))}
         </dl>

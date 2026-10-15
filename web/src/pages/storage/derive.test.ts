@@ -5,24 +5,19 @@ import {
   activeCounters,
   counterTone,
   diskCounterTone,
-  diskProblemLine,
   diskTemperatureTone,
   explainProblems,
   isSmartReportStale,
-  memberColors,
   memberShares,
   poolViews,
   powerOnSpan,
   problemDisks,
   smartView,
   standaloneVolumes,
-  storageSummary,
   usageTone,
   usageVerdict,
-  volumeSubtitle,
   volumeTitle,
 } from './derive';
-import { diskColor } from './diskColors';
 
 const disk = (over: Partial<DiskInfo>): DiskInfo => ({
   label: 'media-1',
@@ -172,21 +167,6 @@ describe('problemDisks', () => {
   });
 });
 
-describe('diskProblemLine', () => {
-  it('uses the message and the temperature, else the SMART verdict', () => {
-    expect(diskProblemLine(disk({ message: 'pending sectors', temperatureC: 41.6 }))).toBe(
-      'pending sectors · 42\u00a0°C',
-    );
-    expect(diskProblemLine(disk({ message: ' ', temperatureC: null, smart: 'FAILED' }))).toBe(
-      'Stato SMART: Fallito',
-    );
-    setLanguage('en');
-    expect(diskProblemLine(disk({ message: '', temperatureC: null, smart: 'PASSED' }))).toBe(
-      'SMART status: Passed',
-    );
-  });
-});
-
 describe('explainProblems', () => {
   it('explains only the defects that are present', () => {
     const { meanings, advice } = explainProblems([disk({ pending: 2, smart: 'PASSED' })]);
@@ -233,10 +213,7 @@ describe('pool and volume grouping', () => {
         volumes: [root, first, second],
       }),
     );
-    expect(view?.members.map((member) => member.volume.mount)).toEqual([
-      '/mnt/disk2',
-      '/mnt/disk1',
-    ]);
+    expect(view?.members.map((member) => member.mount)).toEqual(['/mnt/disk2', '/mnt/disk1']);
   });
 
   it('drops members without a volume and repeated mounts', () => {
@@ -291,47 +268,12 @@ describe('pool and volume grouping', () => {
     );
     expect(memberShares(view?.members ?? [])[0]?.percent).toBe(0);
   });
-
-  it('gives every member its own tint, keyed by mount, from its index in the pool', () => {
-    const views = poolViews(
-      storage({
-        pools: [pool({}), pool({ id: 'other', mount: '/srv/other', members: ['/mnt/backup'] })],
-        volumes: [first, second, unrelated],
-      }),
-    );
-    const colors = memberColors(views);
-    expect(colors.get('/mnt/disk1')).toBe('var(--accent)');
-    expect(colors.get('/mnt/disk2')).not.toBe(colors.get('/mnt/disk1'));
-    expect(colors.get('/mnt/backup')).toBe('var(--accent)');
-    expect(colors.get('/')).toBeUndefined();
-  });
 });
 
 describe('volume text', () => {
-  it('uses the label as title, else the mount, and never repeats the mount', () => {
-    const labelled = volume({ label: 'Photos' });
-    expect(volumeTitle(labelled)).toBe('Photos');
-    expect(volumeSubtitle(labelled)).toBe('/mnt/disk1 · /dev/sdb1 · ext4');
-    const plain = volume({});
-    expect(volumeTitle(plain)).toBe('/mnt/disk1');
-    expect(volumeSubtitle(plain)).toBe('/dev/sdb1 · ext4');
-  });
-
-  it('skips empty parts', () => {
-    expect(volumeSubtitle(volume({ device: '', type: 'zfs' }))).toBe('zfs');
-  });
-});
-
-describe('diskColor', () => {
-  it('starts with the accent and fades evenly towards the last item', () => {
-    expect(diskColor(0, 4)).toBe('var(--accent)');
-    expect(diskColor(3, 4)).toBe('color-mix(in srgb, var(--accent) 28%, transparent)');
-    expect(diskColor(1, 4)).not.toBe(diskColor(2, 4));
-  });
-
-  it('copes with a single item and with an index past the end', () => {
-    expect(diskColor(0, 1)).toBe('var(--accent)');
-    expect(diskColor(9, 3)).toBe(diskColor(2, 3));
+  it('uses the label as title, else the mount', () => {
+    expect(volumeTitle(volume({ label: 'Photos' }))).toBe('Photos');
+    expect(volumeTitle(volume({}))).toBe('/mnt/disk1');
   });
 });
 
@@ -344,26 +286,5 @@ describe('smartView', () => {
     expect(smartView({ ...withDisks, smart: null }, true)).toBeNull();
     expect(smartView({ ...withDisks, disks: [] }, true)).toBeNull();
     expect(smartView(storage({}), true)).toBeNull();
-  });
-});
-
-describe('storageSummary', () => {
-  it('counts only what the instance has', () => {
-    const full = storage({
-      pools: [pool({})],
-      volumes: [volume({}), volume({ mount: '/' })],
-      disks: [disk({})],
-      smart: smartSummary,
-    });
-    expect(storageSummary(full, smartView(full, true))).toBe('1 pool · 2 volumi · 1 disco');
-    setLanguage('en');
-    expect(storageSummary(full, smartView(full, true))).toBe('1 pool · 2 volumes · 1 disk');
-  });
-
-  it('is just the volumes on a volumes-only installation', () => {
-    const only = storage({
-      volumes: [volume({}), volume({ mount: '/' }), volume({ mount: '/b' })],
-    });
-    expect(storageSummary(only, smartView(only, true))).toBe('3 volumi');
   });
 });
