@@ -93,8 +93,6 @@
   color: var(--text-2);
   font-size: var(--text-sm);
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .group {

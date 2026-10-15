@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { cx } from '@/lib/cx';
 import styles from './more.module.css';
 
@@ -8,7 +9,7 @@ export interface SwitchProps {
   label: string;
 }
 
-/** iOS style on/off switch (`role="switch"`), 44px touch target. */
+/** On/off setting (`role="switch"`): a square slider with its state written next to it. */
 export function Switch({ checked, onChange, label }: SwitchProps) {
   return (
     <button
@@ -19,7 +20,12 @@ export function Switch({ checked, onChange, label }: SwitchProps) {
       className={cx(styles.switch, checked && styles.switchOn)}
       onClick={() => onChange(!checked)}
     >
-      <span className={styles.switchThumb} />
+      <span className={styles.switchState}>
+        {checked ? t('more.switch.on') : t('more.switch.off')}
+      </span>
+      <span className={styles.switchTrack} aria-hidden>
+        <span className={styles.switchThumb} />
+      </span>
     </button>
   );
 }

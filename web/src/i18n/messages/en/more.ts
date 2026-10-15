@@ -14,6 +14,9 @@ export const more: Localized<typeof ref> = {
   'more.appearance.showNoUi': 'Show services without a UI',
   'more.appearance.showNoUiHint': 'Also list services that have no web page.',
 
+  'more.switch.on': 'On',
+  'more.switch.off': 'Off',
+
   'more.install.title': 'Installation',
   'more.install.installed.title': 'App installed',
   'more.install.installed.text': (p) => `You’re using ${p.name} as an app on this device.`,
@@ -25,6 +28,9 @@ export const more: Localized<typeof ref> = {
   'more.install.prompt.text':
     'Your browser can install it as an app, with its own window and icon.',
   'more.install.prompt.button': 'Install',
+
+  'more.install.lamp.installed': 'Installed',
+  'more.install.lamp.pending': 'Not installed yet',
 
   'more.install.kind.chromium-desktop.title': (p) => `Install ${p.name} as an app`,
   'more.install.kind.chromium-android.title': 'Add to Home screen',
@@ -98,6 +104,9 @@ export const more: Localized<typeof ref> = {
     'On iPhone and iPad notifications only work with the app added to the Home Screen.',
 
   'more.install.here.title': 'On this address',
+  'more.install.cap.lamp.ok': 'Works',
+  'more.install.cap.lamp.neutral': 'Not active',
+  'more.install.cap.lamp.warn': 'Limited',
   'more.install.cap.installs.title': 'Installs as',
   'more.install.cap.installs.app':
     'A real app: its own window or icon, with offline use and notifications.',
@@ -153,6 +162,7 @@ export const more: Localized<typeof ref> = {
   'more.install.https.opt.localhost.desc':
     'Open it as localhost, for example through an SSH tunnel.',
   'more.install.https.guide': 'All options and the guide',
+  'more.install.https.fit': 'Best fit',
   'more.install.https.secureUrl.text': (p) =>
     `Open ${p.name} from this address to install it as a full app.`,
   'more.install.https.recommended': 'Recommended: install from the secure address',
@@ -164,7 +174,6 @@ export const more: Localized<typeof ref> = {
   'more.secure.copyFailed': 'Couldn’t copy: select the address by hand',
 
   'more.notifications.title': 'Notifications',
-  'more.notifications.heading': 'Push notifications',
   'more.notifications.checking': 'Checking notifications',
   'more.notifications.error.title': 'Status unavailable',
   'more.notifications.error.text': (p) => `Can’t read the notification status from ${p.name}.`,
@@ -203,12 +212,7 @@ export const more: Localized<typeof ref> = {
   'more.notifications.sentNone': 'The notification reached no device',
   'more.notifications.note':
     'You only get notified for critical alerts, such as a failing disk or an essential service going offline.',
-  'more.notifications.devices': (p) =>
-    p.n === 0
-      ? 'No devices registered'
-      : p.n === 1
-        ? '1 device registered'
-        : `${p.n} devices registered`,
+  'more.notifications.devicesLabel': 'Registered devices',
 
   'more.pushError.noServiceWorker':
     'The service worker isn’t active: open the app from the HTTPS address and try again.',

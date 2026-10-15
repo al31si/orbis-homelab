@@ -27,9 +27,10 @@ export const diagnostics = defineMessages({
   'diagnostics.sources.ok': 'In regola',
   'diagnostics.sources.late': 'In ritardo',
   'diagnostics.sources.failing': 'In errore',
-  'diagnostics.sources.updated': (p: { when: string; every: string }) =>
-    `Aggiornata ${p.when} · ogni ${p.every}`,
-  'diagnostics.sources.never': (p: { every: string }) => `Mai aggiornata · ogni ${p.every}`,
+  'diagnostics.sources.of': (p: { total: number }) => `su ${p.total} fonti in regola`,
+  'diagnostics.sources.updated': (p: { when: string }) => `Aggiornata ${p.when}`,
+  'diagnostics.sources.never': 'Mai aggiornata',
+  'diagnostics.sources.every': (p: { every: string }) => `ogni ${p.every}`,
 
   'diagnostics.catalog.title': 'Catalogo',
   'diagnostics.catalog.services': 'Servizi nel catalogo',

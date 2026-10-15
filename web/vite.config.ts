@@ -11,8 +11,9 @@ import { defineConfig } from 'vitest/config';
  * Development proxy to the BFF. To exercise an identity-proxy access mode locally, export
  * DEV_IDENTITY_HEADER (e.g. `X-Forwarded-User`) and DEV_IDENTITY (the value to send); the
  * instance's `trustedProxies` must include 127.0.0.1. Without them no identity header is sent.
+ * `DEV_API_TARGET` points the proxy at another backend (default: the trusted listener on :3101).
  */
-const API_TARGET = 'http://127.0.0.1:3101';
+const API_TARGET = process.env.DEV_API_TARGET ?? 'http://127.0.0.1:3101';
 const identityHeader = process.env.DEV_IDENTITY_HEADER;
 const identity = process.env.DEV_IDENTITY;
 const devHeaders: Record<string, string> =
@@ -131,6 +132,12 @@ export default defineConfig({
   },
   server: { host: '127.0.0.1', port: 5173, strictPort: true, proxy: apiProxy },
   preview: { host: '127.0.0.1', port: 4173, strictPort: true, proxy: apiProxy },
-  build: { target: 'es2022', sourcemap: false },
+  build: {
+    target: 'es2022',
+    sourcemap: false,
+    // Small files are normally inlined as base64 into the JavaScript. The brand logos are only
+    // looked up when a service shows one, so they stay separate files (still precached offline).
+    assetsInlineLimit: (file) => (file.includes('/ui/brand/logos/') ? false : undefined),
+  },
   test: { environment: 'node', include: ['src/**/*.test.ts'] },
 });

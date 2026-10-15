@@ -142,8 +142,8 @@ describe('renderManifest', () => {
       display: 'standalone',
       display_override: ['standalone', 'minimal-ui'],
       orientation: 'any',
-      theme_color: '#070e1b',
-      background_color: '#070e1b',
+      theme_color: '#0c1110',
+      background_color: '#0c1110',
     });
     expect(m.icons.map((i) => `${i.sizes}:${i.purpose}`)).toEqual([
       '192x192:any',

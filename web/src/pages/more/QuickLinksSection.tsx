@@ -1,11 +1,9 @@
 import { useApp } from '@/boot';
 import { t } from '@/i18n';
 import { resolveServiceUrl } from '@/lib/links';
-import { Icon } from '@/ui/icons';
-import { List, ListRow } from '@/ui/List';
 import { Section } from '@/ui/Section';
 import { ServiceIcon } from '@/ui/ServiceIcon';
-import styles from './more.module.css';
+import { Row, Rows } from './rows';
 
 /** Instance links from `config.yaml` (`links:`). The section disappears when there are none. */
 export function QuickLinksSection() {
@@ -13,18 +11,19 @@ export function QuickLinksSection() {
   if (links.length === 0) return null;
   return (
     <Section title={t('more.links.title')}>
-      <List aria-label={t('more.links.title')}>
+      <Rows label={t('more.links.title')}>
         {links.map((link) => (
-          <ListRow
+          <Row
             key={link.id}
             href={resolveServiceUrl(link.url) ?? undefined}
-            leading={<ServiceIcon name={link.icon} iconUrl={link.iconUrl} size={36} />}
+            leading={
+              <ServiceIcon name={link.icon} iconUrl={link.iconUrl} label={link.title} size={36} />
+            }
             title={link.title}
-            subtitle={link.description || undefined}
-            trailing={<Icon name="external-link" size={18} className={styles.external} />}
+            help={link.description || undefined}
           />
         ))}
-      </List>
+      </Rows>
     </Section>
   );
 }

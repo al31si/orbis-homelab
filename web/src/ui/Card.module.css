@@ -26,8 +26,8 @@
 }
 
 .toned {
-  background: color-mix(in srgb, var(--tone) 9%, var(--surface-1));
+  background: var(--surface-1);
   box-shadow:
-    var(--shadow-1),
-    0 0 0 1px color-mix(in srgb, var(--tone) 28%, transparent);
+    inset 3px 0 0 var(--tone),
+    0 0 0 1px color-mix(in srgb, var(--tone) 30%, var(--hairline));
 }

@@ -9,6 +9,9 @@ export const HTTPS_GUIDE_URL = `${DOCS}/https.md`;
 /** Troubleshooting entry for notifications that cannot be turned on or do not arrive. */
 export const PUSH_HELP_URL = `${DOCS}/troubleshooting.md#the-browser-push-service-is-unreachable`;
 
+/** Where the credentials of integrations and sources are explained. */
+export const SECRETS_HELP_URL = `${DOCS}/configuration.md#secrets`;
+
 /** The section of the guide for each way to a secure address (anchors of `docs/https.md`). */
 export const HTTPS_OPTION_URL: Record<HttpsOption, string> = {
   tailscale: `${HTTPS_GUIDE_URL}#option-1-tailscale-serve`,

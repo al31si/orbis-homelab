@@ -21,10 +21,10 @@ export function SecureAddress({ url }: { url: string }) {
     <div className={styles.address}>
       <code className={styles.addressText}>{url}</code>
       <div className={styles.actions}>
-        <Button variant="primary" size="sm" icon="external-link" href={url}>
+        <Button variant="primary" icon="external-link" href={url}>
           {t('more.secure.open')}
         </Button>
-        <Button variant="secondary" size="sm" icon="copy" onClick={() => void copy()}>
+        <Button variant="secondary" icon="copy" onClick={() => void copy()}>
           {t('more.secure.copy')}
         </Button>
       </div>

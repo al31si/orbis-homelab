@@ -1,105 +1,21 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.mono {
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-}
-
-/* settings rows (same metrics as List rows) */
-.row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: 52px;
-  padding: var(--space-3) var(--space-4);
-}
-
-.row + .row,
-.block + .row,
-.row + .extra,
-.block + .extra {
-  border-top: 1px solid var(--hairline);
-}
-
-.block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4) var(--space-4);
-}
-
-.rowText {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.rowTitle {
-  font-size: var(--text-md);
-  font-weight: 500;
-  line-height: var(--leading-snug);
-}
-
-.rowSub {
+.note {
   color: var(--text-2);
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
 }
 
-.statusIcon {
-  flex: none;
-  align-self: flex-start;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--tone) 14%, transparent);
-  color: var(--tone);
-}
-
-.statusIcon[data-tone='neutral'] {
-  background: var(--surface-2);
-  color: var(--text-2);
-}
-
-.extra {
-  padding: var(--space-3) var(--space-4) var(--space-4);
-}
-
-.extraStack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4) var(--space-4);
-  border-top: 1px solid var(--hairline);
-}
-
-.routes {
-  border-top: 1px solid var(--hairline);
-}
-
-.routes li:first-child::before {
-  display: none;
-}
-
-.footer {
-  display: flex;
-  padding: var(--space-2) var(--space-3) var(--space-3);
-  border-top: 1px solid var(--hairline);
+.note code,
+.plateSub code,
+.steps code {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
 }
 
 .actions {
@@ -108,32 +24,189 @@
   gap: var(--space-2);
 }
 
-.note {
-  padding: 0 var(--space-1);
+/* a number of the settings (devices registered): condensed numerals, no meter, it has no ceiling */
+.figure {
+  color: var(--text);
+  font-size: var(--text-xl);
+  font-stretch: var(--stretch-gauge);
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* theme picker: full width on compact screens, a fixed width beside its label from 600px */
+.theme {
+  width: 100%;
+}
+
+.theme [role='radio'] {
+  min-height: var(--tap-min);
+}
+
+@media (min-width: 600px) {
+  .theme {
+    width: 19rem;
+  }
+}
+
+/* on/off setting: a square slider with its state written beside it */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+}
+
+.switchState {
+  min-width: 4.75rem;
   color: var(--text-2);
   font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: right;
+}
+
+.switchOn .switchState {
+  color: var(--text);
+}
+
+.switchTrack {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 22px;
+  border-radius: var(--radius-xs);
+  background: var(--recess);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+}
+
+.switchOn .switchTrack {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.switchThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--text-3);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.switchOn .switchThumb {
+  background: var(--accent);
+  transform: translateX(18px);
+}
+
+/* installation plate */
+.plate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.plateHead {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.plateHead .plateLamp {
+  --dot-size: 10px;
+  margin-top: 6px;
+}
+
+.plateText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.plateTitle {
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+}
+
+.plateSub {
+  color: var(--text-2);
+  font-size: var(--text-base);
   line-height: var(--leading-normal);
 }
 
-.note code,
-.rowSub code {
+.blocks {
+  display: flex;
+  flex-direction: column;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.blocks > .block:last-child {
+  padding-bottom: 0;
+}
+
+.blockTitle {
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+}
+
+/* the steps are a real sequence: the numbers stay */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  counter-reset: step;
+  list-style: none;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  counter-increment: step;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+.steps li::before {
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-xs);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-stretch: var(--stretch-gauge);
+  font-weight: 600;
+}
+
+.steps li > span {
+  padding-top: 1px;
+}
+
+.steps strong {
+  font-weight: 600;
+}
+
+.inlineIcon {
+  display: inline-block;
+  vertical-align: -3px;
   color: var(--text);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
 }
 
-.noteLink {
-  color: var(--accent);
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.external {
-  color: var(--text-3);
-}
-
-/* address */
+/* secure address */
 .address {
   display: flex;
   flex-direction: column;
@@ -141,76 +214,25 @@
 }
 
 .addressText {
-  padding: var(--space-3);
+  padding: 10px var(--space-3);
   border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  background: var(--recess);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   overflow-wrap: anywhere;
   user-select: all;
 }
 
-/* ios steps */
-.steps {
+/* why a secure address */
+.lead {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding-left: var(--space-6);
-  color: var(--text-2);
+  gap: var(--space-1);
+}
+
+.leadTitle {
   font-size: var(--text-base);
-  list-style: decimal;
-}
-
-.steps li::marker {
-  color: var(--text-3);
   font-weight: 600;
-}
-
-.steps strong {
-  color: var(--text);
-  font-weight: 600;
-}
-
-.inlineIcon {
-  display: inline-block;
-  vertical-align: -3px;
-  color: var(--accent);
-}
-
-/* switch */
-.switch {
-  position: relative;
-  flex: none;
-  width: 51px;
-  height: 31px;
-  border-radius: var(--radius-full);
-  background: var(--surface-3);
-  transition: background var(--dur-base) var(--ease-out);
-}
-
-/* keeps the touch target at 44px without growing the visual switch */
-.switch::after {
-  content: '';
-  position: absolute;
-  inset: -7px -4px;
-}
-
-.switchOn {
-  background: var(--accent);
-}
-
-.switchThumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 27px;
-  height: 27px;
-  border-radius: var(--radius-full);
-  background: #fff;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 28%);
-  transition: transform var(--dur-base) var(--ease-out);
-}
-
-.switchOn .switchThumb {
-  transform: translateX(20px);
+  line-height: var(--leading-snug);
 }

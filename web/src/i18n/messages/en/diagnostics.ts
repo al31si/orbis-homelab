@@ -23,8 +23,10 @@ export const diagnostics: Localized<typeof ref> = {
   'diagnostics.sources.ok': 'Healthy',
   'diagnostics.sources.late': 'Late',
   'diagnostics.sources.failing': 'Failing',
-  'diagnostics.sources.updated': (p) => `Updated ${p.when} · every ${p.every}`,
-  'diagnostics.sources.never': (p) => `Never updated · every ${p.every}`,
+  'diagnostics.sources.of': (p) => `of ${p.total} sources healthy`,
+  'diagnostics.sources.updated': (p) => `Updated ${p.when}`,
+  'diagnostics.sources.never': 'Never updated',
+  'diagnostics.sources.every': (p) => `every ${p.every}`,
 
   'diagnostics.catalog.title': 'Catalog',
   'diagnostics.catalog.services': 'Services in the catalog',

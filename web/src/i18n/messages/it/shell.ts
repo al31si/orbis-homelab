@@ -26,7 +26,7 @@ export const shell = defineMessages({
 
   'shell.connection.offline': (p: { name: string }) => `${p.name} non raggiungibile`,
   'shell.connection.offlineSince': (p: { name: string; time: string }) =>
-    `${p.name} non raggiungibile · dati dell’ultimo aggiornamento alle ${p.time}`,
+    `${p.name} non raggiungibile, dati dell’ultimo aggiornamento alle ${p.time}`,
 
   'shell.update.available': 'Aggiornamento disponibile',
   'shell.update.apply': 'Aggiorna',

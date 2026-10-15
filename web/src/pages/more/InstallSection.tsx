@@ -7,7 +7,6 @@ import {
   deriveCapabilities,
   deriveInstallGuide,
   suggestHttpsOptions,
-  type HttpsOption,
   type Capability,
   type InstallGuide,
   type InstallKind,
@@ -15,38 +14,18 @@ import {
 import type { PushState } from '@/pwa/push';
 import { useClientInfo } from '@/pwa/useClientInfo';
 import { useInstall } from '@/pwa/useInstall';
+import { Badge, StatusDot } from '@/ui/Badge';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
-import { Icon, type IconName } from '@/ui/icons';
-import { List, ListRow } from '@/ui/List';
+import { Icon } from '@/ui/icons';
 import { Section } from '@/ui/Section';
 import { RichText } from './RichText';
+import { Row, Rows } from './rows';
 import { SecureAddress } from './SecureAddress';
-import { StatusIcon } from './StatusIcon';
 import styles from './more.module.css';
 
 /** How many ways to a secure address the page lists; the guide has the rest. */
 const HTTPS_OPTIONS_SHOWN = 3;
-
-const KIND_ICON: Record<InstallKind, IconName> = {
-  installed: 'check-circle',
-  'installed-elsewhere': 'check-circle',
-  prompt: 'download',
-  'chromium-desktop': 'monitor',
-  'chromium-android': 'download',
-  ios: 'share',
-  'mac-safari': 'monitor',
-  'firefox-desktop': 'info',
-  'firefox-android': 'download',
-  'in-app-browser': 'info',
-  generic: 'info',
-};
-
-const CAPABILITY_ICON: Record<Capability['id'], IconName> = {
-  'installs-as': 'download',
-  offline: 'wifi-off',
-  notifications: 'bell',
-};
 
 type GuidedKind = Exclude<InstallKind, 'installed' | 'installed-elsewhere' | 'prompt'>;
 
@@ -175,25 +154,14 @@ function CapabilityRow({ capability }: { capability: Capability }) {
     }
   })();
   return (
-    <div className={styles.row}>
-      <StatusIcon icon={CAPABILITY_ICON[capability.id]} tone={capability.tone} />
-      <div className={styles.rowText}>
-        <p className={styles.rowTitle}>{title}</p>
-        <p className={styles.rowSub}>
-          <RichText text={text} />
-        </p>
-      </div>
-    </div>
+    <Row
+      split
+      lamp={{ tone: capability.tone, label: t(`more.install.cap.lamp.${capability.tone}`) }}
+      title={title}
+      help={<RichText text={text} />}
+    />
   );
 }
-
-const HTTPS_OPTION_ICON: Record<HttpsOption, IconName> = {
-  tailscale: 'network',
-  proxy: 'server',
-  caddy: 'cloud',
-  'local-ca': 'shield',
-  localhost: 'monitor',
-};
 
 /**
  * Over plain HTTP: why a secure address is worth it and the routes to one, the most fitting first
@@ -203,34 +171,60 @@ function HttpsHelp() {
   const options = suggestHttpsOptions(window.location.hostname).slice(0, HTTPS_OPTIONS_SHOWN);
   return (
     <Section title={t('more.install.https.title')}>
-      <Card padding="none">
-        <div className={styles.row}>
-          <StatusIcon icon="lock" tone="info" />
-          <div className={styles.rowText}>
-            <p className={styles.rowTitle}>{t('more.install.https.heading')}</p>
-            <p className={styles.rowSub}>{t('more.install.https.text')}</p>
-          </div>
-        </div>
-        <List variant="plain" className={styles.routes} aria-label={t('more.install.https.title')}>
-          {options.map((option) => (
-            <ListRow
-              key={option}
-              multiline
-              href={HTTPS_OPTION_URL[option]}
-              leading={<StatusIcon icon={HTTPS_OPTION_ICON[option]} />}
-              title={t(`more.install.https.opt.${option}.title`)}
-              subtitle={t(`more.install.https.opt.${option}.desc`)}
-              trailing={<Icon name="external-link" size={18} className={styles.external} />}
-            />
-          ))}
-        </List>
-        <div className={styles.footer}>
-          <Button variant="ghost" size="sm" icon="external-link" href={HTTPS_GUIDE_URL}>
-            {t('more.install.https.guide')}
-          </Button>
-        </div>
-      </Card>
+      <div className={styles.lead}>
+        <p className={styles.leadTitle}>{t('more.install.https.heading')}</p>
+        <p className={styles.note}>{t('more.install.https.text')}</p>
+      </div>
+      <Rows ruled label={t('more.install.https.title')}>
+        {options.map((option, index) => (
+          <Row
+            key={option}
+            split
+            href={HTTPS_OPTION_URL[option]}
+            title={t(`more.install.https.opt.${option}.title`)}
+            help={t(`more.install.https.opt.${option}.desc`)}
+            trailing={index === 0 ? <Badge>{t('more.install.https.fit')}</Badge> : undefined}
+          />
+        ))}
+      </Rows>
+      <div className={styles.actions}>
+        <Button variant="primary" icon="external-link" href={HTTPS_GUIDE_URL}>
+          {t('more.install.https.guide')}
+        </Button>
+      </div>
     </Section>
+  );
+}
+
+/** The one object of the page: is the app installed, and if not, what to do next. */
+function Plate({
+  installed,
+  title,
+  text,
+  children,
+}: {
+  installed: boolean;
+  title: string;
+  text: string;
+  children?: ReactNode;
+}) {
+  return (
+    <Card className={styles.plate}>
+      <div className={styles.plateHead}>
+        <StatusDot
+          tone={installed ? 'ok' : 'neutral'}
+          label={installed ? t('more.install.lamp.installed') : t('more.install.lamp.pending')}
+          className={styles.plateLamp}
+        />
+        <div className={styles.plateText}>
+          <h3 className={styles.plateTitle}>{title}</h3>
+          <p className={styles.plateSub}>
+            <RichText text={text} />
+          </p>
+        </div>
+      </div>
+      {children}
+    </Card>
   );
 }
 
@@ -268,17 +262,17 @@ export function InstallSection({ push }: { push: PushState | null }) {
 
   let title: string;
   let text: string;
-  let tone: 'ok' | 'neutral' = 'neutral';
-  let extra: ReactNode = null;
+  let installed = false;
+  let body: ReactNode = null;
 
   if (guide.kind === 'installed') {
     title = t('more.install.installed.title');
     text = t('more.install.installed.text', { name });
-    tone = 'ok';
+    installed = true;
   } else if (guide.kind === 'prompt') {
     title = t('more.install.prompt.title', { name });
     text = t('more.install.prompt.text');
-    extra = (
+    body = (
       <div className={styles.actions}>
         <Button variant="primary" icon="download" onClick={() => void install.promptInstall()}>
           {t('more.install.prompt.button')}
@@ -292,36 +286,43 @@ export function InstallSection({ push }: { push: PushState | null }) {
     if (installedElsewhere) {
       title = t('more.install.elsewhere.title');
       text = t('more.install.elsewhere.text', { name });
-      tone = 'ok';
-      extra = (
+      installed = true;
+      body = (
         <div className={styles.actions}>
-          <Button variant="ghost" onClick={() => setShowSteps(true)}>
-            {t('more.install.elsewhere.show')}
-          </Button>
+          <Button onClick={() => setShowSteps(true)}>{t('more.install.elsewhere.show')}</Button>
         </div>
       );
     } else {
       const guided = guidedSteps(shown, kind as GuidedKind, name);
       title = guidedTitle(kind as GuidedKind, name);
       text = guidedText(shown, kind as GuidedKind, name);
-      extra = (
+      const hasBlocks = secureUrl || guided.steps.length > 0;
+      body = (
         <>
-          {secureUrl && (
-            <>
-              <p className={styles.rowTitle}>{t('more.install.https.recommended')}</p>
-              <p className={styles.note}>{t('more.install.https.secureUrl.text', { name })}</p>
-              <SecureAddress url={secureUrl} />
-              {guided.steps.length > 0 && (
-                <p className={styles.rowTitle}>{t('more.install.https.orHere')}</p>
+          {hasBlocks && (
+            <div className={styles.blocks}>
+              {secureUrl && (
+                <div className={styles.block}>
+                  <p className={styles.blockTitle}>{t('more.install.https.recommended')}</p>
+                  <p className={styles.note}>{t('more.install.https.secureUrl.text', { name })}</p>
+                  <SecureAddress url={secureUrl} />
+                </div>
               )}
-            </>
-          )}
-          {guided.steps.length > 0 && (
-            <ol className={styles.steps}>
-              {guided.steps.map((step, index) => (
-                <li key={index}>{step}</li>
-              ))}
-            </ol>
+              {guided.steps.length > 0 && (
+                <div className={styles.block}>
+                  {secureUrl && (
+                    <p className={styles.blockTitle}>{t('more.install.https.orHere')}</p>
+                  )}
+                  <ol className={styles.steps}>
+                    {guided.steps.map((step, index) => (
+                      <li key={index}>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </div>
           )}
           {guided.note && <p className={styles.note}>{guided.note}</p>}
         </>
@@ -329,32 +330,20 @@ export function InstallSection({ push }: { push: PushState | null }) {
     }
   }
 
-  const icon =
-    KIND_ICON[guide.kind === 'installed-elsewhere' && showSteps ? stepsGuide.kind : guide.kind];
-
   return (
     <>
       <Section title={t('more.install.title')}>
-        <Card padding="none">
-          <div className={styles.row}>
-            <StatusIcon icon={icon} tone={tone} />
-            <div className={styles.rowText}>
-              <p className={styles.rowTitle}>{title}</p>
-              <p className={styles.rowSub}>
-                <RichText text={text} />
-              </p>
-            </div>
-          </div>
-          {extra && <div className={styles.extraStack}>{extra}</div>}
-        </Card>
+        <Plate installed={installed} title={title} text={text}>
+          {body}
+        </Plate>
       </Section>
 
       <Section title={t('more.install.here.title')}>
-        <Card padding="none">
+        <Rows label={t('more.install.here.title')}>
           {capabilities.map((capability) => (
             <CapabilityRow key={capability.id} capability={capability} />
           ))}
-        </Card>
+        </Rows>
       </Section>
 
       {!install.secureContext && !secureUrl && <HttpsHelp />}

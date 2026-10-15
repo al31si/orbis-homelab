@@ -1,15 +1,13 @@
 import { useT } from '@/i18n';
-import { formatNumber } from '@/lib/format';
-import { Badge } from '@/ui/Badge';
+import { formatTemperature } from '@/lib/format';
+import { StatusDot } from '@/ui/Badge';
 import { Card } from '@/ui/Card';
-import { Icon } from '@/ui/icons';
 import { Notice } from '@/ui/Notice';
 import { RelativeTime } from '@/ui/RelativeTime';
 import { Section } from '@/ui/Section';
+import { DiskList } from './DiskList';
 import {
-  activeCounters,
-  diskCounterTone,
-  diskProblemLine,
+  COUNTER_KEYS,
   explainProblems,
   isSmartReportStale,
   problemDisks,
@@ -19,58 +17,22 @@ import {
 } from './derive';
 import styles from './storage.module.css';
 
-/** The disks that are not OK, with the counters that made them so and what those mean. */
-function Callout({ disks }: { disks: SmartView['disks'] }) {
+/** What the defects found on the not-OK disks mean, and what to do about them. */
+function Advice({ disks }: { disks: SmartView['disks'] }) {
   const t = useT();
   const { meanings, advice } = explainProblems(disks);
   const tone = disks.some((disk) => disk.status === 'CRITICAL') ? 'crit' : 'warn';
   return (
-    <Card tone={tone} padding="none" role="alert">
-      <ul className={styles.problems}>
-        {disks.map((disk) => {
-          const diskTone = toneForDiskStatus(disk.status);
-          const counters = activeCounters(disk);
-          return (
-            <li key={disk.label} className={styles.problem} data-tone={diskTone}>
-              <Icon
-                name={diskTone === 'crit' ? 'alert-circle' : 'alert'}
-                size={22}
-                className={styles.problemIcon}
-              />
-              <div className={styles.problemBody}>
-                <div className={styles.problemHead}>
-                  <h3 className={styles.problemTitle}>{disk.label}</h3>
-                  <Badge tone={diskTone} dot>
-                    {t(`storage.status.${disk.status}`)}
-                  </Badge>
-                </div>
-                <p className={styles.problemLine}>{diskProblemLine(disk)}</p>
-                {counters.length > 0 && (
-                  <ul className={styles.problemCounters}>
-                    {counters.map((key) => (
-                      <li key={key} data-tone={diskCounterTone(disk, key)}>
-                        <strong>{formatNumber(disk[key])}</strong>{' '}
-                        {t(`storage.counterInline.${key}`)}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-      <div className={styles.explain}>
-        <p className={styles.advice}>{advice}</p>
-        {meanings.length > 0 && (
-          <details className={styles.meanings}>
-            <summary>{t('storage.health.meaningsSummary')}</summary>
-            {meanings.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
-          </details>
-        )}
-      </div>
+    <Card tone={tone} role="alert" className={styles.advice}>
+      <p>{advice}</p>
+      {meanings.length > 0 && (
+        <details className={styles.meanings}>
+          <summary>{t('storage.health.meaningsSummary')}</summary>
+          {meanings.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </details>
+      )}
     </Card>
   );
 }
@@ -80,27 +42,33 @@ export function HealthSection({ disks, smart }: SmartView) {
   const problems = problemDisks(disks);
   const unreadable = disks.filter((disk) => disk.smart === 'UNAVAILABLE');
   const stale = isSmartReportStale(smart.ageSeconds);
+  const clean = disks.every((disk) => COUNTER_KEYS.every((key) => disk[key] === 0));
   const overallTone = toneForDiskStatus(smart.status);
+  const summary =
+    smart.status === 'OK'
+      ? t('storage.health.allHealthy')
+      : smart.status === 'CRITICAL'
+        ? t('storage.health.critical')
+        : t('storage.health.check');
 
   return (
-    <Section title={t('storage.health.section')}>
+    <Section
+      title={t('storage.health.section')}
+      action={t('storage.summary.disks', { n: disks.length })}
+    >
       <div className={styles.health}>
-        {problems.length > 0 && <Callout disks={problems} />}
-
-        <Card className={styles.summary}>
-          <Icon name="shield" size={22} className={styles.summaryIcon} data-tone={overallTone} />
-          <div className={styles.summaryText}>
-            <p className={styles.summaryTitle}>
-              {smart.status === 'OK' ? t('storage.health.allHealthy') : t('storage.health.check')}
-            </p>
+        <div className={styles.summary}>
+          <StatusDot tone={overallTone} className={styles.summaryLamp} />
+          <div>
+            <p className={styles.summaryTitle}>{summary}</p>
             <p className={styles.caption}>
               {t('storage.health.lastCheck')} <RelativeTime value={smart.checkedAt} />
             </p>
+            {clean && <p className={styles.caption}>{t('storage.disks.countersClean')}</p>}
           </div>
-          <Badge tone={overallTone} dot>
-            {t(`storage.status.${smart.status}`)}
-          </Badge>
-        </Card>
+        </div>
+
+        {problems.length > 0 && <Advice disks={problems} />}
 
         {stale && (
           <Notice tone="warn" title={t('storage.health.staleTitle')}>
@@ -122,6 +90,15 @@ export function HealthSection({ disks, smart }: SmartView) {
             {t('storage.health.unavailableText')}
           </Notice>
         )}
+
+        <DiskList disks={disks} smart={smart} />
+
+        <p className={styles.footnote}>
+          {t('storage.disks.limits', {
+            warn: formatTemperature(smart.temperatureWarnC),
+            crit: formatTemperature(smart.temperatureCriticalC),
+          })}
+        </p>
       </div>
     </Section>
   );

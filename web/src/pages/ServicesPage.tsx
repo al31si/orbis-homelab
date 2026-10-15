@@ -6,19 +6,27 @@ import { EmptyState } from '@/ui/EmptyState';
 import { ErrorState } from '@/ui/ErrorState';
 import { Page, PageHeader } from '@/ui/Page';
 import { Skeleton } from '@/ui/Skeleton';
-import { UpdatedAt } from '@/ui/UpdatedAt';
-import { monitoringCounts } from './services/catalog';
 import { ServicesBrowser } from './services/ServicesBrowser';
+import { ServicesSummary } from './services/ServicesSummary';
 import styles from './services/services.module.css';
 
 function ServicesSkeleton() {
   const t = useT();
   return (
     <div className={styles.layout} aria-busy="true" aria-label={t('services.loading')}>
-      <Skeleton height={44} radius={14} />
-      <Skeleton width={260} height={36} radius={999} />
-      <Skeleton height={232} radius={20} />
-      <Skeleton height={156} radius={20} />
+      <Skeleton height={44} radius={8} />
+      <Skeleton width={260} height={44} radius={5} />
+      <div className={styles.skeletonRows}>
+        {[0, 1, 2, 3, 4].map((row) => (
+          <div key={row} className={styles.skeletonRow}>
+            <Skeleton width={44} height={44} radius={10} />
+            <div className={styles.skeletonText}>
+              <Skeleton width="45%" height={18} radius={4} />
+              <Skeleton width="70%" height={14} radius={4} />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -31,7 +39,9 @@ export default function ServicesPage() {
 
   let body;
   if (data) {
-    body = <ServicesBrowser services={data} />;
+    body = (
+      <ServicesBrowser services={data} fetchedAt={services.fetchedAt} status={services.status} />
+    );
   } else if (services.status === 'loading') {
     body = <ServicesSkeleton />;
   } else if (services.status === 'offline') {
@@ -60,18 +70,7 @@ export default function ServicesPage() {
     <Page>
       <PageHeader
         title={t('services.title')}
-        subtitle={
-          data && (
-            <>
-              {t('services.summary', monitoringCounts(data))}
-              <UpdatedAt
-                fetchedAt={services.fetchedAt}
-                status={services.status}
-                className={styles.updated}
-              />
-            </>
-          )
-        }
+        subtitle={data && <ServicesSummary services={data} />}
       />
       {body}
     </Page>

@@ -25,7 +25,7 @@ export const shell: Localized<typeof ref> = {
   'shell.access.hint': 'Limited access - some data is hidden',
 
   'shell.connection.offline': (p) => `${p.name} unreachable`,
-  'shell.connection.offlineSince': (p) => `${p.name} unreachable · showing data from ${p.time}`,
+  'shell.connection.offlineSince': (p) => `${p.name} unreachable, showing data from ${p.time}`,
 
   'shell.update.available': 'Update available',
   'shell.update.apply': 'Update',

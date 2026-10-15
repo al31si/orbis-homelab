@@ -4,20 +4,63 @@ import { useConnection } from '@/data';
 import { t } from '@/i18n';
 import { useNow } from '@/lib/useNow';
 import { Badge } from '@/ui/Badge';
-import { Card } from '@/ui/Card';
-import { Icon } from '@/ui/icons';
+import { Notice } from '@/ui/Notice';
 import { RelativeTime } from '@/ui/RelativeTime';
 import { Section } from '@/ui/Section';
 import { Skeleton } from '@/ui/Skeleton';
 import { snapshotStatus } from './derive';
 import styles from './activity.module.css';
 
-export interface SnapshotSectionProps<T> {
-  title: string;
+/** Whether the data of an integration is old (or the device is offline), and when it was read. */
+export function useFreshness(snapshot: Snapshot<unknown>): {
+  stale: boolean;
+  fetchedAt: number | null;
+} {
+  const now = useNow(5_000);
+  const offline = useConnection().status === 'offline';
+  const { status, fetchedAt } = snapshotStatus(snapshot, now, offline);
+  return {
+    stale: snapshot.data !== null && (status === 'stale' || status === 'offline'),
+    fetchedAt,
+  };
+}
+
+/** "Out of date", then how long ago the data was read. */
+export function StaleNote({ fetchedAt }: { fetchedAt: number | null }) {
+  return (
+    <span className={styles.stale}>
+      <Badge tone="warn" dot>
+        {t('activity.snapshot.stale')}
+      </Badge>
+      <RelativeTime value={fetchedAt} />
+    </span>
+  );
+}
+
+export interface SnapshotBodyProps<T> {
   /** Name of the data source in error messages ("qBittorrent"). */
   label: string;
   snapshot: Snapshot<T>;
   children: (data: T) => ReactNode;
+}
+
+/** The data when there is some, else the reason why not: the integration's own error, or loading. */
+export function SnapshotBody<T>({ label, snapshot, children }: SnapshotBodyProps<T>) {
+  if (snapshot.data !== null) return <>{children(snapshot.data)}</>;
+  if (snapshot.error) {
+    return (
+      <div role="alert">
+        <Notice tone="warn" title={t('activity.snapshot.failed', { label })}>
+          {snapshot.error}
+        </Notice>
+      </div>
+    );
+  }
+  return <Skeleton height={96} radius="var(--radius-lg)" />;
+}
+
+export interface SnapshotSectionProps<T> extends SnapshotBodyProps<T> {
+  title: string;
 }
 
 /**
@@ -25,40 +68,12 @@ export interface SnapshotSectionProps<T> {
  * presentation, so one failing integration never affects the others.
  */
 export function SnapshotSection<T>({ title, label, snapshot, children }: SnapshotSectionProps<T>) {
-  const now = useNow(5_000);
-  const offline = useConnection().status === 'offline';
-  const { status, fetchedAt } = snapshotStatus(snapshot, now, offline);
-  const stale = snapshot.data !== null && (status === 'stale' || status === 'offline');
-
-  let body: ReactNode;
-  if (snapshot.data !== null) {
-    body = children(snapshot.data);
-  } else if (snapshot.error) {
-    body = (
-      <Card tone="warn" className={styles.failed} role="alert">
-        <Icon name="alert" size={20} />
-        <div>
-          <p className={styles.failedTitle}>{t('activity.snapshot.failed', { label })}</p>
-          <p className={styles.failedDetail}>{snapshot.error}</p>
-        </div>
-      </Card>
-    );
-  } else {
-    body = <Skeleton height={96} radius={20} />;
-  }
-
+  const { stale, fetchedAt } = useFreshness(snapshot);
   return (
-    <Section
-      title={title}
-      action={
-        stale && (
-          <Badge tone="warn" dot>
-            {t('activity.snapshot.stale')} · <RelativeTime value={fetchedAt} />
-          </Badge>
-        )
-      }
-    >
-      {body}
+    <Section title={title} action={stale && <StaleNote fetchedAt={fetchedAt} />}>
+      <SnapshotBody label={label} snapshot={snapshot}>
+        {children}
+      </SnapshotBody>
     </Section>
   );
 }

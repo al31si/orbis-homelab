@@ -13,7 +13,6 @@ export const storage = defineMessages({
   'storage.error': 'Dati di storage non disponibili',
   'storage.empty.title': 'Nessun dato di storage',
   'storage.empty.description': 'Non è stato rilevato nessun volume o disco da mostrare.',
-  'storage.summary.pools': (p: { n: number }) => `${p.n} pool`,
   'storage.summary.volumes': (p: { n: number }) => (p.n === 1 ? '1 volume' : `${p.n} volumi`),
   'storage.summary.disks': (p: { n: number }) => (p.n === 1 ? '1 disco' : `${p.n} dischi`),
 
@@ -25,7 +24,8 @@ export const storage = defineMessages({
   // pools
   'storage.pool.section': 'Pool',
   'storage.pool.sectionMany': 'Pool',
-  'storage.pool.usage': 'utilizzo del pool',
+  'storage.pool.usage': 'usato',
+  'storage.pool.usedOf': (p: { used: string; total: string }) => `${p.used} di ${p.total}`,
   'storage.pool.used': 'Usato',
   'storage.pool.free': 'Libero',
   'storage.pool.total': 'Totale',
@@ -33,14 +33,12 @@ export const storage = defineMessages({
   'storage.pool.share': 'Spazio usato per volume',
   'storage.pool.shareText': (p: { name: string; size: string; percent: string }) =>
     `${p.name} ${p.size}, ${p.percent} dello spazio usato`,
-  'storage.pool.members': 'Volumi del pool',
 
   // volumes
   'storage.volumes.section': 'Volumi',
-  'storage.volumes.others': 'Altri volumi',
   'storage.volume.usage': (p: { name: string }) => `Spazio usato su ${p.name}`,
-  'storage.volume.line': (p: { used: string; free: string; total: string }) =>
-    `${p.used} usati · ${p.free} liberi · ${p.total} totali`,
+  'storage.volume.usedOf': (p: { used: string; total: string }) => `${p.used} di ${p.total}`,
+  'storage.volume.free': 'liberi',
 
   // disk health
   'storage.status.OK': 'In salute',
@@ -48,7 +46,8 @@ export const storage = defineMessages({
   'storage.status.CRITICAL': 'Critico',
   'storage.health.section': 'Salute dischi',
   'storage.health.allHealthy': 'Tutti i dischi in salute',
-  'storage.health.check': 'Verifica SMART',
+  'storage.health.check': 'Alcuni dischi richiedono attenzione',
+  'storage.health.critical': 'Almeno un disco è in stato critico',
   'storage.health.lastCheck': 'Ultima verifica SMART',
   'storage.health.staleTitle': 'Report SMART non aggiornato',
   'storage.health.staleText': (p: { minutes: number }) =>
@@ -86,25 +85,15 @@ export const storage = defineMessages({
     'Il verdetto SMART complessivo è «superato»: il disco non dichiara un guasto imminente, ma i contatori mostrano settori problematici.',
 
   // disks
-  'storage.disks.section': 'Dischi',
   'storage.disks.list': 'Dischi',
-  'storage.disks.colDisk': 'Disco',
-  'storage.disks.colStatus': 'Stato',
-  'storage.disks.colUsage': 'Utilizzo',
-  'storage.disks.colSmart': 'SMART',
-  'storage.disks.colTemperature': 'Temp.',
-  'storage.disks.colPowerOn': 'Ore accese',
-  'storage.disks.colCounters': 'Settori e errori',
-  'storage.disks.serial': (p: { tail: string; device: string }) =>
-    `Seriale …${p.tail} · ${p.device}`,
+  'storage.disks.serial': (p: { tail: string }) => `Seriale …${p.tail}`,
   'storage.disks.unverified': 'Non verificato',
-  'storage.disks.usageOf': (p: { used: string; total: string }) => `${p.used} di ${p.total}`,
-  'storage.disks.free': (p: { value: string }) => `${p.value} liberi`,
-  'storage.disks.noSpace': 'Spazio non disponibile',
   'storage.disks.smart': 'SMART',
   'storage.disks.temperature': 'Temperatura',
+  'storage.disks.temperatureMeter': (p: { name: string }) => `Temperatura di ${p.name}`,
   'storage.disks.powerOn': 'Ore accese',
   'storage.disks.hours': (p: { n: string }) => `${p.n} h`,
+  'storage.disks.countersClean': 'Nessun settore difettoso né errore SMART',
   'storage.disks.limits': (p: { warn: string; crit: string }) =>
     `Temperatura: attenzione da ${p.warn}, critica da ${p.crit}.`,
   'storage.smart.PASSED': 'Superato',

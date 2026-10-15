@@ -5,8 +5,9 @@ import { useSnapshot } from '@/data';
 import { useT } from '@/i18n';
 import { PLACEHOLDER, formatBytes, formatNumber } from '@/lib/format';
 import { toneForThreshold, type UiTone } from '@/lib/tone';
+import { Card } from '@/ui/Card';
 import { Section } from '@/ui/Section';
-import { StatTile } from '@/ui/StatTile';
+import { Vital } from './Vital';
 import { tempLimits, visibleVitals } from './summary';
 import styles from './home.module.css';
 
@@ -38,7 +39,7 @@ function Vitals({ overview, system }: VitalsProps) {
 
   const tileById = {
     cpu: (
-      <StatTile
+      <Vital
         key="cpu"
         label={t('home.vitals.cpu')}
         icon="cpu"
@@ -51,13 +52,11 @@ function Vitals({ overview, system }: VitalsProps) {
             : undefined
         }
         tone={live ? toneForThreshold(live.cpuPercent, 70, 90) : 'neutral'}
-        spark={system?.history.map((point) => point.cpu)}
-        sparkMin={0}
-        sparkMax={100}
+        meter={live?.cpuPercent}
       />
     ),
     memory: (
-      <StatTile
+      <Vital
         key="memory"
         label={t('home.vitals.memory')}
         icon="memory"
@@ -73,13 +72,11 @@ function Vitals({ overview, system }: VitalsProps) {
             : undefined
         }
         tone={live ? toneForThreshold(live.memoryPercent, 80, 92) : 'neutral'}
-        spark={system?.history.map((point) => point.mem)}
-        sparkMin={0}
-        sparkMax={100}
+        meter={live?.memoryPercent}
       />
     ),
     storage: (
-      <StatTile
+      <Vital
         key="storage"
         label={storage?.label || t('home.vitals.storage')}
         icon="storage"
@@ -95,11 +92,11 @@ function Vitals({ overview, system }: VitalsProps) {
             : undefined
         }
         tone={storage ? toneForThreshold(storage.percent, 80, 92) : 'neutral'}
-        progress={storage?.percent}
+        meter={storage?.percent}
       />
     ),
     temperature: (
-      <StatTile
+      <Vital
         key="temperature"
         label={t('home.vitals.temperature')}
         icon="thermometer"
@@ -108,19 +105,21 @@ function Vitals({ overview, system }: VitalsProps) {
         unit={temp === null ? undefined : '°C'}
         detail={t(TEMPERATURE_KEY[tempTone])}
         tone={tempTone}
-        progress={temp === null ? undefined : (temp / limits.crit) * 100}
+        meter={temp === null ? undefined : (temp / limits.crit) * 100}
       />
     ),
   };
 
   return (
     <Section title={t('home.vitals.title')}>
-      <div
-        className={styles.vitals}
-        style={{ '--tiles': Math.min(tiles.length, 4) } as CSSProperties}
-      >
-        {tiles.map((id) => tileById[id])}
-      </div>
+      <Card padding="none" className={styles.vitalsPlate}>
+        <div
+          className={styles.vitals}
+          style={{ '--tiles': Math.min(tiles.length, 4) } as CSSProperties}
+        >
+          {tiles.map((id) => tileById[id])}
+        </div>
+      </Card>
     </Section>
   );
 }
