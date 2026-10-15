@@ -89,7 +89,7 @@
   --recess: #080c0b;
   --lamp-off: #1f2a28;
   --scrim: rgb(3 7 6 / 66%);
-  --header-bg: rgb(12 17 16 / 96%);
+  --header-bg: var(--bg);
 
   --text: #e8eeeb;
   --text-2: #a0aea9;
@@ -126,7 +126,7 @@
     --recess: #d4dbd8;
     --lamp-off: #c6cfcb;
     --scrim: rgb(10 18 15 / 42%);
-    --header-bg: rgb(229 233 231 / 96%);
+    --header-bg: var(--bg);
 
     --text: #101714;
     --text-2: #46514d;
@@ -163,7 +163,7 @@
   --recess: #d4dbd8;
   --lamp-off: #c6cfcb;
   --scrim: rgb(10 18 15 / 42%);
-  --header-bg: rgb(229 233 231 / 96%);
+  --header-bg: var(--bg);
 
   --text: #101714;
   --text-2: #46514d;

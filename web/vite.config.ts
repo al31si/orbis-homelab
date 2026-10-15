@@ -132,6 +132,12 @@ export default defineConfig({
   },
   server: { host: '127.0.0.1', port: 5173, strictPort: true, proxy: apiProxy },
   preview: { host: '127.0.0.1', port: 4173, strictPort: true, proxy: apiProxy },
-  build: { target: 'es2022', sourcemap: false },
+  build: {
+    target: 'es2022',
+    sourcemap: false,
+    // Small files are normally inlined as base64 into the JavaScript. The brand logos are only
+    // looked up when a service shows one, so they stay separate files (still precached offline).
+    assetsInlineLimit: (file) => (file.includes('/ui/brand/logos/') ? false : undefined),
+  },
   test: { environment: 'node', include: ['src/**/*.test.ts'] },
 });
