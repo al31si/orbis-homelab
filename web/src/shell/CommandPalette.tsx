@@ -55,7 +55,7 @@ function serviceItem(service: ServiceView, categories: readonly CategoryInfo[]):
     subtitle:
       service.state === 'up' && service.monitored
         ? service.description
-        : [serviceStateLabel(service), service.description].filter(Boolean).join(' · '),
+        : [serviceStateLabel(service), service.description].filter(Boolean).join(', '),
     keywords: [
       service.description,
       categoryLabel(service.category, categories) ?? '',
@@ -386,7 +386,12 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
                               onMouseMove={() => index !== activeIndex && setActive(index)}
                             >
                               {item.icon.kind === 'service' ? (
-                                <ServiceIcon name={item.icon.name} size={36} />
+                                <ServiceIcon
+                                  name={item.icon.name}
+                                  label={item.title}
+                                  serviceId={item.serviceId}
+                                  size={36}
+                                />
                               ) : (
                                 <span className={styles.glyph}>
                                   <Icon name={item.icon.name} size={20} />

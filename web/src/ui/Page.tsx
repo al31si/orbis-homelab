@@ -45,7 +45,7 @@ export function PageHeader({ title, subtitle, eyebrow, actions }: PageHeaderProp
     function observe() {
       observer?.disconnect();
       const header = document.querySelector('[data-app-header]');
-      const top = header ? Math.round(header.getBoundingClientRect().bottom) : 0;
+      const top = header ? Math.max(0, Math.round(header.getBoundingClientRect().bottom)) : 0;
       observer = new IntersectionObserver(
         ([entry]) => setCollapsedTitle(entry?.isIntersecting ? null : title),
         { rootMargin: `-${top}px 0px 0px 0px` },

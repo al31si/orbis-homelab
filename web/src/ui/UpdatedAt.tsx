@@ -28,7 +28,7 @@ export function UpdatedAt({ fetchedAt, status, className }: UpdatedAtProps) {
         <>
           <span>{status === 'offline' ? t('ui.updatedAt.offline') : t('ui.updatedAt.stale')}</span>
           <span className={styles.muted}>
-            · <RelativeTime value={fetchedAt} />
+            <RelativeTime value={fetchedAt} />
           </span>
         </>
       ) : (

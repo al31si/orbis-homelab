@@ -12,6 +12,7 @@ import { initInstall } from '@/pwa/useInstall';
 import { registerServiceWorker } from '@/pwa/register';
 import { ErrorBoundary } from '@/ui/ErrorBoundary';
 import App from './App';
+import '@fontsource-variable/instrument-sans/wdth.css';
 import './styles/tokens.css';
 import './styles/base.css';
 

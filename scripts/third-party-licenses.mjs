@@ -34,11 +34,15 @@ const PERMISSIVE = new Set([
  * licence still fails the check and has to be reviewed):
  *  - web-push, MPL-2.0: file-level copyleft. Used unmodified as a dependency, so the obligation is
  *    to keep the notice and point to its source, which the notices file does;
- *  - wouter, Unlicense: a public domain dedication.
+ *  - wouter, Unlicense: a public domain dedication;
+ *  - @fontsource-variable/instrument-sans, OFL-1.1: the typeface bundled into the web app. The SIL
+ *    Open Font License allows embedding and redistribution with its notice, which the notices file
+ *    carries; the font is not sold on its own.
  */
 const REVIEWED = new Map([
   ['web-push', 'MPL-2.0'],
   ['wouter', 'Unlicense'],
+  ['@fontsource-variable/instrument-sans', 'OFL-1.1'],
 ]);
 
 const isAllowed = ({ name }, license) => PERMISSIVE.has(license) || REVIEWED.get(name) === license;

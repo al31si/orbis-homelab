@@ -5,15 +5,17 @@
   gap: var(--space-2);
   min-height: 34px;
   padding: 6px var(--page-pad);
-  background: color-mix(in srgb, var(--tone) 14%, var(--bg));
-  border-bottom: 1px solid color-mix(in srgb, var(--tone) 25%, transparent);
-  color: var(--tone);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--hairline-strong);
+  box-shadow: inset 3px 0 0 var(--tone);
+  color: var(--text);
   font-size: var(--text-sm);
   font-weight: 500;
   line-height: var(--leading-snug);
 }
 
 .banner svg {
+  color: var(--tone);
   flex: none;
   align-self: flex-start;
   margin-top: 2px;
