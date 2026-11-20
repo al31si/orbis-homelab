@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { BRAND_LIST, normalizeBrandKey, resolveBrand } from './registry';
 
@@ -54,6 +54,15 @@ describe('the brand registry and the logo files', () => {
 
   it('has a logo file for every brand and no logo without a brand', () => {
     expect(BRAND_LIST.map((brand) => brand.id).sort()).toEqual(files);
+  });
+
+  it('keeps every logo static, including when displayed as an image', () => {
+    for (const id of files) {
+      const svg = readFileSync(new URL(`./logos/${id}.svg`, import.meta.url), 'utf8');
+      expect(svg, id).not.toMatch(
+        /<(?:animate\w*|set)\b|@(?:-\w+-)?keyframes\b|\banimation(?:-[\w-]+)?\s*:/i,
+      );
+    }
   });
 
   it('gives every brand a distinct spelling, so no key leads to two products', () => {

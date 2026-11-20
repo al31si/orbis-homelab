@@ -25,14 +25,6 @@
 
     <circle cx="128" cy="128" r="9" fill="#fff" class="st1"/>
 
-    <!-- SPIN ANIMATION INSIDE THE GROUP -->
-    <animateTransform
-        attributeName="transform"
-        type="rotate"
-        from="0 128 128"
-        to="360 128 128"
-        dur="3s"
-        repeatCount="indefinite"/>
   </g>
 
 </svg>

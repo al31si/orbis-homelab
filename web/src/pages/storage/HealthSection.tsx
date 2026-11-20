@@ -42,10 +42,13 @@ export function HealthSection({ disks, smart }: SmartView) {
   const problems = problemDisks(disks);
   const unreadable = disks.filter((disk) => disk.smart === 'UNAVAILABLE');
   const stale = isSmartReportStale(smart.ageSeconds);
-  const clean = disks.every((disk) => COUNTER_KEYS.every((key) => disk[key] === 0));
-  const overallTone = toneForDiskStatus(smart.status);
-  const summary =
-    smart.status === 'OK'
+  const clean =
+    unreadable.length === 0 && disks.every((disk) => COUNTER_KEYS.every((key) => disk[key] === 0));
+  const unverified = unreadable.length > 0 && smart.status === 'OK';
+  const overallTone = unverified ? 'neutral' : toneForDiskStatus(smart.status);
+  const summary = unverified
+    ? t('storage.disks.unverified')
+    : smart.status === 'OK'
       ? t('storage.health.allHealthy')
       : smart.status === 'CRITICAL'
         ? t('storage.health.critical')

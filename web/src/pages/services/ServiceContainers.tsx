@@ -1,4 +1,5 @@
 import type { ServiceView } from '@shared/api';
+import { useFeatures } from '@/boot';
 import { useSnapshot } from '@/data';
 import { useT } from '@/i18n';
 import { formatBytes, formatPercent } from '@/lib/format';
@@ -29,6 +30,29 @@ function Readout({ label, value }: { label: string; value: string }) {
   );
 }
 
+/** Mount only when system data is enabled, so the meter cannot start an unavailable poller. */
+function MemoryShare({ memoryBytes }: { memoryBytes: number }) {
+  const t = useT();
+  const totalMemory = useSnapshot('system').data?.memory.totalBytes ?? 0;
+  if (totalMemory <= 0) return null;
+  const memoryPercent = (memoryBytes / totalMemory) * 100;
+  return (
+    <div className={styles.meter}>
+      <ProgressBar
+        value={memoryPercent}
+        label={t('services.containers.memoryMeter')}
+        size="sm"
+        cells={30}
+      />
+      <p className={styles.meterCaption}>
+        {t('services.containers.memoryShare', {
+          percent: formatPercent(memoryPercent, memoryPercent < 10 ? 1 : 0),
+        })}
+      </p>
+    </div>
+  );
+}
+
 /**
  * The service's resource use, then each container, anomalies first, with state, CPU, memory and
  * uptime. Mount it only when `features.containers` is on: it subscribes to the containers snapshot
@@ -36,11 +60,10 @@ function Readout({ label, value }: { label: string; value: string }) {
  */
 export function ServiceContainers({ service }: { service: ServiceView }) {
   const t = useT();
+  const features = useFeatures();
   const docker = useSnapshot('containers').data;
-  const totalMemory = useSnapshot('system').data?.memory.totalBytes ?? 0;
   const rows = containerRows(service, docker);
   const names = shortContainerNames(rows.map((row) => row.name));
-  const memoryPercent = totalMemory > 0 ? (service.memoryBytes / totalMemory) * 100 : null;
   const many = rows.length > 1;
 
   return (
@@ -63,21 +86,7 @@ export function ServiceContainers({ service }: { service: ServiceView }) {
                 value={formatBytes(service.memoryBytes)}
               />
             </dl>
-            {memoryPercent !== null && (
-              <div className={styles.meter}>
-                <ProgressBar
-                  value={memoryPercent}
-                  label={t('services.containers.memoryMeter')}
-                  size="sm"
-                  cells={30}
-                />
-                <p className={styles.meterCaption}>
-                  {t('services.containers.memoryShare', {
-                    percent: formatPercent(memoryPercent, memoryPercent < 10 ? 1 : 0),
-                  })}
-                </p>
-              </div>
-            )}
+            {features.system && <MemoryShare memoryBytes={service.memoryBytes} />}
           </div>
           <ul className={styles.rows} aria-label={t('services.containers.list')}>
             {rows.map((row, index) => {
