@@ -117,6 +117,62 @@
   display: none;
 }
 
+/* compact destinations are panel keys; only the edge lamp carries the page accent */
+@media (max-width: 699px) {
+  .items {
+    height: auto;
+    min-height: 60px;
+  }
+
+  .cell + .cell {
+    border-left: 1px solid var(--hairline);
+  }
+
+  .item {
+    gap: var(--space-1);
+    min-height: 60px;
+    padding: var(--space-2) var(--space-1);
+  }
+
+  .item::before {
+    width: 36px;
+    height: 4px;
+    background: var(--lamp-off);
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+
+  .item[aria-current='page'] {
+    background: var(--surface-2);
+  }
+
+  .item[aria-current='page']::before {
+    background: var(--accent);
+  }
+
+  .item[aria-current='page'] .icon {
+    color: var(--text);
+  }
+
+  /* Override the shared selected icon's SVG fill without changing the rail or sidebar. */
+  .icon > svg {
+    fill: none;
+  }
+
+  .item:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .badge {
+    outline: 2px solid var(--surface-1);
+    box-shadow: none;
+  }
+
+  .item[aria-current='page'] .badge {
+    outline-color: var(--surface-2);
+  }
+}
+
 /* medium: navigation rail */
 @media (min-width: 700px) {
   .nav {
