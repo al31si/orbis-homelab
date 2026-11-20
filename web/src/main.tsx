@@ -8,6 +8,7 @@ import { setLanguage } from '@/i18n';
 import { applyAccent } from '@/lib/accent';
 import { initPrefs } from '@/lib/prefs';
 import { initTheme } from '@/lib/theme';
+import { installViewportFix } from '@/lib/viewportFix';
 import { initInstall } from '@/pwa/useInstall';
 import { registerServiceWorker } from '@/pwa/register';
 import { ErrorBoundary } from '@/ui/ErrorBoundary';
@@ -17,6 +18,7 @@ import './styles/tokens.css';
 import './styles/base.css';
 
 async function start(): Promise<void> {
+  installViewportFix();
   const container = document.getElementById('root');
   if (!container) throw new Error('#root not found');
   const root = createRoot(container);

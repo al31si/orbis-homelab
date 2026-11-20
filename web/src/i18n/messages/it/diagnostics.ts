@@ -51,6 +51,15 @@ export const diagnostics = defineMessages({
   'diagnostics.client.serviceWorker': 'Service worker',
   'diagnostics.client.build': 'Build app',
   'diagnostics.client.displayMode': 'Modalità di visualizzazione',
+  'diagnostics.client.viewport': 'Area visibile',
+  'diagnostics.client.viewportSize': (p: {
+    innerWidth: number;
+    innerHeight: number;
+    screenWidth: number;
+    screenHeight: number;
+  }) => `${p.innerWidth} × ${p.innerHeight} (schermo ${p.screenWidth} × ${p.screenHeight})`,
+  'diagnostics.client.heightCorrection': 'Correzione altezza',
+  'diagnostics.client.noHeightCorrection': 'Nessuna',
   'diagnostics.client.installed': 'App installata',
   'diagnostics.client.secure': 'Connessione sicura (HTTPS)',
   'diagnostics.client.online': 'Online',

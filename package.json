@@ -1,6 +1,6 @@
 {
   "name": "orbis-homelab",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "type": "module",
   "description": "Orbis Homelab - self-hosted homelab control center (PWA + BFF)",

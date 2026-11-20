@@ -222,6 +222,12 @@ function ClientSection() {
         <Fact label={t('diagnostics.client.displayMode')}>
           {t(`diagnostics.client.display.${client.displayMode}`)}
         </Fact>
+        <Fact label={t('diagnostics.client.viewport')}>
+          {t('diagnostics.client.viewportSize', client.viewport)}
+        </Fact>
+        <Fact label={t('diagnostics.client.heightCorrection')}>
+          {client.viewport.heightCorrection ?? t('diagnostics.client.noHeightCorrection')}
+        </Fact>
         <Fact label={t('diagnostics.client.installed')}>
           <YesNo value={client.standalone} warnIfNo={false} />
         </Fact>
