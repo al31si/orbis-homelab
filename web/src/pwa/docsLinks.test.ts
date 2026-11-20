@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { HTTPS_GUIDE_URL, HTTPS_OPTION_URL, PUSH_HELP_URL } from '@/lib/docs';
+import { HTTPS_GUIDE_URL, HTTPS_OPTION_URL, PUSH_HELP_URL, SECRETS_HELP_URL } from '@/lib/docs';
 
 /** GitHub's anchor for a heading: lower case, punctuation dropped, spaces to hyphens. */
 function anchor(heading: string): string {
@@ -34,5 +34,10 @@ describe('links from the app to the documentation', () => {
   it('points the notification help at a heading that exists', () => {
     expect(PUSH_HELP_URL).toContain('/troubleshooting.md#');
     expect(anchorsOf('troubleshooting.md').has(PUSH_HELP_URL.split('#')[1]!)).toBe(true);
+  });
+
+  it('points the credentials help at a heading that exists', () => {
+    expect(SECRETS_HELP_URL).toContain('/configuration.md#');
+    expect(anchorsOf('configuration.md').has(SECRETS_HELP_URL.split('#')[1]!)).toBe(true);
   });
 });

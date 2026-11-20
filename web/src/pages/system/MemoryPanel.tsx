@@ -7,7 +7,6 @@ import { LineChart } from '@/ui/LineChart';
 import { Notice } from '@/ui/Notice';
 import { ProgressBar } from '@/ui/ProgressBar';
 import { Section } from '@/ui/Section';
-import { StackedBar } from '@/ui/StackedBar';
 import {
   assessSwap,
   AVAILABLE_CRITICAL_PERCENT,
@@ -16,6 +15,7 @@ import {
   seriesStats,
   SWAP_HIGH_PERCENT,
 } from './derive';
+import { LedLegend, LedStack } from './LedStack';
 import styles from './system.module.css';
 
 export function MemoryPanel({ system }: { system: SystemInfo }) {
@@ -31,38 +31,36 @@ export function MemoryPanel({ system }: { system: SystemInfo }) {
   const segments = [
     {
       id: 'used',
+      kind: 'on',
       label: t('system.memory.used'),
       value: parts.used,
-      color: 'var(--accent)',
-      detail: formatBytes(parts.used),
       text: t('system.memory.usedText', { value: formatBytes(parts.used) }),
     },
     {
       id: 'cache',
+      kind: 'dim',
       label: t('system.memory.cache'),
       value: parts.cache,
-      color: 'color-mix(in srgb, var(--accent) 38%, transparent)',
-      detail: formatBytes(parts.cache),
       text: t('system.memory.cacheText', { value: formatBytes(parts.cache) }),
     },
     {
       id: 'free',
+      kind: 'off',
       label: t('system.memory.free'),
       value: parts.free,
-      detail: formatBytes(parts.free),
       text: t('system.memory.freeText', { value: formatBytes(parts.free) }),
     },
-  ].filter((segment) => segment.value > 0);
+  ] as const;
 
   return (
     <Section title={t('system.memory.title')}>
-      <Card className={styles.grow}>
-        <div className={styles.stack}>
+      <Card padding="none" className={styles.plate}>
+        <div className={styles.block} data-tone={tone}>
           <div className={styles.headline}>
             <div className={styles.figure}>
-              <span className={styles.bigValue} data-tone={tone}>
+              <span className={styles.value} data-tone={tone}>
                 {formatNumber(memory.percent)}
-                <span className={styles.bigUnit}>%</span>
+                <span className={styles.unit}>%</span>
               </span>
               <span className={styles.figureLabel}>
                 {t('system.memory.ofTotal', {
@@ -71,92 +69,99 @@ export function MemoryPanel({ system }: { system: SystemInfo }) {
                 })}
               </span>
             </div>
-            <dl className={styles.pair}>
-              <div>
-                <dt>{t('system.memory.available')}</dt>
-                <dd>{formatBytes(memory.availableBytes)}</dd>
-              </div>
-              <div>
-                <dt>{t('system.memory.cached')}</dt>
-                <dd>{formatBytes(memory.cachedBytes)}</dd>
-              </div>
-            </dl>
+            <LedLegend
+              className={styles.legend}
+              tone={tone}
+              items={segments.map((segment) => ({
+                id: segment.id,
+                kind: segment.kind,
+                label: segment.label,
+                value: formatBytes(segment.value),
+              }))}
+            />
           </div>
-
-          <StackedBar
-            segments={segments}
+          <LedStack
+            tone={tone}
             total={memory.totalBytes}
             label={t('system.memory.title')}
-            height={12}
+            segments={segments}
           />
+          <p className={styles.caption}>
+            {t('system.memory.availableOf', { value: formatBytes(memory.availableBytes) })}
+          </p>
+        </div>
 
-          {history.length >= 2 && (
-            <div className={styles.block}>
-              <p className={styles.caption}>
-                {stats &&
-                  t('system.stats', {
-                    avg: formatPercent(stats.avg),
-                    peak: formatPercent(stats.max),
-                  })}
-              </p>
-              <LineChart
-                times={times}
-                values={values}
-                label={t('system.memory.series')}
-                tone={tone === 'ok' ? 'info' : tone}
-                min={0}
-                max={100}
-                ticks={[50]}
-                format={(value) => formatPercent(value)}
-                height={96}
-              />
-            </div>
-          )}
-
+        {history.length >= 2 && (
           <div className={styles.block}>
             <div className={styles.blockHead}>
-              <h3 className={styles.subhead}>{t('system.swap.title')}</h3>
-              <span className={styles.swapFigure}>
-                {swap.totalBytes > 0
-                  ? t('system.swap.usage', {
-                      used: formatBytes(swap.usedBytes),
-                      total: formatBytes(swap.totalBytes),
-                      percent: formatPercent(swap.percent),
-                    })
-                  : t('system.swap.none')}
-              </span>
+              <h3 className={styles.subhead}>{t('system.memory.series')}</h3>
+              {stats && (
+                <p className={styles.stats}>
+                  <span>{t('system.stats.avg', { value: formatPercent(stats.avg) })}</span>
+                  <span>{t('system.stats.peak', { value: formatPercent(stats.max) })}</span>
+                </p>
+              )}
             </div>
-            {swap.totalBytes > 0 && (
+            <LineChart
+              times={times}
+              values={values}
+              label={t('system.memory.series')}
+              tone={tone === 'ok' ? 'neutral' : tone}
+              min={0}
+              max={100}
+              ticks={[50]}
+              format={(value) => formatPercent(value)}
+              height={104}
+            />
+          </div>
+        )}
+
+        <div className={styles.block}>
+          <div className={styles.blockHead}>
+            <h3 className={styles.subhead}>{t('system.swap.title')}</h3>
+            <span className={styles.caption}>
+              {swap.totalBytes > 0
+                ? t('system.swap.usage', {
+                    used: formatBytes(swap.usedBytes),
+                    total: formatBytes(swap.totalBytes),
+                  })
+                : t('system.swap.none')}
+            </span>
+          </div>
+          {swap.totalBytes > 0 && (
+            <div className={styles.swapMeter}>
               <ProgressBar
                 value={swap.percent}
                 tone={assessment.tone}
                 label={t('system.swap.bar')}
                 size="sm"
+                cells={24}
               />
-            )}
-            {assessment.kind === 'low-memory' && (
-              <Notice tone={assessment.tone} title={t('system.swap.lowMemory.title')}>
-                {t('system.swap.lowMemory.text', { critical: AVAILABLE_CRITICAL_PERCENT })}
-              </Notice>
-            )}
-            {assessment.kind === 'pressure' && (
-              <Notice tone={assessment.tone} title={t('system.swap.pressure.title')}>
-                {t('system.swap.pressure.text', {
-                  swap: SWAP_HIGH_PERCENT,
-                  low: AVAILABLE_LOW_PERCENT,
-                })}
-              </Notice>
-            )}
-            {assessment.kind === 'normal' && swap.percent >= 50 && (
-              <Notice tone="neutral" title={t('system.swap.normal.title')}>
-                {t('system.swap.normal.text', {
-                  critical: AVAILABLE_CRITICAL_PERCENT,
-                  low: AVAILABLE_LOW_PERCENT,
-                  swap: SWAP_HIGH_PERCENT,
-                })}
-              </Notice>
-            )}
-          </div>
+              <span className={styles.rowValue}>{formatPercent(swap.percent)}</span>
+            </div>
+          )}
+          {assessment.kind === 'low-memory' && (
+            <Notice tone={assessment.tone} title={t('system.swap.lowMemory.title')}>
+              {t('system.swap.lowMemory.text', { critical: AVAILABLE_CRITICAL_PERCENT })}
+            </Notice>
+          )}
+          {assessment.kind === 'pressure' && (
+            <Notice tone={assessment.tone} title={t('system.swap.pressure.title')}>
+              {t('system.swap.pressure.text', {
+                swap: SWAP_HIGH_PERCENT,
+                low: AVAILABLE_LOW_PERCENT,
+              })}
+            </Notice>
+          )}
+          {assessment.kind === 'normal' && swap.percent >= 50 && (
+            <Notice tone="neutral" title={t('system.swap.normal.title')}>
+              {t('system.swap.normal.text', {
+                critical: AVAILABLE_CRITICAL_PERCENT,
+                low: AVAILABLE_LOW_PERCENT,
+                swap: SWAP_HIGH_PERCENT,
+              })}
+            </Notice>
+          )}
         </div>
       </Card>
     </Section>

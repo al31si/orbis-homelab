@@ -5,10 +5,11 @@ import { cx } from '@/lib/cx';
 import { formatBytes, formatPercent } from '@/lib/format';
 import { toneForContainerState } from '@/lib/tone';
 import { AppLink } from '@/ui/AppLink';
-import { Card } from '@/ui/Card';
+import { Badge } from '@/ui/Badge';
 import { Chip } from '@/ui/Chip';
 import { Icon } from '@/ui/icons';
 import { Segmented } from '@/ui/Segmented';
+import { ServiceIcon } from '@/ui/ServiceIcon';
 import {
   filterContainers,
   localizeUptime,
@@ -19,13 +20,21 @@ import {
 } from './derive';
 import styles from './system.module.css';
 
+/** What a container row needs to know about the catalog service that owns it. */
+export interface ContainerService {
+  name: string;
+  icon: string;
+  iconUrl: string | null;
+  integration: string | undefined;
+}
+
 interface RowProps {
   container: ContainerInfo;
-  serviceName: string | undefined;
+  service: ContainerService | undefined;
 }
 
 /** Deliberately plain markup: 40+ of these must scroll smoothly on a phone. */
-const ContainerRow = memo(function ContainerRow({ container, serviceName }: RowProps) {
+const ContainerRow = memo(function ContainerRow({ container, service }: RowProps) {
   const t = useT();
   const tone = toneForContainerState(container.state);
   const attention = needsAttention(container.state);
@@ -33,17 +42,29 @@ const ContainerRow = memo(function ContainerRow({ container, serviceName }: RowP
   const state = t(`system.state.${container.state}`);
   const body = (
     <>
-      <span className={styles.cDot} data-tone={tone} aria-hidden />
+      <span className={styles.cLamp} data-tone={tone} aria-hidden />
+      <ServiceIcon
+        name={service?.icon ?? 'generic'}
+        iconUrl={service?.iconUrl ?? null}
+        serviceId={container.serviceId ?? undefined}
+        integration={service?.integration}
+        label={service?.name ?? container.name}
+        size={32}
+        className={styles.cIcon}
+      />
       <span className={styles.cName}>
-        <span className={styles.cTitle}>{container.name}</span>
+        <span className={styles.cTitle} title={container.name}>
+          {container.name}
+        </span>
         <span className={styles.cSub}>
           {attention && (
-            <span className={styles.cSubState} data-tone={tone}>
-              {state} ·{' '}
-            </span>
+            <Badge tone={tone} className={styles.cTag}>
+              {state}
+            </Badge>
           )}
-          {serviceName ?? container.image}
-          <span className={styles.cSubUptime}> · {uptime}</span>
+          <span className={styles.cImage} title={container.image}>
+            {container.image}
+          </span>
         </span>
       </span>
       <span className={styles.cState} data-tone={tone}>
@@ -57,7 +78,10 @@ const ContainerRow = memo(function ContainerRow({ container, serviceName }: RowP
         <span className="sr-only">{t('system.containers.colMemory')} </span>
         {formatBytes(container.memoryBytes)}
       </span>
-      <span className={styles.cUptime}>{uptime}</span>
+      <span className={styles.cUptime}>
+        <span className="sr-only">{t('system.containers.colUptime')} </span>
+        {uptime}
+      </span>
       <span className={styles.cChevron}>
         {container.serviceId && <Icon name="chevron-right" size={16} />}
       </span>
@@ -81,16 +105,21 @@ const ContainerRow = memo(function ContainerRow({ container, serviceName }: RowP
 
 export interface ContainerListProps {
   containers: readonly ContainerInfo[];
-  serviceNames: ReadonlyMap<string, string>;
+  /** Catalog services by id; containers of a service show its logo and can be searched by its name. */
+  services: ReadonlyMap<string, ContainerService>;
 }
 
-export function ContainerList({ containers, serviceNames }: ContainerListProps) {
+export function ContainerList({ containers, services }: ContainerListProps) {
   const t = useT();
   const [filter, setFilter] = useState<ContainerFilter>('all');
   const [sort, setSort] = useState<ContainerSort>('state');
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
 
+  const serviceNames = useMemo(
+    () => new Map([...services].map(([id, service]) => [id, service.name])),
+    [services],
+  );
   const problems = useMemo(
     () => containers.filter((container) => needsAttention(container.state)).length,
     [containers],
@@ -119,10 +148,12 @@ export function ContainerList({ containers, serviceNames }: ContainerListProps) 
         </label>
         <div className={styles.filters}>
           <Chip selected={filter === 'all'} onClick={() => setFilter('all')}>
-            {t('system.containers.all', { n: containers.length })}
+            {t('system.containers.all')}
+            <span className={styles.chipCount}>{containers.length}</span>
           </Chip>
           <Chip selected={filter === 'problems'} onClick={() => setFilter('problems')}>
-            {t('system.containers.problems', { n: problems })}
+            {t('system.containers.problems')}
+            <span className={styles.chipCount}>{problems}</span>
           </Chip>
         </div>
         <Segmented
@@ -139,40 +170,33 @@ export function ContainerList({ containers, serviceNames }: ContainerListProps) 
         />
       </div>
 
-      <Card padding="none">
-        {rows.length === 0 ? (
-          <p className={styles.muted} role="status">
-            {containers.length === 0
-              ? t('system.containers.none')
-              : filter === 'problems' && deferredQuery.trim() === ''
-                ? t('system.containers.allFine')
-                : t('system.containers.noMatch')}
-          </p>
-        ) : (
-          <>
-            <div className={styles.cHead} aria-hidden>
-              <span />
-              <span>{t('system.containers.colContainer')}</span>
-              <span>{t('system.containers.colState')}</span>
-              <span>{t('system.containers.colCpu')}</span>
-              <span>{t('system.containers.colMemory')}</span>
-              <span>{t('system.containers.colUptime')}</span>
-              <span />
-            </div>
-            <ul className={styles.cList} aria-label={t('system.containers.list')}>
-              {rows.map((container) => (
-                <ContainerRow
-                  key={container.name}
-                  container={container}
-                  serviceName={
-                    container.serviceId ? serviceNames.get(container.serviceId) : undefined
-                  }
-                />
-              ))}
-            </ul>
-          </>
-        )}
-      </Card>
+      {rows.length === 0 ? (
+        <p className={styles.muted} role="status">
+          {containers.length === 0
+            ? t('system.containers.none')
+            : filter === 'problems' && deferredQuery.trim() === ''
+              ? t('system.containers.allFine')
+              : t('system.containers.noMatch')}
+        </p>
+      ) : (
+        <div className={styles.cTable}>
+          <div className={styles.cHead} aria-hidden>
+            <span className={styles.cHeadName}>{t('system.containers.colContainer')}</span>
+            <span className={styles.cHeadCpu}>{t('system.containers.colCpu')}</span>
+            <span className={styles.cHeadMem}>{t('system.containers.colMemory')}</span>
+            <span className={styles.cHeadUptime}>{t('system.containers.colUptime')}</span>
+          </div>
+          <ul className={styles.cList} aria-label={t('system.containers.list')}>
+            {rows.map((container) => (
+              <ContainerRow
+                key={container.name}
+                container={container}
+                service={container.serviceId ? services.get(container.serviceId) : undefined}
+              />
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

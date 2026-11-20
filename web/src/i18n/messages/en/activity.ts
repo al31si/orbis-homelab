@@ -13,21 +13,26 @@ export const activity: Localized<typeof ref> = {
   'activity.alerts.title': 'Alerts',
   'activity.alerts.none': 'No active alerts',
   'activity.alerts.failed': 'Can’t read the alerts',
+  'activity.alerts.critical': 'Critical',
+  'activity.alerts.warning': 'Warning',
+  'activity.alerts.info': 'Information',
 
   'activity.snapshot.failed': (p) => `Can’t read ${p.label}`,
   'activity.snapshot.stale': 'Out of date',
 
-  'activity.usage.title': (p) => `${p.label} · weekly`,
-  'activity.usage.remaining': 'Left this week',
-  'activity.usage.resets': (p) => `Resets ${p.moment} · ${p.relative}`,
+  'activity.usage.title': 'AI quota',
+  'activity.usage.remaining': 'left this week',
+  'activity.usage.resets': (p) => `Resets ${p.moment}`,
   'activity.usage.plan': (p) => `${p.plan} plan`,
-  'activity.usage.ringLabel': (p) => `${p.label}: ${p.percent}% of the weekly quota left`,
+  'activity.usage.meterLabel': (p) => `${p.label}: ${p.percent}% of the weekly quota left`,
   'activity.usage.pending': 'Waiting for data',
   'activity.usage.pendingText': 'The data for this source is not available yet.',
 
-  'activity.notConfigured.title': (p) => `${p.names}: not configured`,
-  'activity.notConfigured.text': (p) =>
-    `${p.benefit} It needs ${p.credential}: set ${p.secrets} in the server environment (or point the integration in \`services.yaml\` to another secret).`,
+  'activity.setup.title': (p) => `Connect ${p.name}`,
+  'activity.setup.create': (p) => `In ${p.name}, create ${p.credential}`,
+  'activity.setup.save': (p) => `Save it as \`${p.secret}\` in the \`.env\` file`,
+  'activity.setup.apply': 'Apply it with `docker compose up -d`',
+  'activity.setup.help': 'Where to set it',
 
   'activity.downloads.title': 'Downloads',
   'activity.downloads.benefit': 'Torrent speed and status will appear here.',
@@ -53,8 +58,7 @@ export const activity: Localized<typeof ref> = {
   'activity.media.queueErrors': 'Errors in the queue',
   'activity.media.queueWarnings': 'Warnings in the queue',
   'activity.media.update': (p) => `Update ${p.version}`,
-  'activity.media.queueEmpty': 'Queue empty',
-  'activity.media.queued': (p) => `${p.n} queued`,
+  'activity.media.inQueue': 'queued',
 
   'activity.tasks.title': 'Tasks',
   'activity.tasks.benefit': 'Open and overdue tasks will appear here.',
@@ -73,6 +77,7 @@ export const activity: Localized<typeof ref> = {
   'activity.playback.count': (p) => (p.n === 1 ? '1 stream playing' : `${p.n} streams playing`),
   'activity.playback.restricted': 'Details hidden with limited access',
   'activity.playback.listLabel': 'Current streams',
+  'activity.playback.playing': 'Playing',
   'activity.playback.paused': 'Paused',
   'activity.playback.transcoding': 'Transcoding',
 
@@ -81,4 +86,8 @@ export const activity: Localized<typeof ref> = {
   'activity.events.showMore': (p) => `Show more (${p.n})`,
   'activity.events.today': 'Today',
   'activity.events.yesterday': 'Yesterday',
+  'activity.events.tone.ok': 'Recovered',
+  'activity.events.tone.warn': 'Warning',
+  'activity.events.tone.crit': 'Critical',
+  'activity.events.tone.neutral': 'Information',
 };

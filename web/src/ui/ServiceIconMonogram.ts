@@ -10,10 +10,3 @@ export function monogram(label: string): string {
   const letters = words.slice(0, 2).map((word) => [...word][0] ?? '');
   return (words.length > 1 ? letters.join('') : (letters[0] ?? '')).toLocaleUpperCase();
 }
-
-/** Stable colour for a name: same name, same tile, spread over the hue circle. */
-export function monogramColor(label: string): string {
-  let hash = 0;
-  for (const char of label.toLowerCase()) hash = (hash * 31 + (char.codePointAt(0) ?? 0)) >>> 0;
-  return `hsl(${hash % 360} 42% 40%)`;
-}

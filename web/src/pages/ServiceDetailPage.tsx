@@ -27,15 +27,15 @@ function DetailSkeleton() {
   return (
     <div className={styles.skeleton} aria-busy="true" aria-label={t('services.detail.loading')}>
       <div className={styles.skeletonHead}>
-        <Skeleton width={64} height={64} radius={16} />
+        <Skeleton width={72} height={72} radius={14} />
         <div className={styles.skeletonTitle}>
-          <Skeleton width="55%" height={32} radius={10} />
-          <Skeleton width="80%" height={18} radius={8} />
+          <Skeleton width="55%" height={32} radius={4} />
+          <Skeleton width="80%" height={18} radius={4} />
         </div>
       </div>
-      <Skeleton height={44} radius={14} />
-      <Skeleton height={190} radius={20} />
-      <Skeleton height={140} radius={20} />
+      <Skeleton height={44} radius={8} />
+      <Skeleton height={120} radius={4} />
+      <Skeleton height={140} radius={4} />
     </div>
   );
 }

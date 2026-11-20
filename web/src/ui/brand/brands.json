@@ -1,0 +1,211 @@
+{
+  "source": {
+    "repository": "homarr-labs/dashboard-icons",
+    "commit": "6d31345986eba2067a63eb41c1a5a87d4e8e850a",
+    "license": "Apache-2.0",
+    "path": "svg"
+  },
+  "brands": [
+    {
+      "id": "adguard-home",
+      "name": "AdGuard Home",
+      "aliases": ["adguardhome"]
+    },
+    {
+      "id": "audiobookshelf",
+      "name": "Audiobookshelf"
+    },
+    {
+      "id": "bazarr",
+      "name": "Bazarr"
+    },
+    {
+      "id": "caddy",
+      "name": "Caddy"
+    },
+    {
+      "id": "deluge",
+      "name": "Deluge"
+    },
+    {
+      "id": "emby",
+      "name": "Emby"
+    },
+    {
+      "id": "flaresolverr",
+      "name": "FlareSolverr"
+    },
+    {
+      "id": "gitea",
+      "name": "Gitea"
+    },
+    {
+      "id": "glances",
+      "name": "Glances"
+    },
+    {
+      "id": "grafana",
+      "name": "Grafana"
+    },
+    {
+      "id": "home-assistant",
+      "name": "Home Assistant",
+      "aliases": ["homeassistant", "hass"]
+    },
+    {
+      "id": "immich",
+      "name": "Immich"
+    },
+    {
+      "id": "jellyfin",
+      "name": "Jellyfin"
+    },
+    {
+      "id": "jellyseerr",
+      "name": "Jellyseerr"
+    },
+    {
+      "id": "kavita",
+      "name": "Kavita"
+    },
+    {
+      "id": "lidarr",
+      "name": "Lidarr"
+    },
+    {
+      "id": "mealie",
+      "name": "Mealie"
+    },
+    {
+      "id": "n8n",
+      "name": "n8n"
+    },
+    {
+      "id": "navidrome",
+      "name": "Navidrome"
+    },
+    {
+      "id": "nextcloud",
+      "name": "Nextcloud"
+    },
+    {
+      "id": "nginx-proxy-manager",
+      "name": "Nginx Proxy Manager",
+      "aliases": ["nginxproxymanager"]
+    },
+    {
+      "id": "nzbget",
+      "name": "NZBGet"
+    },
+    {
+      "id": "olivetin",
+      "name": "OliveTin"
+    },
+    {
+      "id": "overseerr",
+      "name": "Overseerr"
+    },
+    {
+      "id": "paperless-ngx",
+      "name": "Paperless-ngx",
+      "aliases": ["paperlessngx"]
+    },
+    {
+      "id": "pi-hole",
+      "name": "Pi-hole",
+      "aliases": ["pihole"]
+    },
+    {
+      "id": "plex",
+      "name": "Plex",
+      "aliases": ["plexmediaserver"]
+    },
+    {
+      "id": "portainer",
+      "name": "Portainer"
+    },
+    {
+      "id": "prometheus",
+      "name": "Prometheus"
+    },
+    {
+      "id": "prowlarr",
+      "name": "Prowlarr"
+    },
+    {
+      "id": "proxmox",
+      "name": "Proxmox VE",
+      "aliases": ["proxmoxve", "pve"]
+    },
+    {
+      "id": "qbittorrent",
+      "name": "qBittorrent"
+    },
+    {
+      "id": "radarr",
+      "name": "Radarr"
+    },
+    {
+      "id": "readarr",
+      "name": "Readarr"
+    },
+    {
+      "id": "sabnzbd",
+      "name": "SABnzbd"
+    },
+    {
+      "id": "seafile",
+      "name": "Seafile"
+    },
+    {
+      "id": "seerr",
+      "name": "Seerr"
+    },
+    {
+      "id": "sonarr",
+      "name": "Sonarr"
+    },
+    {
+      "id": "syncthing",
+      "name": "Syncthing"
+    },
+    {
+      "id": "tailscale",
+      "name": "Tailscale"
+    },
+    {
+      "id": "tautulli",
+      "name": "Tautulli"
+    },
+    {
+      "id": "traefik",
+      "name": "Traefik"
+    },
+    {
+      "id": "transmission",
+      "name": "Transmission"
+    },
+    {
+      "id": "truenas",
+      "name": "TrueNAS",
+      "aliases": ["truenascore", "truenasscale"]
+    },
+    {
+      "id": "unraid",
+      "name": "Unraid"
+    },
+    {
+      "id": "uptime-kuma",
+      "name": "Uptime Kuma",
+      "aliases": ["uptimekuma"]
+    },
+    {
+      "id": "vaultwarden",
+      "name": "Vaultwarden"
+    },
+    {
+      "id": "vikunja",
+      "name": "Vikunja"
+    }
+  ]
+}

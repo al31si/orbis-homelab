@@ -1,78 +1,117 @@
-import type { VolumeInfo } from '@shared/api';
+import type { DiskInfo, VolumeInfo } from '@shared/api';
 import { useT } from '@/i18n';
 import { formatBytes, formatPercent } from '@/lib/format';
-import { Card } from '@/ui/Card';
+import type { UiTone } from '@/lib/tone';
+import { StatusDot } from '@/ui/Badge';
 import { ProgressBar } from '@/ui/ProgressBar';
 import { Section } from '@/ui/Section';
-import { usageTone, volumeSubtitle, volumeTitle } from './derive';
+import {
+  POOL_CRITICAL_PERCENT,
+  POOL_WARN_PERCENT,
+  toneForDiskStatus,
+  usageTone,
+  usageVerdict,
+  volumeTitle,
+  type PoolView,
+} from './derive';
 import styles from './storage.module.css';
 
-export interface VolumeItem {
+/** One filesystem: its volume, the SMART disk behind it when known, and the pool it belongs to. */
+export interface Bay {
   volume: VolumeInfo;
-  /** Pool legend tint, for volumes that are members of a pool. */
-  color?: string;
+  disk: DiskInfo | undefined;
+  poolLabel: string | undefined;
 }
 
-function VolumeCard({ volume, color }: VolumeItem) {
+/** Pool members first, in pool order, then the filesystems no pool shows. */
+export function baysOf(
+  pools: readonly PoolView[],
+  standalone: readonly VolumeInfo[],
+  disks: readonly DiskInfo[],
+): Bay[] {
+  const diskAt = (mount: string) => disks.find((disk) => disk.mount === mount);
+  return [
+    ...pools.flatMap(({ pool, members }) =>
+      members.map((volume) => ({ volume, disk: diskAt(volume.mount), poolLabel: pool.label })),
+    ),
+    ...standalone.map((volume) => ({ volume, disk: diskAt(volume.mount), poolLabel: undefined })),
+  ];
+}
+
+/** A lamp is as bad as the worst of the space left and the SMART status of the disk behind it. */
+function worst(a: UiTone, b: UiTone): UiTone {
+  const rank: Record<string, number> = { ok: 0, warn: 1, crit: 2 };
+  return (rank[b] ?? 0) > (rank[a] ?? 0) ? b : a;
+}
+
+function BayRow({ volume, disk, poolLabel }: Bay) {
   const t = useT();
-  const tone = usageTone(volume.percent);
+  const usage = usageTone(volume.percent);
+  const diskTone = disk && disk.status !== 'OK' ? toneForDiskStatus(disk.status) : 'ok';
+  const tone = worst(usage, diskTone);
+  const state =
+    diskTone !== 'ok' && disk ? t(`storage.status.${disk.status}`) : usageVerdict(volume.percent);
   const title = volumeTitle(volume);
+  const titleIsPath = volume.label === null;
+
   return (
-    <Card className={styles.fs} data-tone={tone}>
-      <div className={styles.fsHead}>
-        <div className={styles.fsId}>
-          {color && <span className={styles.swatch} style={{ background: color }} aria-hidden />}
-          <div className={styles.fsName}>
-            <h3 className={styles.fsTitle}>{title}</h3>
-            <p className={styles.dSub}>{volumeSubtitle(volume)}</p>
-          </div>
-        </div>
-        <span className={styles.fsPercent} data-tone={tone}>
-          {formatPercent(volume.percent, 1)}
+    <li className={styles.bay} data-tone={tone}>
+      <StatusDot tone={tone} label={state} className={styles.lamp} />
+      <h3
+        className={styles.bayTitle}
+        data-path={titleIsPath || undefined}
+        title={volume.label === null ? volume.mount : `${volume.label} ${volume.mount}`}
+      >
+        {title}
+      </h3>
+      <div className={styles.bayMeter}>
+        <ProgressBar
+          value={volume.percent}
+          tone={usage}
+          warnAt={POOL_WARN_PERCENT}
+          critAt={POOL_CRITICAL_PERCENT}
+          label={t('storage.volume.usage', { name: title })}
+          size="sm"
+          cells={24}
+        />
+        <span className={styles.bayPercent} data-tone={usage}>
+          {formatPercent(volume.percent)}
         </span>
       </div>
-      <ProgressBar
-        value={volume.percent}
-        tone={tone}
-        label={t('storage.volume.usage', { name: title })}
-        size="sm"
-      />
-      <p className={styles.dMuted}>
-        {t('storage.volume.line', {
+      <p className={styles.bayFacts}>
+        {!titleIsPath && <span className={styles.path}>{volume.mount}</span>}
+        {volume.device !== '' && <span>{volume.device}</span>}
+        {volume.type !== '' && <span>{volume.type}</span>}
+        {poolLabel && <span>{poolLabel}</span>}
+        {tone !== 'ok' && <span className={styles.state}>{state}</span>}
+      </p>
+      <p className={styles.bayUsed}>
+        {t('storage.volume.usedOf', {
           used: formatBytes(volume.usedBytes),
-          free: formatBytes(volume.availableBytes),
           total: formatBytes(volume.sizeBytes),
         })}
       </p>
-    </Card>
+      <p className={styles.bayFree}>
+        <strong>{formatBytes(volume.availableBytes)}</strong>
+        <span>{t('storage.volume.free')}</span>
+      </p>
+    </li>
   );
 }
 
-/** Usage cards, two per row from the tablet breakpoint up. */
-export function VolumeCards({ items }: { items: readonly VolumeItem[] }) {
-  return (
-    <ul className={styles.filesystems}>
-      {items.map((item) => (
-        <li key={item.volume.mount}>
-          <VolumeCard {...item} />
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-export interface VolumesSectionProps {
-  volumes: readonly VolumeInfo[];
-  /** True when pools already show their own volumes above: this list is then the remainder. */
-  afterPools: boolean;
-}
-
-export function VolumesSection({ volumes, afterPools }: VolumesSectionProps) {
+export function VolumesSection({ bays }: { bays: readonly Bay[] }) {
   const t = useT();
-  if (volumes.length === 0) return null;
+  if (bays.length === 0) return null;
   return (
-    <Section title={afterPools ? t('storage.volumes.others') : t('storage.volumes.section')}>
-      <VolumeCards items={volumes.map((volume) => ({ volume }))} />
+    <Section
+      title={t('storage.volumes.section')}
+      action={t('storage.summary.volumes', { n: bays.length })}
+    >
+      <ul className={styles.bays}>
+        {bays.map((bay) => (
+          <BayRow key={bay.volume.mount} {...bay} />
+        ))}
+      </ul>
     </Section>
   );
 }

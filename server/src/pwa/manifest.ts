@@ -2,7 +2,7 @@ import type { AppInfo, FeatureFlags } from '../../../shared/api.js';
 import type { T } from '../i18n/index.js';
 
 /** Dark surface color of the built-in theme: splash background and browser chrome. */
-export const THEME_COLOR = '#070e1b';
+export const THEME_COLOR = '#0c1110';
 
 interface Icon {
   src: string;

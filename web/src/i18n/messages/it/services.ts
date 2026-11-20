@@ -5,12 +5,23 @@ export const services = defineMessages({
   /* page */
   'services.title': 'Servizi',
   'services.loading': 'Caricamento',
-  'services.summary': (p: { online: number; monitored: number; total: number }) =>
+  'services.summary': (p: {
+    online: number;
+    monitored: number;
+    total: number;
+    problems: number;
+  }) =>
     p.monitored === 0
       ? p.total === 1
         ? '1 servizio'
         : `${p.total} servizi`
-      : `${p.online} su ${p.monitored} online`,
+      : p.problems === 0
+        ? p.monitored === 1
+          ? 'Il servizio è online'
+          : `Tutti i ${p.monitored} servizi sono online`
+        : p.problems === 1
+          ? `1 servizio su ${p.monitored} ha un problema`
+          : `${p.problems} servizi su ${p.monitored} hanno un problema`,
   'services.offline.title': (p: { name: string }) => `${p.name} non raggiungibile`,
   'services.offline.description':
     'Non ci sono ancora dati salvati su questo dispositivo. Riproverò appena la connessione torna.',
@@ -48,15 +59,19 @@ export const services = defineMessages({
   'services.attention.list': 'Servizi che richiedono attenzione',
   'services.empty.catalog.title': 'Nessun servizio configurato',
   'services.empty.catalog.description':
-    'Descrivi i servizi da mostrare nel file services.yaml della tua istanza.',
+    'Elenca i servizi da mostrare nel file `services.yaml` della tua istanza.',
   'services.empty.problems.title': 'Nessun problema',
-  'services.empty.problems.description': 'Tutti i servizi rispondono.',
+  'services.empty.problems.description': 'Tutti i servizi monitorati rispondono.',
   'services.empty.favorites.title': 'Nessun preferito',
   'services.empty.favorites.description':
-    'Tocca la stella accanto a un servizio per averlo a portata di mano nella Home.',
+    'Tocca la stella accanto a un servizio per averlo nella Home.',
   'services.empty.none.title': 'Nessun servizio trovato',
-  'services.empty.none.query': (p: { query: string }) => `Nessun risultato per “${p.query}”.`,
+  'services.empty.none.query': (p: { query: string }) =>
+    `Nessun risultato per “${p.query}”. Prova con un altro nome.`,
+  'services.empty.none.hidden':
+    'I servizi senza interfaccia sono nascosti. Mostrali per vederli qui.',
   'services.empty.reset': 'Azzera filtri',
+  'services.empty.showAll': 'Mostra tutti i servizi',
   'services.noUi.hide': 'Nascondi i servizi senza interfaccia',
   'services.noUi.show': (p: { n: number }) =>
     `Mostra ${p.n} ${p.n === 1 ? 'servizio' : 'servizi'} senza interfaccia`,
@@ -94,14 +109,24 @@ export const services = defineMessages({
   'services.status.error': 'Errore',
   'services.status.httpCheck': 'Controllo HTTP',
   'services.status.notConfigured': 'Non previsto',
+  'services.status.category': 'Categoria',
 
   'services.integration.title': 'Integrazione',
   'services.integration.metrics': 'Metriche',
-  'services.integration.missing.title': 'Integrazione non configurata',
-  'services.integration.missing.body': (p: { name: string }) =>
-    `Per leggere i dati di ${p.name} il server ha bisogno del segreto di questa integrazione (variabile d’ambiente o file). Finché manca, il servizio è solo monitorato: stato e container.`,
-  'services.integration.missing.defaultName': 'Nome predefinito',
-  'services.integration.missing.override': 'modificabile con integration.secret in services.yaml',
+  'services.integration.setup.title': (p: { name: string }) => `Collega ${p.name}`,
+  'services.integration.setup.benefit': (p: { name: string }) =>
+    `Qui compariranno i dati letti da ${p.name}, come versione e aggiornamenti. Finché manca, il servizio è solo monitorato: stato e container.`,
+  'services.integration.setup.createKey': (p: { name: string }) =>
+    `In ${p.name} crea una chiave API`,
+  'services.integration.setup.createToken': (p: { name: string }) =>
+    `In ${p.name} crea un token API`,
+  'services.integration.setup.save': (p: { secret: string }) =>
+    `Salvalo come \`${p.secret}\` nel file \`.env\`, oppure scegli un altro nome con \`integration.secret\` in \`services.yaml\``,
+  'services.integration.setup.saveNamed':
+    'Salvalo nel file `.env` con il nome indicato da `integration.secret` in `services.yaml`',
+  'services.integration.setup.apply': 'Applica con `docker compose up -d`',
+  'services.integration.setup.help': 'Dove si imposta',
+  'services.integration.empty': 'L’integrazione risponde, ma non ci sono dati da mostrare.',
   'services.integration.failing.title': 'L’integrazione non risponde',
   'services.integration.failing.unknown': 'Errore sconosciuto.',
 
@@ -116,4 +141,7 @@ export const services = defineMessages({
   'services.containers.list': 'Container del servizio',
   'services.containers.cpu': 'CPU',
   'services.containers.memory': 'Memoria',
+  'services.containers.memoryMeter': 'Memoria del servizio rispetto a quella del server',
+  'services.containers.memoryShare': (p: { percent: string }) =>
+    `${p.percent} della memoria del server`,
 });

@@ -6,18 +6,10 @@
   max-width: var(--content-max);
   margin-inline: auto;
   padding: 0 var(--page-pad) var(--space-8);
-  animation: page-in var(--dur-base) var(--ease-out) both;
 }
 
 .narrow {
   max-width: 720px;
-}
-
-@keyframes page-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
 }
 
 .header {
@@ -42,15 +34,16 @@
 .title {
   font-family: var(--font-display);
   font-size: var(--text-title);
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-stretch: var(--stretch-gauge);
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: var(--leading-tight);
 }
 
 .subtitle {
   margin-top: var(--space-1);
   color: var(--text-2);
-  font-size: var(--text-md);
+  font-size: var(--text-base);
 }
 
 .actions {

@@ -220,18 +220,18 @@ services:
     ...
 ```
 
-| Key           | Default   | Meaning                                                                                                                        |
-| ------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `id`          | required  | Slug, unique                                                                                                                   |
-| `name`        | required  | 1-60 characters                                                                                                                |
-| `description` | empty     | Max 160 characters                                                                                                             |
-| `category`    | none      | Slug of a group; label and order come from `app.categories`                                                                    |
-| `icon`        | `generic` | Built-in icon key (for example `jellyfin`, `radarr`) or a file name under `config/branding/icons/` (SVG or PNG)                |
-| `url`         | none      | Launch URL. `{host}` is replaced in the browser by the hostname the app was opened on. Without it the service has no link      |
-| `core`        | `false`   | An outage of a core service is critical (and pushed); otherwise it is a warning                                                |
-| `containers`  | `[]`      | Docker container names, main one first. Their state comes from the system provider. A container can belong to one service only |
-| `probe`       | none      | HTTP check made by Orbis Homelab, see below                                                                                    |
-| `integration` | none      | Extra data from a supported application, see below                                                                             |
+| Key           | Default   | Meaning                                                                                                                                                                                                                                                                                     |
+| ------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`          | required  | Slug, unique                                                                                                                                                                                                                                                                                |
+| `name`        | required  | 1-60 characters                                                                                                                                                                                                                                                                             |
+| `description` | empty     | Max 160 characters                                                                                                                                                                                                                                                                          |
+| `category`    | none      | Slug of a group; label and order come from `app.categories`                                                                                                                                                                                                                                 |
+| `icon`        | `generic` | Product key (for example `jellyfin`, `radarr`: the logo of the product, see [Service logos](brand-logos.md)) or a file name under `config/branding/icons/` (SVG or PNG). Without `icon`, a service whose `id`, `name` or integration is a known product gets its logo, any other a monogram |
+| `url`         | none      | Launch URL. `{host}` is replaced in the browser by the hostname the app was opened on. Without it the service has no link                                                                                                                                                                   |
+| `core`        | `false`   | An outage of a core service is critical (and pushed); otherwise it is a warning                                                                                                                                                                                                             |
+| `containers`  | `[]`      | Docker container names, main one first. Their state comes from the system provider. A container can belong to one service only                                                                                                                                                              |
+| `probe`       | none      | HTTP check made by Orbis Homelab, see below                                                                                                                                                                                                                                                 |
+| `integration` | none      | Extra data from a supported application, see below                                                                                                                                                                                                                                          |
 
 **Probe.** `probe: true` checks `url` (which must not contain `{host}`). `probe: http://host:port/path` checks that URL. The object form adds options:
 

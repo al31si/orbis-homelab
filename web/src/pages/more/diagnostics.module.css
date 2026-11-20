@@ -1,26 +1,23 @@
 .layout {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
 .column {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-8);
   min-width: 0;
 }
 
+/* the sources are the main object; the facts about this server and device sit beside them */
 @media (min-width: 1100px) {
   .layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    gap: var(--space-8);
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: var(--space-12);
     align-items: start;
-  }
-
-  .column {
-    gap: var(--space-8);
   }
 }
 
@@ -28,7 +25,8 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  margin-left: -4px;
+  min-height: var(--tap-min);
+  margin: -10px 0 -6px -4px;
   color: var(--accent);
   font-weight: 500;
 }
@@ -38,56 +36,126 @@
   margin-top: var(--space-2);
 }
 
-.value {
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
+/* sources: how many are fine, as one LED per source */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
-.plain {
+.figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.figureValue {
+  font-size: var(--text-gauge);
+  font-stretch: var(--stretch-gauge);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.figureUnit {
   color: var(--text-2);
+  font-size: var(--text-base);
+}
+
+.sources {
+  min-width: 0;
+}
+
+.source {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-block: 10px;
+}
+
+.source + .source {
+  border-top: 1px solid var(--hairline);
+}
+
+.sourceLamp {
+  margin-top: 6px;
+}
+
+.sourceBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sourceLine {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sourceName {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  font-size: var(--text-base);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.sourceMeta {
+  flex: none;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  white-space: nowrap;
 }
 
 .id {
-  display: block;
+  min-width: 0;
   color: var(--text-3);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
+  overflow-wrap: anywhere;
 }
 
-.line {
-  display: block;
+.idInline {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
 }
 
 .error {
   display: block;
   margin-top: 2px;
   color: var(--tone);
+  font-size: var(--text-sm);
   overflow-wrap: anywhere;
 }
 
+/* containers without a service: code values as squared tags */
 .unclassified {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4) var(--space-4);
-  border-top: 1px solid var(--hairline);
 }
 
-.chips {
+.tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
-.chip {
+.tag {
   display: block;
-  padding: 3px 9px;
-  border-radius: var(--radius-full);
-  background: var(--surface-2);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
   color: var(--text);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
+  overflow-wrap: anywhere;
 }
 
 .help {

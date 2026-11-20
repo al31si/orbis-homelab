@@ -1,11 +1,11 @@
 import type { MediaQueueInfo, Snapshot } from '@shared/api';
 import { t } from '@/i18n';
-import { Badge } from '@/ui/Badge';
-import { Card } from '@/ui/Card';
-import { Icon } from '@/ui/icons';
-import { List, ListRow } from '@/ui/List';
-import { ServiceIcon } from '@/ui/ServiceIcon';
+import { formatNumber } from '@/lib/format';
 import type { UiTone } from '@/lib/tone';
+import { AppLink } from '@/ui/AppLink';
+import { Badge, StatusDot } from '@/ui/Badge';
+import { ServiceIcon } from '@/ui/ServiceIcon';
+import { Figure } from './parts';
 import { SnapshotSection } from './SnapshotSection';
 import styles from './activity.module.css';
 
@@ -13,66 +13,62 @@ type App = MediaQueueInfo['apps'][number];
 
 const HEALTH_TONE: Record<App['health'][number]['type'], UiTone> = {
   ok: 'ok',
-  notice: 'info',
+  notice: 'neutral',
   warning: 'warn',
   error: 'crit',
 };
 
+/** One lamp and its sentence. */
+function Note({ tone, children }: { tone: UiTone; children: string }) {
+  return (
+    <span className={styles.note} data-tone={tone}>
+      <StatusDot tone={tone} />
+      {children}
+    </span>
+  );
+}
+
 function AppRow({ app }: { app: App }) {
   const health = app.health.filter((entry) => entry.type !== 'ok');
-  const queueTone: UiTone = app.queueErrors ? 'crit' : app.queueWarnings ? 'warn' : 'neutral';
+  const queueTone: UiTone | undefined = app.queueErrors
+    ? 'crit'
+    : app.queueWarnings
+      ? 'warn'
+      : undefined;
   return (
-    <ListRow
-      href={`/services/${encodeURIComponent(app.id)}`}
-      multiline
-      leading={<ServiceIcon name={app.id} size={36} />}
-      title={app.name}
-      subtitle={
-        <>
-          <span className={styles.rowLine}>
+    <li>
+      <AppLink href={`/services/${encodeURIComponent(app.id)}`} className={styles.appRow}>
+        <ServiceIcon name={app.id} label={app.name} serviceId={app.id} integration={app.id} />
+        <span className={styles.appText}>
+          <span className={styles.appName}>{app.name}</span>
+          <span className={styles.appVersion}>
             {app.version
               ? t('activity.media.version', { version: app.version })
               : t('activity.media.versionUnknown')}
           </span>
-          {app.queueErrors && (
-            <span className={styles.rowLine} data-tone="crit">
-              {t('activity.media.queueErrors')}
-            </span>
-          )}
+          {app.queueErrors && <Note tone="crit">{t('activity.media.queueErrors')}</Note>}
           {!app.queueErrors && app.queueWarnings && (
-            <span className={styles.rowLine} data-tone="warn">
-              {t('activity.media.queueWarnings')}
-            </span>
+            <Note tone="warn">{t('activity.media.queueWarnings')}</Note>
           )}
           {health.map((entry) => (
-            <span
-              key={`${entry.type}:${entry.message}`}
-              className={styles.rowLine}
-              data-tone={HEALTH_TONE[entry.type]}
-            >
+            <Note key={`${entry.type}:${entry.message}`} tone={HEALTH_TONE[entry.type]}>
               {entry.message}
-            </span>
+            </Note>
           ))}
           {app.updateAvailable && (
-            <span className={styles.rowLine} data-tone="info">
-              <span className={styles.updateLine}>
-                <Icon name="arrow-up" size={13} />
-                {t('activity.media.update', { version: app.updateAvailable })}
-              </span>
-            </span>
+            <Badge className={styles.update}>
+              {t('activity.media.update', { version: app.updateAvailable })}
+            </Badge>
           )}
-        </>
-      }
-      trailing={
-        app.queueCount === 0 ? (
-          <span className={styles.queueEmpty}>{t('activity.media.queueEmpty')}</span>
-        ) : (
-          <Badge tone={queueTone} dot={queueTone !== 'neutral'}>
-            {t('activity.media.queued', { n: app.queueCount })}
-          </Badge>
-        )
-      }
-    />
+        </span>
+        <Figure
+          value={formatNumber(app.queueCount)}
+          caption={t('activity.media.inQueue')}
+          tone={queueTone}
+          dim={app.queueCount === 0}
+        />
+      </AppLink>
+    </li>
   );
 }
 
@@ -85,17 +81,13 @@ export function MediaSection({ snapshot }: { snapshot: Snapshot<MediaQueueInfo> 
     >
       {(data) =>
         data.apps.length === 0 ? (
-          <Card>
-            <p className={styles.muted}>{t('activity.media.none')}</p>
-          </Card>
+          <p className={styles.muted}>{t('activity.media.none')}</p>
         ) : (
-          <Card padding="none">
-            <List variant="plain" aria-label={t('activity.media.listLabel')}>
-              {data.apps.map((app) => (
-                <AppRow key={app.id} app={app} />
-              ))}
-            </List>
-          </Card>
+          <ul className={styles.rows} aria-label={t('activity.media.listLabel')}>
+            {data.apps.map((app) => (
+              <AppRow key={app.id} app={app} />
+            ))}
+          </ul>
         )
       }
     </SnapshotSection>

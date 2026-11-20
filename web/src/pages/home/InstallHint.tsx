@@ -5,7 +5,6 @@ import { t } from '@/i18n';
 import type { InstallKind } from '@/pwa/installGuide';
 import { useInstall } from '@/pwa/useInstall';
 import { Button } from '@/ui/Button';
-import { Card } from '@/ui/Card';
 import { Icon } from '@/ui/icons';
 import { IconButton } from '@/ui/IconButton';
 import styles from './home.module.css';
@@ -20,7 +19,7 @@ function wasDismissed(appId: string): boolean {
   }
 }
 
-/** The kinds worth a card on the Home page: there is something to do for the visitor right now. */
+/** The kinds worth a row on the Home page: there is something to do for the visitor right now. */
 const HINTED: readonly InstallKind[] = [
   'prompt',
   'ios',
@@ -56,49 +55,55 @@ export function InstallHint() {
   const body = (() => {
     switch (guide.kind) {
       case 'prompt':
-        return <p>{t('home.install.prompt')}</p>;
+        return t('home.install.prompt');
       case 'ios':
         return (
-          <p>
+          <>
             {t('home.install.iosTap')} <strong>{t('home.install.iosShare')}</strong>
             {t('home.install.iosThen')} <strong>{t('home.install.iosAdd')}</strong>.
-          </p>
+          </>
         );
       case 'mac-safari':
-        return <p>{t('home.install.dock')}</p>;
+        return t('home.install.dock');
       case 'chromium-android':
-        return <p>{t('home.install.android')}</p>;
+        return t('home.install.android');
       default:
-        return <p>{guide.secure ? t('home.install.browser') : t('home.install.window')}</p>;
+        return guide.secure ? t('home.install.browser') : t('home.install.window');
     }
   })();
 
   return (
-    <Card className={styles.install}>
-      <span className={styles.installIcon}>
-        <Icon name={guide.kind === 'ios' ? 'share' : 'download'} size={22} />
-      </span>
+    <aside className={styles.install} aria-label={t('home.install.title', { name: app.name })}>
+      <Icon
+        name={guide.kind === 'ios' ? 'share' : 'download'}
+        size={20}
+        className={styles.installIcon}
+      />
       <div className={styles.installText}>
-        <p className={styles.installTitle}>{t('home.install.title', { name: app.name })}</p>
-        {body}
-        {guide.kind === 'prompt' ? (
-          <Button variant="primary" size="sm" onClick={() => void install.promptInstall()}>
-            {t('home.install.install')}
-          </Button>
-        ) : (
-          <>
-            {secureUrl && (
-              <Button variant="secondary" size="sm" href={secureUrl}>
-                {t('home.install.openSecure')}
-              </Button>
-            )}
-            <Button variant={secureUrl ? 'ghost' : 'secondary'} size="sm" href="/more">
-              {t('home.install.howTo')}
+        <div className={styles.installBody}>
+          <p className={styles.installTitle}>{t('home.install.title', { name: app.name })}</p>
+          <p>{body}</p>
+        </div>
+        <div className={styles.installActions}>
+          {guide.kind === 'prompt' ? (
+            <Button variant="primary" onClick={() => void install.promptInstall()}>
+              {t('home.install.install')}
             </Button>
-          </>
-        )}
+          ) : (
+            <>
+              {secureUrl && (
+                <Button variant="secondary" href={secureUrl}>
+                  {t('home.install.openSecure')}
+                </Button>
+              )}
+              <Button variant={secureUrl ? 'ghost' : 'secondary'} href="/more">
+                {t('home.install.howTo')}
+              </Button>
+            </>
+          )}
+        </div>
       </div>
       <IconButton icon="close" label={t('home.install.dismiss')} iconSize={18} onClick={dismiss} />
-    </Card>
+    </aside>
   );
 }

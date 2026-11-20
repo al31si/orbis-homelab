@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react';
 import type { Diagnostics } from '@shared/api';
 import { useApp, useFeatures } from '@/boot';
 import { useSnapshot } from '@/data';
 import { t } from '@/i18n';
 import { formatDuration, formatRelativeTime } from '@/lib/format';
+import type { UiTone } from '@/lib/tone';
 import { useNow } from '@/lib/useNow';
-import { useClientInfo } from '@/pwa/useClientInfo';
+import { useClientInfo, type ServiceWorkerStatus } from '@/pwa/useClientInfo';
 import { AppLink } from '@/ui/AppLink';
 import { Badge, StatusDot } from '@/ui/Badge';
 import { Button } from '@/ui/Button';
@@ -13,110 +13,119 @@ import { Card } from '@/ui/Card';
 import { EmptyState } from '@/ui/EmptyState';
 import { ErrorState } from '@/ui/ErrorState';
 import { Icon } from '@/ui/icons';
-import { List, ListRow } from '@/ui/List';
 import { Page, PageHeader } from '@/ui/Page';
+import { ProgressBar } from '@/ui/ProgressBar';
 import { RelativeTime } from '@/ui/RelativeTime';
 import { Section } from '@/ui/Section';
 import { Skeleton } from '@/ui/Skeleton';
 import { UpdatedAt } from '@/ui/UpdatedAt';
 import { RichText } from './more/RichText';
+import { Fact, Facts, Lit, Row, Rows } from './more/rows';
 import { sourceTone, summarizeSources } from './more/diagnostics';
 import styles from './more/diagnostics.module.css';
 
-function Value({ children }: { children: ReactNode }) {
-  return <code className={styles.value}>{children}</code>;
-}
-
 /** "No" is only worth a warning where the answer should normally be yes. */
-function yesNo(value: boolean, warnIfNo: boolean) {
-  return value ? (
-    <Badge tone="ok">{t('diagnostics.client.yes')}</Badge>
-  ) : (
-    <Badge tone={warnIfNo ? 'warn' : 'neutral'}>{t('diagnostics.client.no')}</Badge>
+function YesNo({ value, warnIfNo }: { value: boolean; warnIfNo: boolean }) {
+  return (
+    <Lit tone={value ? 'ok' : warnIfNo ? 'warn' : 'neutral'}>
+      {value ? t('diagnostics.client.yes') : t('diagnostics.client.no')}
+    </Lit>
   );
 }
+
+const SERVICE_WORKER_TONE: Record<ServiceWorkerStatus, UiTone> = {
+  unsupported: 'warn',
+  insecure: 'warn',
+  development: 'neutral',
+  none: 'neutral',
+  failed: 'warn',
+  installing: 'neutral',
+  waiting: 'ok',
+  active: 'ok',
+};
 
 function ServerSection({ data }: { data: Diagnostics }) {
   const { name } = useApp();
   return (
     <Section title={t('diagnostics.server.title')}>
-      <List aria-label={t('diagnostics.server.listLabel', { name })}>
-        <ListRow title={t('diagnostics.server.version')} trailing={<Value>{data.version}</Value>} />
-        <ListRow
-          title={t('diagnostics.server.uptime')}
-          trailing={<Value>{formatDuration(data.uptimeSeconds)}</Value>}
-        />
-        <ListRow
-          title={t('diagnostics.server.started')}
-          trailing={<RelativeTime value={data.startedAt} className={styles.plain} />}
-        />
-        <ListRow
-          title={t('diagnostics.server.node')}
-          trailing={<Value>{data.nodeVersion}</Value>}
-        />
-      </List>
+      <Facts label={t('diagnostics.server.listLabel', { name })}>
+        <Fact label={t('diagnostics.server.version')} mono>
+          {data.version}
+        </Fact>
+        <Fact label={t('diagnostics.server.uptime')}>{formatDuration(data.uptimeSeconds)}</Fact>
+        <Fact label={t('diagnostics.server.started')}>
+          <RelativeTime value={data.startedAt} />
+        </Fact>
+        <Fact label={t('diagnostics.server.node')} mono>
+          {data.nodeVersion}
+        </Fact>
+      </Facts>
     </Section>
   );
 }
 
+/** The primary object: how many sources answer on time, one LED per source, then each source. */
 function SourcesSection({ data }: { data: Diagnostics }) {
   const now = useNow(5_000);
   const summary = summarizeSources(data.sources, now);
   return (
-    <Section
-      title={t('diagnostics.sources.title')}
-      action={
-        <Badge tone={summary.tone} dot>
-          {t('diagnostics.sources.summary', summary)}
-        </Badge>
-      }
-    >
-      <Card padding="none">
-        <List variant="plain" aria-label={t('diagnostics.sources.title')}>
-          {data.sources.map((source) => {
-            const tone = sourceTone(source, now);
-            return (
-              <ListRow
-                key={source.id}
-                multiline
-                leading={
-                  <StatusDot
-                    tone={tone}
-                    label={
-                      tone === 'ok'
-                        ? t('diagnostics.sources.ok')
-                        : tone === 'warn'
-                          ? t('diagnostics.sources.late')
-                          : t('diagnostics.sources.failing')
-                    }
-                  />
-                }
-                title={source.label}
-                subtitle={
-                  <>
-                    <code className={styles.id}>{source.id}</code>
-                    <span className={styles.line}>
-                      {source.fetchedAt
-                        ? t('diagnostics.sources.updated', {
-                            when: formatRelativeTime(source.fetchedAt, now),
-                            every: formatDuration(source.intervalMs / 1000),
-                          })
-                        : t('diagnostics.sources.never', {
-                            every: formatDuration(source.intervalMs / 1000),
-                          })}
-                    </span>
-                    {source.error && (
-                      <span className={styles.error} data-tone="crit">
-                        {source.error}
-                      </span>
-                    )}
-                  </>
-                }
-              />
-            );
-          })}
-        </List>
+    <Section title={t('diagnostics.sources.title')}>
+      <Card className={styles.summary}>
+        <p className={styles.figure}>
+          <span className={styles.figureValue}>{summary.healthy}</span>
+          <span className={styles.figureUnit}>{t('diagnostics.sources.of', summary)}</span>
+        </p>
+        <ProgressBar
+          value={summary.healthy}
+          max={Math.max(1, summary.total)}
+          cells={Math.max(1, summary.total)}
+          tone={summary.tone}
+          label={t('diagnostics.sources.summary', summary)}
+        />
       </Card>
+      <ul className={styles.sources} aria-label={t('diagnostics.sources.title')}>
+        {data.sources.map((source) => {
+          const tone = sourceTone(source, now);
+          const state =
+            tone === 'ok'
+              ? t('diagnostics.sources.ok')
+              : tone === 'warn'
+                ? t('diagnostics.sources.late')
+                : t('diagnostics.sources.failing');
+          const every = t('diagnostics.sources.every', {
+            every: formatDuration(source.intervalMs / 1000),
+          });
+          return (
+            <li key={source.id} className={styles.source}>
+              <StatusDot tone={tone} label={state} className={styles.sourceLamp} />
+              <div className={styles.sourceBody}>
+                <div className={styles.sourceLine}>
+                  <span className={styles.sourceName}>
+                    {source.label}
+                    {tone !== 'ok' && <Badge tone={tone}>{state}</Badge>}
+                  </span>
+                  <span className={styles.sourceMeta}>
+                    {source.fetchedAt
+                      ? t('diagnostics.sources.updated', {
+                          when: formatRelativeTime(source.fetchedAt, now),
+                        })
+                      : t('diagnostics.sources.never')}
+                  </span>
+                </div>
+                <div className={styles.sourceLine}>
+                  <code className={styles.id}>{source.id}</code>
+                  <span className={styles.sourceMeta}>{every}</span>
+                </div>
+                {source.error && (
+                  <span className={styles.error} data-tone="crit">
+                    {source.error}
+                  </span>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </Section>
   );
 }
@@ -126,42 +135,32 @@ function CatalogSection({ data }: { data: Diagnostics }) {
   const unclassified = data.catalog.containersUnclassified;
   return (
     <Section title={t('diagnostics.catalog.title')}>
-      <Card padding="none">
-        <List variant="plain">
-          <ListRow
-            title={t('diagnostics.catalog.services')}
-            trailing={<Value>{data.catalog.services}</Value>}
-          />
-          {features.containers && (
-            <ListRow
-              title={t('diagnostics.catalog.unclassified')}
-              trailing={
-                unclassified.length === 0 ? (
-                  <Badge tone="ok" dot>
-                    {t('diagnostics.catalog.none')}
-                  </Badge>
-                ) : (
-                  <Badge tone="neutral">{unclassified.length}</Badge>
-                )
-              }
-            />
-          )}
-        </List>
-        {features.containers && unclassified.length > 0 && (
-          <div className={styles.unclassified}>
-            <ul className={styles.chips} aria-label={t('diagnostics.catalog.unclassified')}>
-              {unclassified.map((name) => (
-                <li key={name}>
-                  <code className={styles.chip}>{name}</code>
-                </li>
-              ))}
-            </ul>
-            <p className={styles.help}>
-              <RichText text={t('diagnostics.catalog.help')} />
-            </p>
-          </div>
+      <Facts label={t('diagnostics.catalog.title')}>
+        <Fact label={t('diagnostics.catalog.services')}>{data.catalog.services}</Fact>
+        {features.containers && (
+          <Fact label={t('diagnostics.catalog.unclassified')}>
+            {unclassified.length === 0 ? (
+              <Lit tone="ok">{t('diagnostics.catalog.none')}</Lit>
+            ) : (
+              unclassified.length
+            )}
+          </Fact>
         )}
-      </Card>
+      </Facts>
+      {features.containers && unclassified.length > 0 && (
+        <div className={styles.unclassified}>
+          <ul className={styles.tags} aria-label={t('diagnostics.catalog.unclassified')}>
+            {unclassified.map((name) => (
+              <li key={name}>
+                <code className={styles.tag}>{name}</code>
+              </li>
+            ))}
+          </ul>
+          <p className={styles.help}>
+            <RichText text={t('diagnostics.catalog.help')} />
+          </p>
+        </div>
+      )}
     </Section>
   );
 }
@@ -169,12 +168,9 @@ function CatalogSection({ data }: { data: Diagnostics }) {
 function PushSection({ data }: { data: Diagnostics }) {
   return (
     <Section title={t('diagnostics.push.title')}>
-      <List aria-label={t('diagnostics.push.listLabel')}>
-        <ListRow
-          title={t('diagnostics.push.devices')}
-          trailing={<Value>{data.push.subscriptions}</Value>}
-        />
-      </List>
+      <Facts label={t('diagnostics.push.listLabel')}>
+        <Fact label={t('diagnostics.push.devices')}>{data.push.subscriptions}</Fact>
+      </Facts>
     </Section>
   );
 }
@@ -182,35 +178,28 @@ function PushSection({ data }: { data: Diagnostics }) {
 function ExtensionsSection({ data }: { data: Diagnostics }) {
   return (
     <Section title={t('diagnostics.extensions.title')}>
-      <Card padding="none">
-        <List variant="plain" aria-label={t('diagnostics.extensions.title')}>
-          {data.extensions.map((extension) => (
-            <ListRow
+      <Rows label={t('diagnostics.extensions.title')}>
+        {data.extensions.map((extension) => {
+          const state = extension.loaded
+            ? t('diagnostics.extensions.loaded')
+            : t('diagnostics.extensions.failed');
+          return (
+            <Row
               key={extension.id}
-              multiline
-              title={<code className={styles.id}>{extension.id}</code>}
-              subtitle={
+              lamp={{ tone: extension.loaded ? 'ok' : 'crit', label: state }}
+              title={<code className={styles.idInline}>{extension.id}</code>}
+              help={
                 extension.error ? (
                   <span className={styles.error} data-tone="crit">
                     {extension.error}
                   </span>
                 ) : undefined
               }
-              trailing={
-                extension.loaded ? (
-                  <Badge tone="ok" dot>
-                    {t('diagnostics.extensions.loaded')}
-                  </Badge>
-                ) : (
-                  <Badge tone="crit" dot>
-                    {t('diagnostics.extensions.failed')}
-                  </Badge>
-                )
-              }
+              trailing={state}
             />
-          ))}
-        </List>
-      </Card>
+          );
+        })}
+      </Rows>
     </Section>
   );
 }
@@ -219,31 +208,30 @@ function ClientSection() {
   const client = useClientInfo();
   return (
     <Section title={t('diagnostics.client.title')}>
-      <List aria-label={t('diagnostics.client.title')}>
-        <ListRow
-          title={t('diagnostics.client.serviceWorker')}
-          trailing={t(`diagnostics.client.sw.${client.serviceWorker}`)}
-        />
+      <Facts label={t('diagnostics.client.title')}>
+        <Fact label={t('diagnostics.client.serviceWorker')}>
+          <Lit tone={SERVICE_WORKER_TONE[client.serviceWorker]}>
+            {t(`diagnostics.client.sw.${client.serviceWorker}`)}
+          </Lit>
+        </Fact>
         {client.buildId && (
-          <ListRow
-            title={t('diagnostics.client.build')}
-            trailing={<Value>{client.buildId}</Value>}
-          />
+          <Fact label={t('diagnostics.client.build')} mono>
+            {client.buildId}
+          </Fact>
         )}
-        <ListRow
-          title={t('diagnostics.client.displayMode')}
-          trailing={t(`diagnostics.client.display.${client.displayMode}`)}
-        />
-        <ListRow
-          title={t('diagnostics.client.installed')}
-          trailing={yesNo(client.standalone, false)}
-        />
-        <ListRow
-          title={t('diagnostics.client.secure')}
-          trailing={yesNo(client.secureContext, true)}
-        />
-        <ListRow title={t('diagnostics.client.online')} trailing={yesNo(client.online, true)} />
-      </List>
+        <Fact label={t('diagnostics.client.displayMode')}>
+          {t(`diagnostics.client.display.${client.displayMode}`)}
+        </Fact>
+        <Fact label={t('diagnostics.client.installed')}>
+          <YesNo value={client.standalone} warnIfNo={false} />
+        </Fact>
+        <Fact label={t('diagnostics.client.secure')}>
+          <YesNo value={client.secureContext} warnIfNo />
+        </Fact>
+        <Fact label={t('diagnostics.client.online')}>
+          <YesNo value={client.online} warnIfNo />
+        </Fact>
+      </Facts>
     </Section>
   );
 }
@@ -252,12 +240,12 @@ function DiagnosticsSkeleton() {
   return (
     <div className={styles.layout} aria-busy="true" aria-label={t('diagnostics.loading')}>
       <div className={styles.column}>
-        <Skeleton height={190} radius={20} />
-        <Skeleton height={330} radius={20} />
+        <Skeleton height={96} radius={10} />
+        <Skeleton height={330} radius={10} />
       </div>
       <div className={styles.column}>
-        <Skeleton height={120} radius={20} />
-        <Skeleton height={250} radius={20} />
+        <Skeleton height={190} radius={10} />
+        <Skeleton height={250} radius={10} />
       </div>
     </div>
   );
@@ -273,10 +261,10 @@ export default function DiagnosticsPage() {
     body = (
       <div className={styles.layout}>
         <div className={styles.column}>
-          <ServerSection data={data} />
           <SourcesSection data={data} />
         </div>
         <div className={styles.column}>
+          <ServerSection data={data} />
           <CatalogSection data={data} />
           {data.push.enabled && <PushSection data={data} />}
           {data.extensions.length > 0 && <ExtensionsSection data={data} />}

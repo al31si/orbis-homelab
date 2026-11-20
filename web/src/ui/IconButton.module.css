@@ -4,7 +4,7 @@
   place-items: center;
   width: var(--tap-min);
   height: var(--tap-min);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   color: var(--text-2);
   transition:
     background var(--dur-fast) var(--ease-out),

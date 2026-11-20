@@ -1,20 +1,18 @@
-/* layout ------------------------------------------------------------------ */
+/* page --------------------------------------------------------------------- */
 
 .tabs {
-  align-self: stretch;
-}
-
-/* Two tabs on phones; everything is visible from the rail breakpoint up. */
-@media (max-width: 699.98px) {
-  .panel[data-active='false'] {
-    display: none;
-  }
+  width: 100%;
 }
 
 @media (min-width: 700px) {
   .tabs {
-    display: none;
+    max-width: 22rem;
   }
+}
+
+.tabs [role='radio'],
+.sort [role='radio'] {
+  min-height: var(--tap-min);
 }
 
 .panel {
@@ -24,53 +22,103 @@
   min-width: 0;
 }
 
+.panel[data-active='false'] {
+  display: none;
+}
+
+/* One column; from the sidebar breakpoint CPU is read next to memory and temperature. */
 .resources {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   min-width: 0;
 }
 
-@media (min-width: 700px) {
+.areaCpu,
+.areaMemory,
+.areaTemperature,
+.areaDisk,
+.areaHost {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Each plate fills its cell, so the pairs below line up. */
+.areaCpu > section,
+.areaMemory > section,
+.areaTemperature > section {
+  flex: 1;
+}
+
+.areaCpu .plate,
+.areaMemory .plate,
+.areaTemperature .plate {
+  flex: 1;
+}
+
+/* From the sidebar breakpoint: CPU beside memory, temperature beside disk I/O, the host as a strip. */
+@media (min-width: 1100px) {
   .resources {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
+    grid-template-areas:
+      'cpu memory'
+      'temperature disk'
+      'host host';
+    column-gap: var(--space-8);
+  }
+
+  .areaCpu {
+    grid-area: cpu;
+  }
+
+  .areaMemory {
+    grid-area: memory;
+  }
+
+  .areaTemperature {
+    grid-area: temperature;
+  }
+
+  .areaDisk {
+    grid-area: disk;
+  }
+
+  .areaHost {
+    grid-area: host;
   }
 }
 
-.hostCell {
-  grid-column: 1 / -1;
-}
+/* plate: one surface, blocks separated by hairlines --------------------------- */
 
-.grow {
-  flex: 1 1 auto;
-}
-
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+.plate {
+  min-width: 0;
 }
 
 .block {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding-top: var(--space-4);
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+.block + .block {
   border-top: 1px solid var(--hairline);
 }
 
 .blockHead {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: var(--space-2) var(--space-3);
 }
 
 .subhead {
-  color: var(--text-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: 600;
+  line-height: var(--leading-snug);
 }
 
 .caption {
@@ -79,10 +127,12 @@
   line-height: var(--leading-snug);
 }
 
-.footnote {
-  color: var(--text-3);
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
+.stats {
+  display: flex;
+  gap: var(--space-3);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
 }
 
 .muted {
@@ -92,44 +142,44 @@
   text-align: center;
 }
 
-/* headline figure --------------------------------------------------------- */
+/* the figure: big condensed numerals --------------------------------------- */
 
 .headline {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-4) var(--space-6);
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
 }
 
 .figure {
   display: flex;
   flex: none;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-1);
 }
 
-.bigValue {
+.value {
   display: flex;
   align-items: baseline;
-  gap: 3px;
+  gap: 4px;
   font-family: var(--font-display);
   font-size: var(--text-display);
+  font-stretch: var(--stretch-gauge);
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: var(--leading-tight);
+  line-height: 1;
 }
 
-.bigValue[data-tone='warn'],
-.bigValue[data-tone='crit'] {
+.value[data-tone='warn'],
+.value[data-tone='crit'] {
   color: var(--tone);
 }
 
-.bigUnit {
-  margin-left: 2px;
+.unit {
   color: var(--text-2);
   font-size: var(--text-lg);
   font-weight: 500;
-  letter-spacing: 0;
 }
 
 .figureLabel {
@@ -137,248 +187,296 @@
   font-size: var(--text-sm);
 }
 
-.headlineSpread {
+.legend {
+  flex: 1 1 11rem;
+  max-width: 16rem;
+}
+
+/* meter rows: label | meter | value, aligned in columns ------------------------ */
+
+.meterRows {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.breakdown {
-  flex: 1 1 180px;
-}
-
-.pair {
-  display: flex;
-  gap: var(--space-6);
-}
-
-.pair dt {
-  color: var(--text-3);
-  font-size: var(--text-xs);
-}
-
-.pair dd {
-  font-size: var(--text-md);
-  font-weight: 600;
-}
-
-/* host -------------------------------------------------------------------- */
-
-.facts {
+.meterRow {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4) var(--space-3);
+  grid-template-columns: 5.5rem minmax(0, 1fr) 3.75rem;
+  align-items: center;
+  gap: var(--space-3);
 }
 
-@media (min-width: 700px) {
-  .facts {
-    grid-template-columns: repeat(5, minmax(0, auto));
-    justify-content: space-between;
-  }
-}
-
-.fact dt {
-  color: var(--text-3);
-  font-size: var(--text-xs);
-}
-
-.fact dd {
+.rowLabel {
   overflow: hidden;
-  font-size: var(--text-md);
-  font-weight: 600;
+  color: var(--text-2);
+  font-size: var(--text-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* cpu --------------------------------------------------------------------- */
-
-.load {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
-}
-
-.loadItem {
-  display: grid;
-  gap: 2px;
-}
-
-.loadValue {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
+.rowValue {
+  font-size: var(--text-base);
+  font-stretch: var(--stretch-gauge);
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  text-align: right;
+  white-space: nowrap;
 }
 
-.loadLabel {
-  margin-bottom: 4px;
-  color: var(--text-3);
-  font-size: var(--text-xs);
+.rowValue[data-tone='warn'],
+.rowValue[data-tone='crit'] {
+  color: var(--tone);
 }
 
 .cores {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3) var(--space-6);
+  gap: var(--space-2) var(--space-4);
+}
+
+@media (max-width: 359.98px) {
+  .cores {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 700px) and (max-width: 1099.98px) {
+  .cores[data-many] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .core {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 36px;
+  grid-template-columns: 1.25rem minmax(0, 1fr) 2.75rem;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-sm);
 }
 
-.coreLabel {
+.coreIndex {
   color: var(--text-3);
   font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
 }
 
-.coreValue {
+.swapMeter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.75rem;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* temperature --------------------------------------------------------------- */
+
+.lamp {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.thermo {
+  display: flex;
+  flex-direction: column;
+}
+
+/* A tick under the meter at each threshold, labelled in degrees. */
+.thermoScale {
+  position: relative;
+  height: 22px;
+  margin-top: 4px;
+}
+
+.thermoMark {
+  position: absolute;
+  top: 0;
+  left: var(--at);
+  padding-top: 8px;
+  color: var(--text-2);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transform: translateX(-50%);
+}
+
+.thermoMark::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 6px;
+  margin-left: -1px;
+  background: var(--tone);
+}
+
+.thermoMark[data-end] {
+  transform: translateX(-100%);
+}
+
+.thermoMark[data-end]::before {
+  right: 0;
+  left: auto;
+  margin-left: 0;
+}
+
+/* disk i/o: a quiet table ------------------------------------------------------ */
+
+.io {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.io th,
+.io td {
+  padding: var(--space-3) 0;
+  font-weight: inherit;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.io thead th {
+  padding: 0 0 var(--space-2);
+  color: var(--text-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.io td,
+.io thead th:not(:first-child) {
+  width: 5.5rem;
   text-align: right;
 }
 
-/* swap -------------------------------------------------------------------- */
-
-.swapFigure {
-  color: var(--text-2);
-  font-size: var(--text-sm);
+.io tbody tr + tr {
+  border-top: 1px solid var(--hairline);
 }
 
-/* temperature ------------------------------------------------------------- */
-
-.sensors {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+.io td {
+  font-size: var(--text-base);
+  font-stretch: var(--stretch-gauge);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.sensor {
-  display: grid;
-  grid-template-columns: 88px minmax(0, 1fr) 52px;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-sm);
+.io td[data-idle] {
+  color: var(--text-3);
+  font-weight: 500;
 }
 
-.sensorLabel {
+.ioName,
+.ioDevice {
+  display: block;
   overflow: hidden;
-  color: var(--text-2);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sensorValue {
-  text-align: right;
-  font-weight: 600;
+.ioName {
+  font-size: var(--text-base);
+  font-weight: 500;
 }
 
-.sensorValue[data-tone='warn'],
-.sensorValue[data-tone='crit'] {
-  color: var(--tone);
+.ioDevice {
+  color: var(--text-3);
+  font-size: var(--text-xs);
 }
 
-.thermo {
-  position: relative;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--text-3) 20%, transparent);
-}
+/* host: a definition list on one plate ----------------------------------------- */
 
-.thermoFill {
-  display: block;
-  height: 100%;
-  min-width: 4px;
-  border-radius: inherit;
-  background: var(--tone);
-}
-
-.thermo[data-tone='neutral'] .thermoFill {
-  background: var(--text-2);
-}
-
-/* Threshold ticks poke out of the track so they stay visible under the fill. */
-.mark {
-  position: absolute;
-  top: -3px;
-  bottom: -3px;
-  width: 2px;
-  margin-left: -1px;
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--tone) 70%, transparent);
-}
-
-/* disk i/o ---------------------------------------------------------------- */
-
-.rates {
+.facts {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
 }
 
-.rate {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--text);
+.fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+}
+
+.fact + .fact {
+  border-top: 1px solid var(--hairline);
+}
+
+.fact dt {
+  flex: none;
+  color: var(--text-2);
   font-size: var(--text-sm);
 }
 
-.rate[data-idle] {
-  color: var(--text-3);
+.fact dd {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-base);
+  font-weight: 600;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* docker ------------------------------------------------------------------ */
+/* Full width on the wide layout: five columns instead of five rows. */
+@media (min-width: 1100px) {
+  .facts {
+    flex-direction: row;
+  }
+
+  .fact {
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    padding-block: var(--space-3);
+  }
+
+  .fact + .fact {
+    border-top: 0;
+    border-left: 1px solid var(--hairline);
+  }
+
+  .fact dd {
+    max-width: 100%;
+    text-align: left;
+  }
+}
+
+/* docker -------------------------------------------------------------------------- */
 
 .dockerStack {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
   min-width: 0;
 }
 
-.dockerSummary {
+.dockerBlocks {
   display: grid;
-  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 @media (min-width: 700px) {
-  .dockerSummary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-6);
+  .dockerBlocks {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  .dockerBlocks > .block + .block {
+    border-top: 0;
+    border-left: 1px solid var(--hairline);
   }
 }
 
-.counts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
-  padding-top: var(--space-1);
-}
-
-.count {
-  display: flex;
-  flex-direction: column-reverse;
-}
-
-.count dd {
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: 600;
-  line-height: var(--leading-tight);
-}
-
-.count[data-tone='crit'] dd,
-.count[data-tone='warn'] dd {
-  color: var(--tone);
-}
-
-.count dt {
-  color: var(--text-3);
-  font-size: var(--text-xs);
+.sentence {
+  color: var(--text-2);
+  font-size: var(--text-base);
 }
 
 .traffic {
@@ -389,7 +487,7 @@
 
 .trafficItem {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: baseline;
   column-gap: 6px;
   color: var(--text-2);
@@ -402,12 +500,14 @@
 .trafficValue {
   color: var(--text);
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
+  font-stretch: var(--stretch-gauge);
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  line-height: var(--leading-tight);
 }
 
-/* container list ---------------------------------------------------------- */
+/* container list -------------------------------------------------------------------- */
 
 .containers {
   display: flex;
@@ -422,17 +522,6 @@
   gap: var(--space-3);
 }
 
-@media (min-width: 1100px) {
-  .toolbar {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .search {
-    flex: 1;
-  }
-}
-
 .search {
   display: flex;
   align-items: center;
@@ -440,13 +529,13 @@
   min-height: var(--tap-min);
   padding: 0 var(--space-3);
   border-radius: var(--radius-md);
-  background: var(--surface-1);
-  box-shadow: 0 0 0 1px var(--hairline);
+  background: var(--recess);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
   color: var(--text-3);
 }
 
 .search:focus-within {
-  box-shadow: 0 0 0 2px var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .search input {
@@ -478,14 +567,70 @@
   scrollbar-width: none;
 }
 
-.sort {
-  align-self: stretch;
+.filters > button {
+  min-height: var(--tap-min);
+}
+
+.chipCount {
+  font-stretch: var(--stretch-gauge);
+  font-variant-numeric: tabular-nums;
 }
 
 @media (min-width: 700px) {
-  .sort {
-    align-self: flex-start;
+  .toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
   }
+
+  .search {
+    flex: 1 1 16rem;
+  }
+}
+
+/* One grid for header and rows. Compact: lamp, logo, name over image, CPU, memory, uptime
+   under them. From the rail breakpoint: state and uptime get their own columns. */
+.cHead,
+.cRow {
+  display: grid;
+  grid-template-columns: 8px 32px minmax(0, 1fr) 3.25rem 4.25rem;
+  grid-template-areas:
+    'lamp icon title cpu mem'
+    'lamp icon sub up up';
+  column-gap: var(--space-3);
+  align-items: center;
+  padding: 0 var(--space-3);
+}
+
+.cHead {
+  grid-template-areas: '. . name cpu mem';
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--hairline-strong);
+  color: var(--text-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.cHeadName {
+  grid-area: name;
+}
+
+.cHeadCpu,
+.cHeadMem,
+.cHeadUptime {
+  text-align: right;
+}
+
+.cHeadCpu {
+  grid-area: cpu;
+}
+
+.cHeadMem {
+  grid-area: mem;
+}
+
+.cHeadUptime {
+  display: none;
 }
 
 .cList {
@@ -493,37 +638,23 @@
 }
 
 .cItem {
-  position: relative;
   /* Off-screen rows skip layout and paint: keeps the 40+ row list light on phones. */
   content-visibility: auto;
   contain-intrinsic-size: auto 60px;
 }
 
-.cItem + .cItem::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: var(--space-4);
-  height: 1px;
-  background: var(--hairline);
+.cItem + .cItem {
+  border-top: 1px solid var(--hairline);
 }
 
 .cItem[data-attn] {
-  background: color-mix(in srgb, var(--tone) 9%, transparent);
   box-shadow: inset 3px 0 0 var(--tone);
 }
 
 .cRow {
-  display: grid;
-  grid-template-columns: 8px minmax(0, 1fr) auto 16px;
-  grid-template-areas:
-    'dot name cpu chev'
-    'dot name mem chev';
-  align-items: center;
-  column-gap: var(--space-3);
   min-height: 60px;
-  padding: var(--space-2) var(--space-4);
+  padding-block: var(--space-2);
+  row-gap: 1px;
 }
 
 .cLink {
@@ -540,57 +671,67 @@
   }
 }
 
-.cDot {
-  grid-area: dot;
+.cLamp {
+  grid-area: lamp;
   width: 8px;
   height: 8px;
   border-radius: var(--radius-full);
   background: var(--tone, var(--text-3));
 }
 
-.cName {
-  grid-area: name;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
+.cIcon {
+  grid-area: icon;
 }
 
-.cTitle,
-.cSub {
+/* The name block is transparent to the grid: title and image sit on the two lines. */
+.cName {
+  display: contents;
+}
+
+.cTitle {
+  grid-area: title;
   overflow: hidden;
+  font-size: var(--text-base);
+  font-weight: 500;
+  line-height: var(--leading-snug);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.cTitle {
-  font-size: var(--text-base);
-  font-weight: 500;
-  line-height: var(--leading-snug);
-}
-
 .cSub {
+  grid-area: sub;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
   color: var(--text-2);
   font-size: var(--text-sm);
   line-height: var(--leading-snug);
 }
 
-.cSubState {
-  color: var(--tone);
-  font-weight: 600;
+.cImage {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cTag {
+  flex: none;
 }
 
 .cCpu,
 .cMem {
-  justify-self: end;
-  text-align: right;
+  font-size: var(--text-base);
+  font-stretch: var(--stretch-gauge);
+  font-variant-numeric: tabular-nums;
   line-height: var(--leading-snug);
+  text-align: right;
+  white-space: nowrap;
 }
 
 .cCpu {
   grid-area: cpu;
-  align-self: end;
-  font-size: var(--text-base);
   font-weight: 600;
 }
 
@@ -601,89 +742,78 @@
 
 .cMem {
   grid-area: mem;
-  align-self: start;
   color: var(--text-2);
-  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.cUptime {
+  grid-area: up;
+  color: var(--text-3);
+  font-size: var(--text-xs);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Compact: the state is only announced, the lamp and the tag show it. */
+.cState {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .cChevron {
-  grid-area: chev;
-  display: flex;
-  justify-content: flex-end;
-  color: var(--text-3);
-}
-
-.cState,
-.cUptime,
-.cHead {
   display: none;
 }
 
-@media (min-width: 700px) {
-  .cRow,
+/* No room for the logo on the narrowest phones: the lamp and the name carry the row. */
+@media (max-width: 359.98px) {
+  .cHead,
+  .cRow {
+    grid-template-columns: 8px minmax(0, 1fr) 3rem 4rem;
+    grid-template-areas:
+      'lamp title cpu mem'
+      'lamp sub up up';
+  }
+
   .cHead {
-    display: grid;
-    grid-template-columns: 8px minmax(0, 1fr) 132px 72px 84px 84px 16px;
-    grid-template-areas: none;
-    column-gap: var(--space-3);
+    grid-template-areas: '. name cpu mem';
   }
 
-  .cDot,
-  .cName,
-  .cCpu,
-  .cMem,
-  .cChevron {
-    grid-area: auto;
-    align-self: center;
-  }
-
-  .cCpu,
-  .cMem {
-    font-size: var(--text-base);
-  }
-
-  .cMem,
-  .cUptime {
-    color: var(--text-2);
-  }
-
-  .cState {
-    display: block;
-    overflow: hidden;
-    color: var(--text-2);
-    font-size: var(--text-sm);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .cState[data-tone='warn'],
-  .cState[data-tone='crit'] {
-    color: var(--tone);
-    font-weight: 600;
-  }
-
-  .cUptime {
-    display: block;
-    font-size: var(--text-sm);
-    text-align: right;
-  }
-
-  .cSubState,
-  .cSubUptime {
+  .cIcon {
     display: none;
   }
+}
 
-  .cHead {
-    padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--hairline);
-    color: var(--text-3);
-    font-size: var(--text-xs);
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+@media (min-width: 700px) {
+  .cHead,
+  .cRow {
+    grid-template-columns: 8px 32px minmax(0, 1fr) 4.5rem 5.25rem 5.25rem 16px;
+    grid-template-areas:
+      'lamp icon title cpu mem up chev'
+      'lamp icon sub cpu mem up chev';
   }
 
-  .cHead span:nth-child(n + 4) {
-    text-align: right;
+  .cHead {
+    grid-template-areas: '. . name cpu mem up .';
+  }
+
+  .cHeadUptime {
+    display: block;
+    grid-area: up;
+  }
+
+  .cUptime {
+    color: var(--text-2);
+    font-size: var(--text-sm);
+  }
+
+  .cChevron {
+    display: flex;
+    grid-area: chev;
+    justify-content: flex-end;
+    color: var(--text-3);
   }
 }

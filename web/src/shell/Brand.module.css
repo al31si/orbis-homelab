@@ -22,8 +22,9 @@
   overflow: hidden;
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-stretch: var(--stretch-gauge);
+  font-weight: 600;
+  letter-spacing: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

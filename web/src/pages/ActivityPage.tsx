@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useApp } from '@/boot';
 import { useSession, useSnapshot } from '@/data';
 import { ExtensionActivitySections } from '@/extensions/ActivitySections';
@@ -20,20 +21,25 @@ import { UsageSection } from './activity/UsageSection';
 import styles from './activity/activity.module.css';
 
 function ActivitySkeleton() {
+  const radius = 'var(--radius-lg)';
   return (
     <div className={styles.stack} aria-busy="true" aria-label={t('activity.loading')}>
       <div className={styles.column}>
-        <Skeleton height={72} radius={20} />
-        <Skeleton height={250} radius={20} />
-        <Skeleton height={190} radius={20} />
+        <Skeleton height={24} radius={radius} />
+        <Skeleton height={250} radius={radius} />
+        <Skeleton height={230} radius={radius} />
       </div>
       <div className={styles.column}>
-        <Skeleton height={150} radius={20} />
-        <Skeleton height={96} radius={20} />
-        <Skeleton height={320} radius={20} />
+        <Skeleton height={190} radius={radius} />
+        <Skeleton height={320} radius={radius} />
       </div>
     </div>
   );
+}
+
+/** An integration that is declared but not connected yet: an empty bay, kept below what is live. */
+function Bay({ children }: { children: ReactNode }) {
+  return <div className={styles.bay}>{children}</div>;
 }
 
 export default function ActivityPage() {
@@ -46,59 +52,81 @@ export default function ActivityPage() {
   let body;
   if (data) {
     const { downloads, mediaQueue, tasks, playback } = data;
+    const bays = [
+      {
+        group: 'downloads',
+        present: downloads,
+        title: t('activity.downloads.title'),
+        benefit: t('activity.downloads.benefit'),
+        credential: t('activity.downloads.credential'),
+      },
+      {
+        group: 'media',
+        present: mediaQueue,
+        title: t('activity.media.title'),
+        benefit: t('activity.media.benefit'),
+        credential: t('activity.media.credential'),
+      },
+      {
+        group: 'playback',
+        present: playback,
+        title: t('activity.playback.title'),
+        benefit: t('activity.playback.benefit'),
+        credential: t('activity.playback.credential'),
+      },
+      {
+        group: 'tasks',
+        present: tasks,
+        title: t('activity.tasks.title'),
+        benefit: t('activity.tasks.benefit'),
+        credential: t('activity.tasks.credential'),
+      },
+    ] as const;
     body = (
       <div className={styles.stack}>
         <div className={styles.column}>
           <ActivityAlerts overview={overview} />
           <ExtensionActivitySections />
-          {downloads ? (
-            <DownloadsSection snapshot={downloads} />
-          ) : (
-            <NotConfigured
-              title={t('activity.downloads.title')}
-              icon="download"
-              missing={missingIntegrations(session, 'downloads')}
-              benefit={t('activity.downloads.benefit')}
-              credential={t('activity.downloads.credential')}
-            />
+          {downloads && (
+            <div className={styles.live}>
+              <DownloadsSection snapshot={downloads} />
+            </div>
           )}
-          {mediaQueue ? (
-            <MediaSection snapshot={mediaQueue} />
-          ) : (
-            <NotConfigured
-              title={t('activity.media.title')}
-              icon="services"
-              missing={missingIntegrations(session, 'media')}
-              benefit={t('activity.media.benefit')}
-              credential={t('activity.media.credential')}
-            />
+          {mediaQueue && (
+            <div className={styles.live}>
+              <MediaSection snapshot={mediaQueue} />
+            </div>
           )}
+          {playback && (
+            <div className={styles.live}>
+              <PlaybackSection snapshot={playback} />
+            </div>
+          )}
+          {tasks && (
+            <div className={styles.live}>
+              <TasksSection snapshot={tasks} />
+            </div>
+          )}
+          {bays.map(({ group, present, ...copy }) => {
+            const missing = present ? [] : missingIntegrations(session, group);
+            return (
+              missing.length > 0 && (
+                <Bay key={group}>
+                  <NotConfigured missing={missing} {...copy} />
+                </Bay>
+              )
+            );
+          })}
         </div>
         <div className={styles.column}>
-          {tasks ? (
-            <TasksSection snapshot={tasks} />
-          ) : (
-            <NotConfigured
-              title={t('activity.tasks.title')}
-              icon="list"
-              missing={missingIntegrations(session, 'tasks')}
-              benefit={t('activity.tasks.benefit')}
-              credential={t('activity.tasks.credential')}
-            />
+          {data.usage.length > 0 && (
+            <div className={styles.usage}>
+              <UsageSection usage={data.usage} />
+            </div>
           )}
-          {playback ? (
-            <PlaybackSection snapshot={playback} />
-          ) : (
-            <NotConfigured
-              title={t('activity.playback.title')}
-              icon="play"
-              missing={missingIntegrations(session, 'playback')}
-              benefit={t('activity.playback.benefit')}
-              credential={t('activity.playback.credential')}
-            />
-          )}
-          <UsageSection usage={data.usage} />
-          <EventsSection events={data.events} />
+          <div className={styles.history}>
+            <EventsSection events={data.events} />
+          </div>
         </div>
       </div>
     );

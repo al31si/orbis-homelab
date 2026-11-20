@@ -31,10 +31,10 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 PUBLIC = Path(__file__).resolve().parent.parent / 'public'
 
-# Defaults follow the dark theme tokens (tokens.css): deep navy with a cool accent.
-DEFAULT_BG_TOP = '#0b1e3a'
-DEFAULT_BG_BOTTOM = '#060e1c'
-DEFAULT_SPLASH_BG = '#070e1b'
+# Defaults follow the dark theme tokens (tokens.css): graphite with a green cast and the blue emblem.
+DEFAULT_BG_TOP = '#18231f'
+DEFAULT_BG_BOTTOM = '#0a100f'
+DEFAULT_SPLASH_BG = '#0c1110'
 DEFAULT_ACCENT = '#3aa6e0'
 
 # (css width, css height, device pixel ratio): portrait launch images of current iPhones/iPads.

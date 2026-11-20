@@ -2,13 +2,11 @@ import type { Overview, ServiceView } from '@shared/api';
 import { useT } from '@/i18n';
 import { Badge } from '@/ui/Badge';
 import { Button } from '@/ui/Button';
-import { Card } from '@/ui/Card';
-import { Icon } from '@/ui/icons';
 import { List, ListRow } from '@/ui/List';
-import { ProgressBar } from '@/ui/ProgressBar';
 import { Section } from '@/ui/Section';
 import { ServiceIcon } from '@/ui/ServiceIcon';
 import { serviceStateLabel, serviceTone } from '@/pages/services/catalog';
+import { ServiceLamps } from './ServiceLamps';
 import { summarizeServices } from './summary';
 import styles from './home.module.css';
 
@@ -19,82 +17,72 @@ export interface HomeServicesProps {
   services: readonly ServiceView[] | null;
 }
 
-/** "17 of 18 online" plus the services that need a look; only monitored services count. */
+/** "17 of 18 online", a lamp per service, and the services that need a look; only monitored ones count. */
 export function HomeServices({ summary, problemServiceIds, services }: HomeServicesProps) {
   const t = useT();
   const { monitored, up, unmonitored, allUp } = summarizeServices(summary);
   const problems = problemServiceIds
     .map((id) => services?.find((service) => service.id === id))
     .filter((service): service is ServiceView => service !== undefined && service.monitored);
+  const tone = allUp ? 'ok' : summary.down > 0 ? 'crit' : 'warn';
 
   return (
-    <Section
-      title={t('home.services.title')}
-      action={
-        <Button href="/services" variant="ghost" size="sm">
-          {t('home.services.all')}
-        </Button>
-      }
-    >
-      <Card padding="none">
+    <Section title={t('home.services.title')}>
+      <div className={styles.services}>
         <div className={styles.servicesHead}>
-          <div className={styles.servicesCount}>
-            <span className={styles.servicesNumber}>
-              {monitored > 0
-                ? t('home.services.online', { up, monitored })
-                : t('home.services.noneMonitored', { total: summary.total })}
-            </span>
-            {allUp && (
-              <span className={styles.servicesOk}>
-                <Icon name="check-circle" size={18} />
-                {t('home.services.allUp')}
-              </span>
-            )}
-          </div>
-          {monitored > 0 && (
-            <ProgressBar
-              value={up}
-              max={monitored}
-              tone={allUp ? 'ok' : summary.down > 0 ? 'crit' : 'warn'}
-              label={t('home.services.progress')}
-              size="sm"
-            />
+          {monitored > 0 ? (
+            <p className={styles.servicesCount} data-tone={tone}>
+              <span className={styles.servicesFigure}>{up}</span>
+              <span className={styles.servicesOf}>{t('home.services.of', { monitored })}</span>
+            </p>
+          ) : (
+            <p className={styles.servicesNone}>
+              {t('home.services.noneMonitored', { total: summary.total })}
+            </p>
           )}
-          {monitored > 0 && unmonitored > 0 && (
-            <span className={styles.servicesNote}>
-              {t('home.services.unmonitored', { n: unmonitored })}
-            </span>
-          )}
+          <Button href="/services" variant="ghost">
+            {t('home.services.all')}
+          </Button>
         </div>
-        {problems.length > 0 && (
-          <div className={styles.problems}>
-            <List variant="plain" aria-label={t('home.services.problems')}>
-              {problems.map((service) => (
-                <ListRow
-                  key={service.id}
-                  href={`/services/${encodeURIComponent(service.id)}`}
-                  multiline
-                  leading={
-                    <ServiceIcon
-                      name={service.icon}
-                      iconUrl={service.iconUrl}
-                      label={service.name}
-                      size={36}
-                    />
-                  }
-                  title={service.name}
-                  subtitle={service.stateDetail ?? undefined}
-                  trailing={
-                    <Badge tone={serviceTone(service)} dot>
-                      {serviceStateLabel(service)}
-                    </Badge>
-                  }
-                />
-              ))}
-            </List>
-          </div>
+        <ServiceLamps summary={summary} services={services} />
+        {monitored > 0 && unmonitored > 0 && (
+          <p className={styles.servicesNote}>
+            {t('home.services.unmonitored', { n: unmonitored })}
+          </p>
         )}
-      </Card>
+        {problems.length > 0 && (
+          <List
+            variant="plain"
+            className={styles.problems}
+            aria-label={t('home.services.problems')}
+          >
+            {problems.map((service) => (
+              <ListRow
+                key={service.id}
+                href={`/services/${encodeURIComponent(service.id)}`}
+                multiline
+                leading={
+                  <ServiceIcon
+                    name={service.icon}
+                    iconUrl={service.iconUrl}
+                    serviceId={service.id}
+                    integration={service.integration?.id}
+                    label={service.name}
+                    size={36}
+                  />
+                }
+                title={service.name}
+                subtitle={service.stateDetail ?? undefined}
+                trailing={
+                  <Badge tone={serviceTone(service)} dot>
+                    {serviceStateLabel(service)}
+                  </Badge>
+                }
+              />
+            ))}
+          </List>
+        )}
+      </div>
     </Section>
   );
 }

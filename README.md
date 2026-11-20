@@ -105,6 +105,7 @@ The image is built for `linux/amd64` and `linux/arm64`. The `amd64` image is wha
 - [SMART report format](docs/smart-report.md)
 - [Usage providers](docs/usage-providers.md) and the optional [Claude Code usage writer](contrib/claude-usage/README.md)
 - [Extensions](docs/extensions.md)
+- [Service logos](docs/brand-logos.md) and the [design language](docs/design-language.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Releasing](docs/releasing.md) and the release notes ([0.2.0](docs/release-notes/0.2.0.md), [0.1.0](docs/release-notes/0.1.0.md))
 - [Contributing](CONTRIBUTING.md)

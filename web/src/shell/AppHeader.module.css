@@ -14,8 +14,6 @@
 .collapsed {
   background: var(--header-bg);
   border-bottom-color: var(--hairline);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
-  backdrop-filter: saturate(180%) blur(24px);
 }
 
 .bar {
@@ -86,6 +84,7 @@
 @media (min-width: 700px) {
   .header {
     padding-left: 0;
+    background: var(--header-bg);
   }
 
   .title,

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { t } from '@/i18n';
+import { useShell } from '@/shell/ShellContext';
 import styles from './PullToRefresh.module.css';
 import { Icon } from './icons';
 
@@ -22,6 +23,7 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
   const [pull, setPull] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const { scroller } = useShell();
   const refreshRef = useRef(onRefresh);
 
   useEffect(() => {
@@ -33,11 +35,13 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
     let distance = 0;
     let busy = false;
 
+    const scrollTop = () => scroller.current?.scrollTop ?? 0;
+
     function onStart(event: TouchEvent) {
       const touch = event.touches[0];
       const blocked = document.body.style.overflow === 'hidden';
       startY =
-        !busy && !blocked && event.touches.length === 1 && window.scrollY <= 0 && touch
+        !busy && !blocked && event.touches.length === 1 && scrollTop() <= 0 && touch
           ? touch.clientY
           : null;
       distance = 0;
@@ -47,7 +51,7 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
       const touch = event.touches[0];
       if (startY === null || !touch) return;
       const delta = touch.clientY - startY;
-      if (delta <= 0 || window.scrollY > 0) {
+      if (delta <= 0 || scrollTop() > 0) {
         if (distance > 0) setPull(0);
         distance = 0;
         return;
@@ -92,7 +96,7 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
       document.removeEventListener('touchend', onEnd);
       document.removeEventListener('touchcancel', onEnd);
     };
-  }, []);
+  }, [scroller]);
 
   const progress = Math.min(1, pull / THRESHOLD);
   return (

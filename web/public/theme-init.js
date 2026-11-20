@@ -23,7 +23,7 @@
     var theme = known.indexOf(stored) >= 0 ? stored : app.theme;
     if (theme === 'light' || theme === 'dark') {
       root.dataset.theme = theme;
-      var color = theme === 'dark' ? '#070e1b' : '#f2f5fa';
+      var color = theme === 'dark' ? '#0c1110' : '#e5e9e7';
       var metas = document.querySelectorAll('meta[name="theme-color"]');
       for (var i = 0; i < metas.length; i++) {
         metas[i].setAttribute('content', color);

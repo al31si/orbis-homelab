@@ -1,8 +1,6 @@
 import type { DiskInfo, PoolInfo, SmartSummary, StorageInfo, VolumeInfo } from '@shared/api';
 import { t } from '@/i18n';
-import { formatTemperature } from '@/lib/format';
 import { toneForThreshold, type UiTone } from '@/lib/tone';
-import { diskColor } from './diskColors';
 
 /** Pool and volume usage turns amber from here and red from `POOL_CRITICAL_PERCENT`. */
 export const POOL_WARN_PERCENT = 85;
@@ -43,16 +41,10 @@ export function powerOnSpan(hours: number): string {
 
 /* -------------------------------------------------------- pools and volumes */
 
-export interface PoolMember {
-  volume: VolumeInfo;
-  /** Tint that identifies the member in the pool legend and wherever else it is listed. */
-  color: string;
-}
-
 export interface PoolView {
   pool: PoolInfo;
   /** Member volumes in the order the pool lists them; mounts without a volume are dropped. */
-  members: PoolMember[];
+  members: VolumeInfo[];
 }
 
 type VolumeData = Pick<StorageInfo, 'pools' | 'volumes'>;
@@ -60,13 +52,10 @@ type VolumeData = Pick<StorageInfo, 'pools' | 'volumes'>;
 /** Resolves each pool's member mounts to their volumes. */
 export function poolViews({ pools, volumes }: VolumeData): PoolView[] {
   const byMount = new Map(volumes.map((volume) => [volume.mount, volume]));
-  return pools.map((pool) => {
-    const found = [...new Set(pool.members)].flatMap((mount) => byMount.get(mount) ?? []);
-    return {
-      pool,
-      members: found.map((volume, index) => ({ volume, color: diskColor(index, found.length) })),
-    };
-  });
+  return pools.map((pool) => ({
+    pool,
+    members: [...new Set(pool.members)].flatMap((mount) => byMount.get(mount) ?? []),
+  }));
 }
 
 /** Volumes the pools do not already show: neither a member nor the pool's own mount. */
@@ -79,41 +68,23 @@ export function volumeTitle(volume: Pick<VolumeInfo, 'label' | 'mount'>): string
   return volume.label ?? volume.mount;
 }
 
-/** "/mnt/media · /dev/sdb1 · ext4": the mount is repeated only when the title is a label. */
-export function volumeSubtitle(volume: VolumeInfo): string {
-  return [volume.label === null ? null : volume.mount, volume.device, volume.type]
-    .filter((part) => part !== null && part !== '')
-    .join(' · ');
-}
-
 export interface MemberShare {
   mount: string;
   label: string;
-  color: string;
   usedBytes: number;
   /** Share of the space used by all members together, 0..100. */
   percent: number;
 }
 
 /** How the used space of a pool is spread across its member volumes. */
-export function memberShares(members: readonly PoolMember[]): MemberShare[] {
-  const total = members.reduce((sum, { volume }) => sum + volume.usedBytes, 0);
-  return members.map(({ volume, color }) => ({
+export function memberShares(members: readonly VolumeInfo[]): MemberShare[] {
+  const total = members.reduce((sum, volume) => sum + volume.usedBytes, 0);
+  return members.map((volume) => ({
     mount: volume.mount,
     label: volumeTitle(volume),
-    color,
     usedBytes: volume.usedBytes,
     percent: total > 0 ? (volume.usedBytes / total) * 100 : 0,
   }));
-}
-
-/** Mount point -> member tint, so a SMART disk can wear the colour of its pool legend entry. */
-export function memberColors(views: readonly PoolView[]): ReadonlyMap<string, string> {
-  return new Map(
-    views.flatMap((view) =>
-      view.members.map(({ volume, color }) => [volume.mount, color] as const),
-    ),
-  );
 }
 
 /* ---------------------------------------------------------------- SMART */
@@ -186,16 +157,6 @@ export function problemDisks(disks: readonly DiskInfo[]): DiskInfo[] {
     .sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status]);
 }
 
-/** "pending/uncorrectable sectors present · 42 °C", falling back to the SMART verdict. */
-export function diskProblemLine(disk: DiskInfo): string {
-  const message =
-    disk.message.trim() ||
-    t('storage.health.smartState', { state: t(`storage.smart.${disk.smart}`) });
-  return disk.temperatureC === null
-    ? message
-    : `${message} · ${formatTemperature(Math.round(disk.temperatureC))}`;
-}
-
 export interface ProblemExplanation {
   /** What each kind of defect on the given disks means, one sentence per kind. */
   meanings: string[];
@@ -214,17 +175,4 @@ export function explainProblems(disks: readonly DiskInfo[]): ProblemExplanation 
     meanings.push(t('storage.meaning.passed'));
   }
   return { meanings, advice: t('storage.health.advice') };
-}
-
-/* ---------------------------------------------------------------- summary */
-
-/** "2 pools · 6 volumes · 4 disks": what the page shows, skipping what the instance lacks. */
-export function storageSummary(storage: StorageInfo, smart: SmartView | null): string {
-  return [
-    storage.pools.length > 0 && t('storage.summary.pools', { n: storage.pools.length }),
-    storage.volumes.length > 0 && t('storage.summary.volumes', { n: storage.volumes.length }),
-    smart !== null && t('storage.summary.disks', { n: smart.disks.length }),
-  ]
-    .filter((part) => part !== false)
-    .join(' · ');
 }

@@ -10,7 +10,13 @@ export const services: Localized<typeof ref> = {
       ? p.total === 1
         ? '1 service'
         : `${p.total} services`
-      : `${p.online} of ${p.monitored} online`,
+      : p.problems === 0
+        ? p.monitored === 1
+          ? 'The service is online'
+          : `All ${p.monitored} services are online`
+        : p.problems === 1
+          ? `1 of ${p.monitored} services has a problem`
+          : `${p.problems} of ${p.monitored} services have a problem`,
   'services.offline.title': (p) => `${p.name} is unreachable`,
   'services.offline.description':
     'There is no saved data on this device yet. I’ll retry as soon as the connection is back.',
@@ -48,15 +54,17 @@ export const services: Localized<typeof ref> = {
   'services.attention.list': 'Services that need attention',
   'services.empty.catalog.title': 'No services configured',
   'services.empty.catalog.description':
-    'Describe the services to show in the services.yaml file of your instance.',
+    'List the services to show in the `services.yaml` file of your instance.',
   'services.empty.problems.title': 'No problems',
-  'services.empty.problems.description': 'All services are responding.',
+  'services.empty.problems.description': 'All monitored services are responding.',
   'services.empty.favorites.title': 'No favorites',
-  'services.empty.favorites.description':
-    'Tap the star next to a service to keep it within reach on Home.',
+  'services.empty.favorites.description': 'Tap the star next to a service to keep it on Home.',
   'services.empty.none.title': 'No services found',
-  'services.empty.none.query': (p) => `No results for “${p.query}”.`,
+  'services.empty.none.query': (p) => `No results for “${p.query}”. Try another name.`,
+  'services.empty.none.hidden':
+    'Services without an interface are hidden. Show them to see them here.',
   'services.empty.reset': 'Clear filters',
+  'services.empty.showAll': 'Show all services',
   'services.noUi.hide': 'Hide services without an interface',
   'services.noUi.show': (p) =>
     `Show ${p.n} ${p.n === 1 ? 'service' : 'services'} without an interface`,
@@ -92,15 +100,23 @@ export const services: Localized<typeof ref> = {
   'services.status.uptime': 'Up for',
   'services.status.error': 'Error',
   'services.status.httpCheck': 'HTTP check',
-  'services.status.notConfigured': 'Not configured',
+  'services.status.notConfigured': 'Not set up',
+  'services.status.category': 'Category',
 
   'services.integration.title': 'Integration',
   'services.integration.metrics': 'Metrics',
-  'services.integration.missing.title': 'Integration not configured',
-  'services.integration.missing.body': (p) =>
-    `To read data from ${p.name} the server needs this integration’s secret (environment variable or file). Until then the service is only monitored: state and containers.`,
-  'services.integration.missing.defaultName': 'Default name',
-  'services.integration.missing.override': 'change it with integration.secret in services.yaml',
+  'services.integration.setup.title': (p) => `Connect ${p.name}`,
+  'services.integration.setup.benefit': (p) =>
+    `The data read from ${p.name}, such as its version and updates, will appear here. Until then the service is only monitored: state and containers.`,
+  'services.integration.setup.createKey': (p) => `In ${p.name}, create an API key`,
+  'services.integration.setup.createToken': (p) => `In ${p.name}, create an API token`,
+  'services.integration.setup.save': (p) =>
+    `Save it as \`${p.secret}\` in the \`.env\` file, or pick another name with \`integration.secret\` in \`services.yaml\``,
+  'services.integration.setup.saveNamed':
+    'Save it in the `.env` file under the name set by `integration.secret` in `services.yaml`',
+  'services.integration.setup.apply': 'Apply it with `docker compose up -d`',
+  'services.integration.setup.help': 'Where to set it',
+  'services.integration.empty': 'The integration is responding, but there is no data to show.',
   'services.integration.failing.title': 'The integration is not responding',
   'services.integration.failing.unknown': 'Unknown error.',
 
@@ -115,4 +131,6 @@ export const services: Localized<typeof ref> = {
   'services.containers.list': 'Service containers',
   'services.containers.cpu': 'CPU',
   'services.containers.memory': 'Memory',
+  'services.containers.memoryMeter': 'Memory of the service compared with the server’s',
+  'services.containers.memoryShare': (p) => `${p.percent} of the server’s memory`,
 };

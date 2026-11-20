@@ -2,50 +2,55 @@ import type { Alert } from '@shared/api';
 import { useFeatures } from '@/boot';
 import { useT } from '@/i18n';
 import { toneForSeverity } from '@/lib/tone';
+import { StatusDot } from '@/ui/Badge';
 import { Card } from '@/ui/Card';
-import { Icon, type IconName } from '@/ui/icons';
 import { List, ListRow } from '@/ui/List';
 import { RelativeTime } from '@/ui/RelativeTime';
 import { Section } from '@/ui/Section';
 import { alertHref, sortAlerts } from './summary';
 import styles from './home.module.css';
 
-const ICON_BY_SEVERITY: Record<Alert['severity'], IconName> = {
-  critical: 'alert-circle',
-  warning: 'alert',
-  info: 'info',
-};
+const SEVERITY_KEY = {
+  critical: 'home.alerts.critical',
+  warning: 'home.alerts.warning',
+  info: 'home.alerts.info',
+} as const satisfies Record<Alert['severity'], string>;
 
-/** Active alerts, critical first; each one leads to the page that explains it. */
-export function HomeAlerts({ alerts }: { alerts: readonly Alert[] }) {
+/** The alerts as hairline-separated rows, critical first; each row leads to the page that explains it. */
+export function AlertRows({ alerts }: { alerts: readonly Alert[] }) {
   const t = useT();
   const features = useFeatures();
+  return (
+    <List variant="plain" aria-label={t('home.alerts.title')}>
+      {sortAlerts(alerts).map((alert) => (
+        <ListRow
+          key={alert.id}
+          href={alertHref(alert, features)}
+          multiline
+          leading={<StatusDot tone={toneForSeverity(alert.severity)} />}
+          title={
+            <>
+              <span className="sr-only">{t(SEVERITY_KEY[alert.severity])}: </span>
+              {alert.title}
+            </>
+          }
+          subtitle={alert.detail}
+          trailing={<RelativeTime value={alert.since} className={styles.since} />}
+        />
+      ))}
+    </List>
+  );
+}
+
+/** Active alerts as a titled section of their own (used where there is no state plate, e.g. Activity). */
+export function HomeAlerts({ alerts }: { alerts: readonly Alert[] }) {
+  const t = useT();
   if (alerts.length === 0) return null;
   return (
     <Section title={t('home.alerts.title')}>
-      <div className={styles.alerts}>
-        {sortAlerts(alerts).map((alert) => {
-          const tone = toneForSeverity(alert.severity);
-          return (
-            <Card key={alert.id} padding="none" tone={alert.severity === 'info' ? undefined : tone}>
-              <List variant="plain">
-                <ListRow
-                  href={alertHref(alert, features)}
-                  multiline
-                  leading={
-                    <span className={styles.alertIcon} data-tone={tone}>
-                      <Icon name={ICON_BY_SEVERITY[alert.severity]} size={22} />
-                    </span>
-                  }
-                  title={alert.title}
-                  subtitle={alert.detail}
-                  trailing={<RelativeTime value={alert.since} className={styles.since} />}
-                />
-              </List>
-            </Card>
-          );
-        })}
-      </div>
+      <Card padding="none">
+        <AlertRows alerts={alerts} />
+      </Card>
     </Section>
   );
 }

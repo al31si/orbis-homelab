@@ -1,15 +1,19 @@
+/*
+ * Navigation. A grid cell of the frame (see AppShell.module.css), never a fixed bar: the bottom
+ * bar is the last row of a frame that is as tall as the visible area, so it cannot drift while the
+ * content scrolls and it clears the home indicator through its own bottom padding.
+ *
+ * The current page is marked by a lamp: a short bar on the edge that faces the content.
+ */
+
 /* compact: bottom tab bar */
 .nav {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  grid-area: nav;
   z-index: 40;
+  min-width: 0;
   padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
-  background: var(--header-bg);
-  border-top: 1px solid var(--hairline);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
-  backdrop-filter: saturate(180%) blur(24px);
+  background: var(--surface-1);
+  border-top: 1px solid var(--hairline-strong);
 }
 
 .items {
@@ -35,27 +39,55 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
-  color: var(--text-3);
-  font-size: 0.625rem;
+  color: var(--text-2);
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  line-height: 1.1;
   transition: color var(--dur-fast) var(--ease-out);
 }
 
+/* the lamp */
+.item::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  width: 28px;
+  height: 3px;
+  border-radius: 0 0 var(--radius-xs) var(--radius-xs);
+  background: var(--accent);
+  opacity: 0;
+  transform: translateX(-50%) scaleX(0.4);
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
 .item[aria-current='page'] {
+  color: var(--text);
+}
+
+.item[aria-current='page']::before {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+.item[aria-current='page'] .icon {
   color: var(--accent);
 }
 
 .item:active .icon {
-  transform: scale(0.88);
+  transform: scale(0.9);
 }
 
 .icon {
   position: relative;
   display: grid;
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
 }
 
 .badge {
@@ -66,7 +98,7 @@
   height: 9px;
   border-radius: var(--radius-full);
   background: var(--tone);
-  box-shadow: 0 0 0 2px var(--bg);
+  box-shadow: 0 0 0 2px var(--surface-1);
 }
 
 .label {
@@ -88,25 +120,19 @@
 /* medium: navigation rail */
 @media (min-width: 700px) {
   .nav {
-    top: 0;
-    right: auto;
     display: flex;
     flex-direction: column;
-    width: calc(var(--rail-w) + var(--safe-left));
     padding: calc(var(--safe-top) + var(--space-4)) var(--space-2)
       max(var(--space-4), var(--safe-bottom)) calc(var(--safe-left) + var(--space-2));
     overflow-y: auto;
-    background: var(--surface-1);
     border-top: 0;
-    border-right: 1px solid var(--hairline);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+    border-right: 1px solid var(--hairline-strong);
   }
 
   .items {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: 2px;
     height: auto;
     margin-top: var(--space-4);
   }
@@ -124,24 +150,34 @@
 
   .item {
     flex: none;
-    gap: 4px;
-    height: 62px;
+    width: 100%;
+    height: 60px;
     border-radius: var(--radius-md);
-    font-size: 0.6875rem;
+  }
+
+  /* the lamp moves to the edge next to the content */
+  .item::before {
+    top: 50%;
+    left: auto;
+    right: -9px;
+    width: 3px;
+    height: 24px;
+    border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+    transform: translateY(-50%) scaleY(0.4);
+  }
+
+  .item[aria-current='page']::before {
+    transform: translateY(-50%);
   }
 
   .badge {
     box-shadow: 0 0 0 2px var(--surface-1);
   }
-
-  .item[aria-current='page'] {
-    background: var(--accent-soft);
-  }
 }
 
 @media (min-width: 700px) and (max-height: 520px) {
   .item {
-    height: 54px;
+    height: 52px;
   }
 
   .items {
@@ -159,9 +195,8 @@
 /* wide: sidebar */
 @media (min-width: 1100px) {
   .nav {
-    width: var(--sidebar-w);
     padding: calc(var(--safe-top) + var(--space-6)) var(--space-4)
-      max(var(--space-4), var(--safe-bottom));
+      max(var(--space-4), var(--safe-bottom)) var(--space-4);
   }
 
   .items {
@@ -172,13 +207,18 @@
     flex-direction: row;
     justify-content: flex-start;
     gap: var(--space-3);
-    height: 44px;
+    height: 42px;
     padding: 0 var(--space-3);
     font-size: var(--text-base);
     font-weight: 500;
   }
 
+  .item::before {
+    right: calc(var(--space-4) * -1 - 1px);
+  }
+
   .item[aria-current='page'] {
+    background: var(--surface-2);
     font-weight: 600;
   }
 
@@ -187,9 +227,8 @@
     flex-direction: column;
     gap: 2px;
     margin-top: var(--space-3);
-    padding: var(--space-3);
-    border-radius: var(--radius-md);
-    background: var(--surface-2);
+    padding: var(--space-3) var(--space-3) 0;
+    border-top: 1px solid var(--hairline);
   }
 
   .footerStatus {

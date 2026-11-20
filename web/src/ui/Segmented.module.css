@@ -3,7 +3,7 @@
   padding: 3px;
   gap: 2px;
   border-radius: var(--radius-md);
-  background: var(--surface-2);
+  background: var(--recess);
 }
 
 .full {
@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 38px;
+  min-height: 36px;
   padding: 0 var(--space-4);
   border-radius: calc(var(--radius-md) - 3px);
   color: var(--text-2);
@@ -30,9 +30,9 @@
 }
 
 .selected {
-  background: var(--surface-3);
+  background: var(--surface-1);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
   color: var(--text);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 22%);
 }
 
 @media (hover: hover) {

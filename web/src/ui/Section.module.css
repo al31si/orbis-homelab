@@ -7,23 +7,24 @@
 
 .header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
-  min-height: 28px;
-  padding: 0 var(--space-1);
+  min-height: 30px;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--hairline-strong);
 }
 
 .title {
-  color: var(--text-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: var(--leading-snug);
 }
 
 .action {
   display: flex;
   align-items: center;
-  margin-right: calc(var(--space-2) * -1);
+  color: var(--text-2);
+  font-size: var(--text-sm);
 }

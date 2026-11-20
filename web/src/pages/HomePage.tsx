@@ -7,7 +7,6 @@ import { EmptyState } from '@/ui/EmptyState';
 import { Button } from '@/ui/Button';
 import { Page, PageHeader } from '@/ui/Page';
 import { Skeleton } from '@/ui/Skeleton';
-import { HomeAlerts } from './home/HomeAlerts';
 import { HomeFavorites } from './home/HomeFavorites';
 import { HomeHero } from './home/HomeHero';
 import { HomeServices } from './home/HomeServices';
@@ -29,16 +28,12 @@ function HomeSkeleton() {
   return (
     <div className={styles.layout} aria-busy="true" aria-label={t('home.loading')}>
       <div className={styles.column}>
-        <Skeleton height={140} radius={20} />
-        <div className={styles.vitals}>
-          {[0, 1, 2, 3].map((index) => (
-            <Skeleton key={index} height={132} radius={20} />
-          ))}
-        </div>
+        <Skeleton height={132} radius="var(--radius-lg)" />
+        <Skeleton height={236} radius="var(--radius-lg)" />
       </div>
       <div className={styles.column}>
-        <Skeleton height={120} radius={20} />
-        <Skeleton height={96} radius={20} />
+        <Skeleton height={160} radius="var(--radius-lg)" />
+        <Skeleton height={104} radius="var(--radius-lg)" />
       </div>
     </div>
   );
@@ -56,21 +51,22 @@ export default function HomePage() {
   let body;
   if (data) {
     body = (
-      <div className={styles.layout}>
-        <div className={styles.column}>
-          <HomeHero overview={data} status={overview.status} fetchedAt={overview.fetchedAt} />
-          <HomeAlerts alerts={data.alerts} />
-          <HomeVitals overview={data} />
+      <div className={styles.home}>
+        <div className={styles.layout}>
+          <div className={styles.column}>
+            <HomeHero overview={data} status={overview.status} fetchedAt={overview.fetchedAt} />
+            <HomeVitals overview={data} />
+          </div>
+          <div className={styles.column}>
+            <HomeServices
+              summary={data.services}
+              problemServiceIds={data.problemServiceIds}
+              services={services.data}
+            />
+            {services.data && <HomeFavorites services={services.data} />}
+          </div>
         </div>
-        <div className={styles.column}>
-          <HomeServices
-            summary={data.services}
-            problemServiceIds={data.problemServiceIds}
-            services={services.data}
-          />
-          {services.data && <HomeFavorites services={services.data} />}
-          <InstallHint />
-        </div>
+        <InstallHint />
       </div>
     );
   } else if (overview.status === 'loading') {

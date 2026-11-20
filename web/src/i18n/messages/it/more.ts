@@ -17,6 +17,9 @@ export const more = defineMessages({
   'more.appearance.showNoUi': 'Mostra servizi senza interfaccia',
   'more.appearance.showNoUiHint': 'Elenca anche i servizi che non hanno una pagina web.',
 
+  'more.switch.on': 'Attivo',
+  'more.switch.off': 'Non attivo',
+
   'more.install.title': 'Installazione',
   'more.install.installed.title': 'App installata',
   'more.install.installed.text': (p: { name: string }) =>
@@ -29,6 +32,9 @@ export const more = defineMessages({
   'more.install.prompt.text':
     'Il browser può installarla come app, con una finestra e un’icona proprie.',
   'more.install.prompt.button': 'Installa',
+
+  'more.install.lamp.installed': 'Installata',
+  'more.install.lamp.pending': 'Non ancora installata',
 
   'more.install.kind.chromium-desktop.title': (p: { name: string }) =>
     `Installa ${p.name} come app`,
@@ -106,6 +112,9 @@ export const more = defineMessages({
     'Le notifiche su iPhone e iPad funzionano solo con l’app aggiunta alla schermata Home.',
 
   'more.install.here.title': 'Su questo indirizzo',
+  'more.install.cap.lamp.ok': 'Funziona',
+  'more.install.cap.lamp.neutral': 'Non attivo',
+  'more.install.cap.lamp.warn': 'Con limiti',
   'more.install.cap.installs.title': 'Si installa come',
   'more.install.cap.installs.app':
     'Un’app vera: finestra o icona proprie, con uso offline e notifiche.',
@@ -161,6 +170,7 @@ export const more = defineMessages({
   'more.install.https.opt.localhost.title': 'Solo questo computer',
   'more.install.https.opt.localhost.desc': 'Aprila come localhost, per esempio con un tunnel SSH.',
   'more.install.https.guide': 'Tutte le opzioni e la guida',
+  'more.install.https.fit': 'Più adatta',
   'more.install.https.secureUrl.text': (p: { name: string }) =>
     `Apri ${p.name} da questo indirizzo per installarla come app vera.`,
   'more.install.https.recommended': 'Consigliato: installa dall’indirizzo sicuro',
@@ -172,7 +182,6 @@ export const more = defineMessages({
   'more.secure.copyFailed': 'Copia non riuscita: seleziona l’indirizzo a mano',
 
   'more.notifications.title': 'Notifiche',
-  'more.notifications.heading': 'Notifiche push',
   'more.notifications.checking': 'Verifica delle notifiche',
   'more.notifications.error.title': 'Stato non disponibile',
   'more.notifications.error.text': (p: { name: string }) =>
@@ -212,12 +221,7 @@ export const more = defineMessages({
   'more.notifications.sentNone': 'Nessun dispositivo raggiunto dalla notifica',
   'more.notifications.note':
     'Ricevi una notifica solo per gli avvisi critici, ad esempio un disco in errore o un servizio essenziale offline.',
-  'more.notifications.devices': (p: { n: number }) =>
-    p.n === 0
-      ? 'Nessun dispositivo registrato'
-      : p.n === 1
-        ? '1 dispositivo registrato'
-        : `${p.n} dispositivi registrati`,
+  'more.notifications.devicesLabel': 'Dispositivi registrati',
 
   'more.pushError.noServiceWorker':
     'Il service worker non è attivo: apri l’app dall’indirizzo HTTPS e riprova.',

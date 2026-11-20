@@ -4,7 +4,7 @@ import { useSnapshot } from '@/data';
 import { useT } from '@/i18n';
 import { Section } from '@/ui/Section';
 import { Skeleton } from '@/ui/Skeleton';
-import { ContainerList } from './ContainerList';
+import { ContainerList, type ContainerService } from './ContainerList';
 import { dockerCounts } from './derive';
 import { DockerSummary } from './DockerSummary';
 import { Unavailable } from './Unavailable';
@@ -14,9 +14,9 @@ function DockerSkeleton() {
   const t = useT();
   return (
     <div className={styles.dockerStack} aria-busy="true" aria-label={t('system.loading')}>
-      <Skeleton height={44} radius={12} />
+      <Skeleton height={44} radius={8} />
       {[0, 1, 2, 3, 4, 5].map((index) => (
-        <Skeleton key={index} height={56} radius={12} />
+        <Skeleton key={index} height={56} radius={8} />
       ))}
     </div>
   );
@@ -33,8 +33,19 @@ export function DockerPanel({ system }: DockerPanelProps) {
   const containers = useSnapshot('containers');
   const services = useSnapshot('services');
 
-  const serviceNames = useMemo(
-    () => new Map((services.data ?? []).map((service) => [service.id, service.name])),
+  const catalog = useMemo(
+    () =>
+      new Map<string, ContainerService>(
+        (services.data ?? []).map((service) => [
+          service.id,
+          {
+            name: service.name,
+            icon: service.icon,
+            iconUrl: service.iconUrl,
+            integration: service.integration?.id,
+          },
+        ]),
+      ),
     [services.data],
   );
   const counts = dockerCounts(system?.docker, containers.data);
@@ -48,7 +59,7 @@ export function DockerPanel({ system }: DockerPanelProps) {
       )}
       <Section title={t('system.section.containers')}>
         {containers.data ? (
-          <ContainerList containers={containers.data} serviceNames={serviceNames} />
+          <ContainerList containers={containers.data} services={catalog} />
         ) : (
           <Unavailable
             snapshot={containers}

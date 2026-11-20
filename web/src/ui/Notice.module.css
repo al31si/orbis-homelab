@@ -4,7 +4,10 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--tone, var(--text-3)) 10%, transparent);
+  background: var(--surface-1);
+  box-shadow:
+    inset 3px 0 0 var(--tone, var(--text-3)),
+    0 0 0 1px var(--hairline);
 }
 
 .icon {

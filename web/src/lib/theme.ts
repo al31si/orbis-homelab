@@ -1,7 +1,7 @@
 import { getPrefs, subscribePrefs, type ThemePref } from './prefs';
 
 /** Must match --bg in styles/tokens.css and the <meta name="theme-color"> tags in index.html. */
-const THEME_COLORS = { dark: '#070e1b', light: '#f2f5fa' } as const;
+const THEME_COLORS = { dark: '#0c1110', light: '#e5e9e7' } as const;
 
 function applyTheme(theme: ThemePref): void {
   const root = document.documentElement;
