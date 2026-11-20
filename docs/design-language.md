@@ -56,7 +56,7 @@ Sentence case everywhere. No tracked-out upper-case labels, no eyebrow above eve
 
 ## Layout
 
-- Compact (under 700px): one column, a bottom bar of three to five destinations; Settings sits in the header.
+- Compact (under 700px): one column, a bottom plate of three to five panel keys divided by hairlines; Settings sits in the header. Icons stay outline, with an edge lamp and brighter text for the current page; state badges are separate corner lamps. The plate extends through the bottom safe area.
 - Medium (700px and up): navigation rail on the left. Wide (1100px and up): sidebar with the overall state at its foot.
 - The frame fills the visible area and scrolls its content inside (`shell/AppShell`). The document never scrolls and nothing is `position: fixed` for layout, so the bottom bar cannot drift on mobile browsers.
 - Two columns only when two things are really read side by side; otherwise one readable column (line length under 80 characters).
