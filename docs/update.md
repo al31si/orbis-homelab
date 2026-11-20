@@ -20,6 +20,14 @@ docker compose logs --tail 50 orbis
 
 `config.example.yaml` is only a reference (`diff config.example.yaml config/config.yaml` shows new options); your `config/` is never overwritten. Open the app on a device where it is installed: the service worker downloads the new app shell in the background and the app switches to it (reload or relaunch the app if it still shows the old version).
 
+## From 0.2.0 to 0.3.0
+
+The configuration format and the extension API are unchanged from 0.2.0: `config.yaml`, `services.yaml`, `.env`, `data/` and extensions work as they are. Back up `config/`, `.env` and `data/`, then follow [Update with Compose](#update-with-compose) with `VERSION=0.3.0` to fetch the matching release files and update the image. Reload or relaunch the installed app if it still shows the old interface.
+
+The pages use the new front-panel design, with lamps, LED meters and locally bundled service logos. Custom icon files still take precedence; see [Service logos](brand-logos.md) for matching rules. The Home state plate is compact on phones and the bottom bar has been restyled.
+
+Roll back as described in [Roll back](#roll-back): set `ORBIS_VERSION=0.2.0`; the data format is unchanged.
+
 ## From 0.1.0 to 0.2.0
 
 No configuration change is required: `config.yaml`, `services.yaml`, `.env`, `data/` and extensions work as they are, and push keys and subscriptions in `data/` are read as before. Follow [Update with Compose](#update-with-compose) with `VERSION=0.2.0`. What you will notice:
