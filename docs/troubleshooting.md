@@ -45,6 +45,10 @@ Compare with `config.example.yaml`; every optional block there validates as ship
 - A blank page after an update: reload once; the browser may hold the old app shell. On iOS, close the app and reopen it.
 - Behind a reverse proxy, make sure it forwards plain HTTP to the container port and does not rewrite paths.
 
+## Bottom gap in the iOS installed app
+
+iOS can report a Home Screen app's viewport about one status-bar height shorter than the screen, leaving a gap below the bottom bar. Orbis corrects the frame height only in iOS installed apps when the deficit is between 1 and 120px. In Diagnostics → This device, **Viewport** shows the inner and screen dimensions; **Height correction** shows the applied `--app-height` value, or **None**. Include both rows when reporting a remaining gap.
+
 ## No data, or pages are missing
 
 Pages exist only when their data source is configured ([feature detection](configuration.md#feature-detection)).

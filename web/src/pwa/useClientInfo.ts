@@ -22,9 +22,27 @@ export interface ClientInfo {
   secureContext: boolean;
   displayMode: 'standalone' | 'fullscreen' | 'minimal-ui' | 'browser';
   online: boolean;
+  viewport: {
+    innerWidth: number;
+    innerHeight: number;
+    screenWidth: number;
+    screenHeight: number;
+    heightCorrection: string | null;
+  };
 }
 
 const VERSION_TIMEOUT_MS = 2_000;
+
+function readViewport(): ClientInfo['viewport'] {
+  return {
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+    screenWidth: window.screen.width,
+    screenHeight: window.screen.height,
+    heightCorrection:
+      getComputedStyle(document.documentElement).getPropertyValue('--app-height').trim() || null,
+  };
+}
 
 function displayMode(): ClientInfo['displayMode'] {
   for (const mode of ['standalone', 'fullscreen', 'minimal-ui'] as const) {
@@ -76,10 +94,34 @@ function askBuildId(worker: ServiceWorker): Promise<string | null> {
 export function useClientInfo(): ClientInfo {
   const install = useInstall();
   const online = useSyncExternalStore(subscribeOnline, () => navigator.onLine);
+  const [viewport, setViewport] = useState(readViewport);
   const [worker, setWorker] = useState<{ status: ServiceWorkerStatus; buildId: string | null }>({
     status: 'none',
     buildId: null,
   });
+
+  useEffect(() => {
+    let frame: number | null = null;
+    const refresh = () => {
+      if (frame !== null) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = null;
+        setViewport(readViewport());
+      });
+    };
+    refresh();
+    window.addEventListener('resize', refresh);
+    window.addEventListener('orientationchange', refresh);
+    window.addEventListener('pageshow', refresh);
+    window.visualViewport?.addEventListener('resize', refresh);
+    return () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', refresh);
+      window.removeEventListener('orientationchange', refresh);
+      window.removeEventListener('pageshow', refresh);
+      window.visualViewport?.removeEventListener('resize', refresh);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,5 +150,6 @@ export function useClientInfo(): ClientInfo {
     secureContext: install.secureContext,
     displayMode: displayMode(),
     online,
+    viewport,
   };
 }

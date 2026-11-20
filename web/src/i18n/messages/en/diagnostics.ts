@@ -47,6 +47,11 @@ export const diagnostics: Localized<typeof ref> = {
   'diagnostics.client.serviceWorker': 'Service worker',
   'diagnostics.client.build': 'App build',
   'diagnostics.client.displayMode': 'Display mode',
+  'diagnostics.client.viewport': 'Viewport',
+  'diagnostics.client.viewportSize': (p) =>
+    `${p.innerWidth} × ${p.innerHeight} (screen ${p.screenWidth} × ${p.screenHeight})`,
+  'diagnostics.client.heightCorrection': 'Height correction',
+  'diagnostics.client.noHeightCorrection': 'None',
   'diagnostics.client.installed': 'App installed',
   'diagnostics.client.secure': 'Secure connection (HTTPS)',
   'diagnostics.client.online': 'Online',
