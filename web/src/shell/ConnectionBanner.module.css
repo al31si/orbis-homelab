@@ -20,3 +20,15 @@
   align-self: flex-start;
   margin-top: 2px;
 }
+
+.message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--text-2);
+  font-weight: 400;
+}

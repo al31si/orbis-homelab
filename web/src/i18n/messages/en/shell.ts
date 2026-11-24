@@ -27,6 +27,10 @@ export const shell: Localized<typeof ref> = {
   'shell.connection.offline': (p) => `${p.name} unreachable`,
   'shell.connection.offlineSince': (p) => `${p.name} unreachable, showing data from ${p.time}`,
 
+  'shell.networkHint.tailscale': 'Is Tailscale on for this device?',
+  'shell.networkHint.generic': (p) =>
+    `If ${p.name} is only reachable from your home network or a VPN, check that this device is connected.`,
+
   'shell.update.available': 'Update available',
   'shell.update.apply': 'Update',
 
