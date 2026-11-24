@@ -20,6 +20,10 @@ docker compose logs --tail 50 orbis
 
 `config.example.yaml` is only a reference (`diff config.example.yaml config/config.yaml` shows new options); your `config/` is never overwritten. Open the app on a device where it is installed: the service worker downloads the new app shell in the background and the app switches to it (reload or relaunch the app if it still shows the old version).
 
+## From 0.3.1 to 0.3.2
+
+Nothing to migrate: follow [Update with Compose](#update-with-compose) with `VERSION=0.3.2`, then relaunch the installed app. When the server cannot be reached, the app now suggests checking Tailscale or the home network/VPN ([release notes](release-notes/0.3.2.md)). Roll back with `ORBIS_VERSION=0.3.1`.
+
 ## From 0.3.0 to 0.3.1
 
 Nothing to migrate: follow [Update with Compose](#update-with-compose) with `VERSION=0.3.1`, then relaunch the installed app. It fixes the gap below the bottom bar in iOS Home Screen apps ([release notes](release-notes/0.3.1.md)). Roll back with `ORBIS_VERSION=0.3.0`.
