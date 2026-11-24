@@ -28,6 +28,10 @@ export const shell = defineMessages({
   'shell.connection.offlineSince': (p: { name: string; time: string }) =>
     `${p.name} non raggiungibile, dati dell’ultimo aggiornamento alle ${p.time}`,
 
+  'shell.networkHint.tailscale': 'Tailscale è acceso su questo dispositivo?',
+  'shell.networkHint.generic': (p: { name: string }) =>
+    `Se ${p.name} è raggiungibile solo dalla rete di casa o da una VPN, controlla che questo dispositivo sia collegato.`,
+
   'shell.update.available': 'Aggiornamento disponibile',
   'shell.update.apply': 'Aggiorna',
 
