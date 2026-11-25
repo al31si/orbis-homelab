@@ -225,8 +225,8 @@ function ClientSection() {
         <Fact label={t('diagnostics.client.viewport')}>
           {t('diagnostics.client.viewportSize', client.viewport)}
         </Fact>
-        <Fact label={t('diagnostics.client.heightCorrection')}>
-          {client.viewport.heightCorrection ?? t('diagnostics.client.noHeightCorrection')}
+        <Fact label={t('diagnostics.client.safeAreaInsets')}>
+          {t('diagnostics.client.safeAreaInsetsValue', client.viewport.safeAreaInsets)}
         </Fact>
         <Fact label={t('diagnostics.client.installed')}>
           <YesNo value={client.standalone} warnIfNo={false} />
@@ -242,17 +242,13 @@ function ClientSection() {
   );
 }
 
-function DiagnosticsSkeleton() {
+function DiagnosticsSkeleton({ secondary = false }: { secondary?: boolean }) {
+  const heights = secondary ? [190, 250] : [96, 330];
   return (
-    <div className={styles.layout} aria-busy="true" aria-label={t('diagnostics.loading')}>
-      <div className={styles.column}>
-        <Skeleton height={96} radius={10} />
-        <Skeleton height={330} radius={10} />
-      </div>
-      <div className={styles.column}>
-        <Skeleton height={190} radius={10} />
-        <Skeleton height={250} radius={10} />
-      </div>
+    <div className={styles.column} aria-busy="true" aria-label={t('diagnostics.loading')}>
+      {heights.map((height) => (
+        <Skeleton key={height} height={height} radius={10} />
+      ))}
     </div>
   );
 }
@@ -264,20 +260,7 @@ export default function DiagnosticsPage() {
 
   let body;
   if (data) {
-    body = (
-      <div className={styles.layout}>
-        <div className={styles.column}>
-          <SourcesSection data={data} />
-        </div>
-        <div className={styles.column}>
-          <ServerSection data={data} />
-          <CatalogSection data={data} />
-          {data.push.enabled && <PushSection data={data} />}
-          {data.extensions.length > 0 && <ExtensionsSection data={data} />}
-          <ClientSection />
-        </div>
-      </div>
-    );
+    body = <SourcesSection data={data} />;
   } else if (diagnostics.status === 'loading') {
     body = <DiagnosticsSkeleton />;
   } else if (diagnostics.status === 'offline') {
@@ -323,7 +306,22 @@ export default function DiagnosticsPage() {
           </>
         }
       />
-      {body}
+      <div className={styles.layout}>
+        <div className={styles.column}>
+          <ClientSection />
+          {body}
+        </div>
+        {data ? (
+          <div className={styles.column}>
+            <ServerSection data={data} />
+            <CatalogSection data={data} />
+            {data.push.enabled && <PushSection data={data} />}
+            {data.extensions.length > 0 && <ExtensionsSection data={data} />}
+          </div>
+        ) : diagnostics.status === 'loading' ? (
+          <DiagnosticsSkeleton secondary />
+        ) : null}
+      </div>
     </Page>
   );
 }

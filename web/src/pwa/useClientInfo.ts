@@ -27,11 +27,36 @@ export interface ClientInfo {
     innerHeight: number;
     screenWidth: number;
     screenHeight: number;
-    heightCorrection: string | null;
+    safeAreaInsets: { top: number; bottom: number };
   };
 }
 
 const VERSION_TIMEOUT_MS = 2_000;
+
+/** Resolve CSS environment values to rounded CSS pixels without affecting the document height. */
+export function readSafeAreaInsets(): ClientInfo['viewport']['safeAreaInsets'] {
+  const probe = document.createElement('div');
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.cssText = `
+    position: fixed;
+    visibility: hidden;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  `;
+  document.body.appendChild(probe);
+  try {
+    const style = getComputedStyle(probe);
+    return {
+      top: Math.round(Number.parseFloat(style.paddingTop) || 0),
+      bottom: Math.round(Number.parseFloat(style.paddingBottom) || 0),
+    };
+  } finally {
+    probe.remove();
+  }
+}
 
 function readViewport(): ClientInfo['viewport'] {
   return {
@@ -39,8 +64,7 @@ function readViewport(): ClientInfo['viewport'] {
     innerHeight: window.innerHeight,
     screenWidth: window.screen.width,
     screenHeight: window.screen.height,
-    heightCorrection:
-      getComputedStyle(document.documentElement).getPropertyValue('--app-height').trim() || null,
+    safeAreaInsets: readSafeAreaInsets(),
   };
 }
 

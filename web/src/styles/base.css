@@ -11,13 +11,19 @@ html {
   background: var(--bg);
 }
 
+/* iOS 26 shortens standalone viewports by the status bar until the document is taller. */
+@media (display-mode: standalone) {
+  html {
+    min-height: min(100lvh, calc(100% + env(safe-area-inset-top, 0px)));
+  }
+}
+
 /*
  * App shell: the document itself never scrolls. The frame (shell/AppShell) is as tall as the
  * visible area and scrolls its content inside, so the bottom navigation is a normal row at the end
  * of the frame instead of a `position: fixed` bar that depends on how a mobile browser reports its
  * toolbars. `#root` scrolls only for what renders outside the frame (boot and fatal error screens).
- * On iOS Home Screen apps, --app-height corrects a viewport shortened by the status bar;
- * otherwise the fixed body keeps the full containing-block height.
+ * The fixed body fills the viewport; the standalone html rule above lets WebKit expand it.
  */
 body {
   position: fixed;
@@ -25,7 +31,7 @@ body {
   right: 0;
   left: 0;
   bottom: auto;
-  height: var(--app-height, 100%);
+  height: 100%;
   margin: 0;
   overflow: hidden;
   overscroll-behavior: none;

@@ -117,11 +117,21 @@
   display: none;
 }
 
-/* compact destinations are panel keys; only the edge lamp carries the page accent */
+/*
+ * compact destinations are panel keys; only the edge lamp carries the page accent.
+ * The keys run down to the screen edge: the home-indicator clearance is padding inside each key,
+ * not an empty band under the bar, and it is trimmed like native tab bars do (the indicator sits
+ * in the lowest part of the inset, so the labels can come closer than the full inset).
+ */
 @media (max-width: 699px) {
+  .nav {
+    --key-clearance: max(0px, calc(var(--safe-bottom) - 14px));
+    padding-bottom: 0;
+  }
+
   .items {
     height: auto;
-    min-height: 60px;
+    min-height: calc(60px + var(--key-clearance));
   }
 
   .cell + .cell {
@@ -130,8 +140,8 @@
 
   .item {
     gap: var(--space-1);
-    min-height: 60px;
-    padding: var(--space-2) var(--space-1);
+    min-height: calc(60px + var(--key-clearance));
+    padding: var(--space-2) var(--space-1) calc(var(--space-2) + var(--key-clearance));
   }
 
   .item::before {
