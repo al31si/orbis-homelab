@@ -50,8 +50,8 @@ export const diagnostics: Localized<typeof ref> = {
   'diagnostics.client.viewport': 'Viewport',
   'diagnostics.client.viewportSize': (p) =>
     `${p.innerWidth} × ${p.innerHeight} (screen ${p.screenWidth} × ${p.screenHeight})`,
-  'diagnostics.client.heightCorrection': 'Height correction',
-  'diagnostics.client.noHeightCorrection': 'None',
+  'diagnostics.client.safeAreaInsets': 'Safe-area insets',
+  'diagnostics.client.safeAreaInsetsValue': (p) => `top ${p.top} · bottom ${p.bottom}`,
   'diagnostics.client.installed': 'App installed',
   'diagnostics.client.secure': 'Secure connection (HTTPS)',
   'diagnostics.client.online': 'Online',

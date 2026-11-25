@@ -58,8 +58,9 @@ export const diagnostics = defineMessages({
     screenWidth: number;
     screenHeight: number;
   }) => `${p.innerWidth} × ${p.innerHeight} (schermo ${p.screenWidth} × ${p.screenHeight})`,
-  'diagnostics.client.heightCorrection': 'Correzione altezza',
-  'diagnostics.client.noHeightCorrection': 'Nessuna',
+  'diagnostics.client.safeAreaInsets': 'Margini sicuri',
+  'diagnostics.client.safeAreaInsetsValue': (p: { top: number; bottom: number }) =>
+    `alto ${p.top} · basso ${p.bottom}`,
   'diagnostics.client.installed': 'App installata',
   'diagnostics.client.secure': 'Connessione sicura (HTTPS)',
   'diagnostics.client.online': 'Online',

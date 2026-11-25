@@ -51,7 +51,19 @@ This banner means the device cannot reach the server. If Orbis is only available
 
 ## Bottom gap in the iOS installed app
 
-iOS can report a Home Screen app's viewport about one status-bar height shorter than the screen, leaving a gap below the bottom bar. Orbis corrects the frame height only in iOS installed apps when the deficit is between 1 and 120px. In Diagnostics → This device, **Viewport** shows the inner and screen dimensions; **Height correction** shows the applied `--app-height` value, or **None**. Include both rows when reporting a remaining gap.
+iOS 26 can report a Home Screen app's viewport about one status-bar height shorter than the screen while the document is shorter than the screen, leaving a strip below the bottom bar. Making the fixed body taller does not help: WebKit clips it at the short viewport edge. Orbis instead grows `html` only in standalone mode:
+
+```css
+@media (display-mode: standalone) {
+  html {
+    min-height: min(100lvh, calc(100% + env(safe-area-inset-top, 0px)));
+  }
+}
+```
+
+This lets the viewport itself expand. The `100lvh` cap avoids adding too much height with an opaque status bar. The body stays fixed at `height: 100%`, with scrolling inside the app frame.
+
+Open **Settings → Info → Diagnostics** (Italian: **Impostazioni → Info → Diagnostica**). **This device** / **Questo dispositivo** is the first section, and stays available while server diagnostics are loading, offline or failing. **Viewport** / **Area visibile** shows `innerWidth × innerHeight` alongside the screen size. **Safe-area insets** / **Margini sicuri** shows the measured top and bottom insets in rounded CSS pixels, for example `top 59 · bottom 34` / `alto 59 · basso 34`. Both rows refresh on resize, rotation, page restore and visual viewport resize. Include both rows, the display mode and the app build when reporting a remaining gap.
 
 ## No data, or pages are missing
 
